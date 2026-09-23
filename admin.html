@@ -120,10 +120,10 @@
         placeholder="Price"
       >
 
-      <input
-        id="productImage"
-        placeholder="Image URL"
-      >
+<textarea
+        id="productImages"
+        placeholder="Image URLs (one per line — पहला URL main photo होगा)"
+      ></textarea>
 
       <input
         id="productSizes"
@@ -312,11 +312,20 @@
           .getElementById("productPrice")
           .value;
 
-      const image_url =
+      const imagesRaw =
         document
-          .getElementById("productImage")
+          .getElementById("productImages")
           .value
           .trim();
+
+      const imagesArray =
+        imagesRaw
+          .split("\n")
+          .map(url => url.trim())
+          .filter(url => url.length > 0);
+
+      const image_url =
+        imagesArray[0] || "";
 
       const sizes =
         document
@@ -338,6 +347,7 @@
             description: description,
             price: price,
             image_url: image_url,
+            images: imagesArray,
             sizes: sizes,
             stock: stock,
             is_active: true
@@ -374,7 +384,7 @@
         .value = "";
 
       document
-        .getElementById("productImage")
+        .getElementById("productImages")
         .value = "";
 
       document
