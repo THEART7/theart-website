@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>T-HEART — Premium Clothing</title>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap');
 
@@ -592,36 +592,9 @@ footer p{
                 <div class="product-shirt"></div>
             </div>
 
-            <div class="product-info">
-                <div class="product-name">Signature Black Tee</div>
-                <div class="product-price">₹599</div>
-            </div>
-        </div>
-
-
-        <div class="product-card">
-            <div class="product-image">
-                <span class="product-tag">NEW</span>
-                <div class="product-shirt white-shirt"></div>
-            </div>
-
-            <div class="product-info">
-                <div class="product-name">Essential White Tee</div>
-                <div class="product-price">₹599</div>
-            </div>
-        </div>
-
-
-        <div class="product-card">
-            <div class="product-image">
-                <div class="product-shirt red-shirt"></div>
-            </div>
-
-            <div class="product-info">
-                <div class="product-name">Statement Red Tee</div>
-                <div class="product-price">₹849</div>
-            </div>
-        </div>
+            <div class="products" id="productsGrid">
+        <p style="font-size:11px;color:#777;">Loading products...</p>
+    </div>
 
 
         <div class="product-card">
@@ -678,6 +651,60 @@ footer p{
 
 
 <script>
+const SUPABASE_URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
+const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
+
+const supabaseClient =
+  window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function loadShopProducts() {
+
+  const { data, error } =
+    await supabaseClient
+      .from("Products")
+      .select("*")
+      .eq("is_active", true)
+      .order("id", { ascending: false });
+
+  const grid = document.getElementById("productsGrid");
+
+  if (error) {
+    grid.innerHTML = "<p>Could not load products.</p>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    grid.innerHTML = "<p>No products yet.</p>";
+    return;
+  }
+
+  grid.innerHTML = "";
+
+  data.forEach(product => {
+
+    const img =
+      (product.images && product.images.length > 0)
+        ? product.images[0]
+        : product.image_url;
+
+    const card = document.createElement("div");
+    card.className = "product-card";
+
+    card.innerHTML = `
+      <div class="product-image">
+        <img src="${img || ''}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+      <div class="product-info">
+        <div class="product-name">${product.name}</div>
+        <div class="product-price">₹${product.price}</div>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+loadShopProducts();
 
 /* HERO SLIDER */
 
@@ -732,5 +759,4 @@ document.querySelectorAll(".category").forEach(button => {
 </script>
 
 </body>
-    </html>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</html>
