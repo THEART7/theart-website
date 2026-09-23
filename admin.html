@@ -132,9 +132,46 @@ const supabaseClient = window.supabase.createClient(
 
 
 async function login() {
-
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
+  const message = document.getElementById("loginMessage");
+
+  if (!email || !password) {
+    message.textContent = "Please enter email and password.";
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    message.textContent = error.message;
+    return;
+  }
+
+  const { data: admin, error: adminError } = await supabaseClient
+    .from("admins")
+    .select("id, role")
+    .eq("id", data.user.id)
+    .maybeSingle();
+
+  if (adminError || !admin) {
+    await supabaseClient.auth.signOut();
+    message.textContent = "You are not authorized as an admin.";
+    return;
+  }
+
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("adminPanel").classList.remove("hidden");
+
+  document.getElementById("welcome").textContent =
+    "Logged in as " + data.user.email;
+
+  loadProducts();
+  loadOrders();
+}
 
   const { data, error } =
     await supabaseClient.auth.signInWithPassword({
