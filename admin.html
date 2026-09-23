@@ -120,11 +120,14 @@
         placeholder="Price"
       >
 
-<textarea
+<label>Product Photos (पहली photo main cover होगी)</label>
+      <input
         id="productImages"
-        placeholder="Image URLs (one per line — पहला URL main photo होगा)"
-      ></textarea>
-
+        type="file"
+        accept="image/*"
+        multiple
+      >
+      <p id="uploadStatus"></p>
       <input
         id="productSizes"
         placeholder="Sizes e.g. S,M,L,XL,XXL"
@@ -312,17 +315,52 @@
           .getElementById("productPrice")
           .value;
 
-      const imagesRaw =
-        document
-          .getElementById("productImages")
-          .value
-          .trim();
+      const fileInput =
+        document.getElementById("productImages");
 
-      const imagesArray =
-        imagesRaw
-          .split("\n")
-          .map(url => url.trim())
-          .filter(url => url.length > 0);
+      const files = fileInput.files;
+
+      const uploadStatus =
+        document.getElementById("uploadStatus");
+
+      let imagesArray = [];
+
+      if (files.length > 0) {
+
+        uploadStatus.textContent = "Uploading photos...";
+
+        for (let i = 0; i < files.length; i++) {
+
+          const file = files[i];
+
+          const fileName =
+            Date.now() + "-" + i + "-" + file.name;
+
+          const { error: uploadError } =
+            await supabaseClient
+              .storage
+              .from("product-images")
+              .upload(fileName, file);
+
+          if (uploadError) {
+
+            uploadStatus.textContent =
+              "Upload failed: " + uploadError.message;
+
+            return;
+          }
+
+          const { data: publicUrlData } =
+            supabaseClient
+              .storage
+              .from("product-images")
+              .getPublicUrl(fileName);
+
+          imagesArray.push(publicUrlData.publicUrl);
+        }
+
+        uploadStatus.textContent = "";
+      }
 
       const image_url =
         imagesArray[0] || "";
@@ -386,6 +424,10 @@
       document
         .getElementById("productImages")
         .value = "";
+
+      document
+        .getElementById("uploadStatus")
+        .textContent = "";
 
       document
         .getElementById("productSizes")
