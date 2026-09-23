@@ -218,6 +218,8 @@ body{
     font-size:11px;
     letter-spacing:1.5px;
     font-weight:700;
+    border:0;
+    cursor:pointer;
 }
 
 .slider-dots{
@@ -433,6 +435,182 @@ footer p{
     font-size:10px;
 }
 
+/* CART DRAWER */
+
+.cart-overlay{
+    position:fixed;
+    inset:0;
+    background:#0007;
+    z-index:98;
+    display:none;
+}
+
+.cart-overlay.open{
+    display:block;
+}
+
+.cart-drawer{
+    position:fixed;
+    top:0;
+    right:-100%;
+    width:88%;
+    max-width:380px;
+    height:100%;
+    background:#f7f6f2;
+    z-index:99;
+    transition:right .3s ease;
+    display:flex;
+    flex-direction:column;
+    padding:20px;
+    overflow-y:auto;
+}
+
+.cart-drawer.open{
+    right:0;
+}
+
+.cart-drawer h3{
+    font-family:"Playfair Display",serif;
+    font-size:22px;
+    margin-bottom:20px;
+}
+
+.cart-item{
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+    align-items:center;
+}
+
+.cart-item img{
+    width:60px;
+    height:70px;
+    object-fit:cover;
+    background:#e4e1da;
+}
+
+.cart-item-info{
+    flex:1;
+}
+
+.cart-item-info .name{
+    font-size:12px;
+    font-weight:600;
+}
+
+.cart-item-info .price{
+    font-size:11px;
+    color:#666;
+    margin-top:3px;
+}
+
+.qty-controls{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:6px;
+}
+
+.qty-controls button{
+    width:22px;
+    height:22px;
+    border:1px solid #ccc;
+    background:white;
+    cursor:pointer;
+    font-size:12px;
+}
+
+.remove-btn{
+    font-size:10px;
+    color:#a33;
+    background:none;
+    border:0;
+    cursor:pointer;
+    text-decoration:underline;
+    margin-top:4px;
+}
+
+.cart-total{
+    margin-top:auto;
+    padding-top:15px;
+    border-top:1px solid #ddd;
+}
+
+.cart-total .row{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    margin-bottom:8px;
+}
+
+.checkout-btn{
+    width:100%;
+    padding:14px;
+    background:#111;
+    color:white;
+    border:0;
+    font-size:11px;
+    letter-spacing:1.5px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.close-cart{
+    align-self:flex-end;
+    background:none;
+    border:0;
+    font-size:22px;
+    cursor:pointer;
+}
+
+/* CHECKOUT MODAL */
+
+.checkout-overlay{
+    position:fixed;
+    inset:0;
+    background:#0007;
+    z-index:198;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.checkout-overlay.open{
+    display:flex;
+}
+
+.checkout-box{
+    background:#f7f6f2;
+    padding:25px 20px;
+    max-width:420px;
+    width:100%;
+    max-height:90vh;
+    overflow-y:auto;
+}
+
+.checkout-box h3{
+    font-family:"Playfair Display",serif;
+    font-size:22px;
+    margin-bottom:15px;
+}
+
+.checkout-box input,
+.checkout-box textarea{
+    width:100%;
+    padding:12px;
+    margin-bottom:10px;
+    border:1px solid #ccc;
+    font-family:inherit;
+    font-size:12px;
+    background:white;
+}
+
+.checkout-box textarea{
+    min-height:70px;
+}
+
 /* DESKTOP */
 
 @media(min-width:700px){
@@ -505,7 +683,10 @@ footer p{
 
     <div class="right-icons">
         <button class="icon" title="Search">⌕</button>
-        <button class="icon" title="Cart">🛒</button>
+        <button class="icon" id="cartBtn" title="Cart" style="position:relative;">
+          🛒
+          <span id="cartCount" style="position:absolute;top:-4px;right:-8px;background:#111;color:#fff;font-size:9px;border-radius:50%;width:16px;height:16px;display:none;align-items:center;justify-content:center;">0</span>
+        </button>
     </div>
 
 </header>
@@ -584,10 +765,8 @@ footer p{
     </div>
 
 
-<div class="products" id="productsGrid">
+    <div class="products" id="productsGrid">
         <p style="font-size:11px;color:#777;">Loading products...</p>
-</div>
-
     </div>
 
 </section>
@@ -628,6 +807,44 @@ footer p{
     </p>
 
 </footer>
+
+
+<!-- CART DRAWER -->
+
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+
+<div class="cart-drawer" id="cartDrawer">
+    <button class="close-cart" onclick="closeCart()">×</button>
+    <h3>Your Cart</h3>
+    <div id="cartItemsList"></div>
+    <div class="cart-total">
+        <div class="row">
+            <span>Subtotal</span>
+            <span id="cartSubtotal">₹0</span>
+        </div>
+        <button class="checkout-btn" onclick="openCheckout()">CHECKOUT</button>
+    </div>
+</div>
+
+
+<!-- CHECKOUT MODAL -->
+
+<div class="checkout-overlay" id="checkoutOverlay">
+    <div class="checkout-box">
+        <h3>Checkout</h3>
+
+        <input id="custName" placeholder="Full Name">
+        <input id="custEmail" type="email" placeholder="Email">
+        <input id="custPhone" type="tel" placeholder="Phone Number">
+        <textarea id="custAddress" placeholder="Full Delivery Address"></textarea>
+
+        <p id="checkoutTotal" style="font-size:13px;font-weight:600;margin:10px 0;"></p>
+        <p id="checkoutMessage" style="font-size:11px;color:#a33;margin-bottom:10px;"></p>
+
+        <button class="checkout-btn" onclick="placeOrder()">PLACE ORDER</button>
+        <button class="button" style="width:100%;margin-top:8px;text-align:center;" onclick="closeCheckout()">CANCEL</button>
+    </div>
+</div>
 
 
 <script>
@@ -677,6 +894,7 @@ async function loadShopProducts() {
       <div class="product-info">
         <div class="product-name">${product.name}</div>
         <div class="product-price">₹${product.price}</div>
+        <button class="button" style="width:100%;margin-top:8px;padding:10px;text-align:center;" onclick="addToCart(${product.id}, '${product.name.replace(/'/g,"\\'")}', ${product.price}, '${(img||'').replace(/'/g,"\\'")}')">ADD TO CART</button>
       </div>
     `;
 
@@ -686,57 +904,143 @@ async function loadShopProducts() {
 
 loadShopProducts();
 
-/* HERO SLIDER */
+/* CART LOGIC */
 
-let slides = document.querySelectorAll(".slide");
-let dots = document.querySelectorAll(".dot");
-
-let current = 0;
-
-function showSlide(index){
-
-    slides.forEach(slide => {
-        slide.classList.remove("active");
-    });
-
-    dots.forEach(dot => {
-        dot.classList.remove("active");
-    });
-
-    slides[index].classList.add("active");
-    dots[index].classList.add("active");
+function getCart() {
+  return JSON.parse(localStorage.getItem("theart_cart") || "[]");
 }
 
-setInterval(() => {
+function saveCart(cart) {
+  localStorage.setItem("theart_cart", JSON.stringify(cart));
+  updateCartCount();
+  renderCartItems();
+}
 
-    current++;
+function addToCart(id, name, price, image) {
+  const cart = getCart();
+  const existing = cart.find(item => item.id === id);
 
-    if(current >= slides.length){
-        current = 0;
-    }
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({ id: id, name: name, price: price, image: image, qty: 1 });
+  }
 
-    showSlide(current);
+  saveCart(cart);
+  openCart();
+}
 
-},5000);
+function updateCartCount() {
+  const cart = getCart();
+  const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+  const badge = document.getElementById("cartCount");
 
+  if (totalQty > 0) {
+    badge.style.display = "flex";
+    badge.textContent = totalQty;
+  } else {
+    badge.style.display = "none";
+  }
+}
 
-/* CATEGORY BUTTONS */
+function changeQty(id, delta) {
+  const cart = getCart();
+  const item = cart.find(i => i.id === id);
 
-document.querySelectorAll(".category").forEach(button => {
+  if (!item) return;
 
-    button.addEventListener("click", () => {
+  item.qty += delta;
 
-        document.querySelectorAll(".category").forEach(btn => {
-            btn.classList.remove("active");
-        });
+  if (item.qty <= 0) {
+    const newCart = cart.filter(i => i.id !== id);
+    saveCart(newCart);
+    return;
+  }
 
-        button.classList.add("active");
+  saveCart(cart);
+}
 
+function removeFromCart(id) {
+  const cart = getCart().filter(i => i.id !== id);
+  saveCart(cart);
+}
+
+function cartSubtotal() {
+  const cart = getCart();
+  return cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+}
+
+function renderCartItems() {
+  const cart = getCart();
+  const list = document.getElementById("cartItemsList");
+
+  if (cart.length === 0) {
+    list.innerHTML = "<p style='font-size:12px;color:#777;'>Your cart is empty.</p>";
+  } else {
+    list.innerHTML = "";
+
+    cart.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "cart-item";
+
+      div.innerHTML = `
+        <img src="${item.image || ''}" alt="${item.name}">
+        <div class="cart-item-info">
+          <div class="name">${item.name}</div>
+          <div class="price">₹${item.price} x ${item.qty}</div>
+          <div class="qty-controls">
+            <button onclick="changeQty(${item.id}, -1)">-</button>
+            <span>${item.qty}</span>
+            <button onclick="changeQty(${item.id}, 1)">+</button>
+          </div>
+          <button class="remove-btn" onclick="removeFromCart(${item.id})">Remove</button>
+        </div>
+      `;
+
+      list.appendChild(div);
     });
+  }
 
-});
+  document.getElementById("cartSubtotal").textContent = "₹" + cartSubtotal();
+}
 
-</script>
+function openCart() {
+  document.getElementById("cartOverlay").classList.add("open");
+  document.getElementById("cartDrawer").classList.add("open");
+  renderCartItems();
+}
 
-</body>
-</html>
+function closeCart() {
+  document.getElementById("cartOverlay").classList.remove("open");
+  document.getElementById("cartDrawer").classList.remove("open");
+}
+
+document.getElementById("cartBtn").addEventListener("click", openCart);
+
+updateCartCount();
+
+/* CHECKOUT LOGIC */
+
+function openCheckout() {
+  const cart = getCart();
+
+  if (cart.length === 0) {
+    alert("Your cart is empty.");
+    return;
+  }
+
+  document.getElementById("checkoutTotal").textContent =
+    "Total: ₹" + cartSubtotal();
+
+  document.getElementById("checkoutMessage").textContent = "";
+
+  document.getElementById("checkoutOverlay").classList.add("open");
+}
+
+function closeCheckout() {
+  document.getElementById("checkoutOverlay").classList.remove("open");
+}
+
+async function placeOrder() {
+
+  const name = document.getElementById("custName"
