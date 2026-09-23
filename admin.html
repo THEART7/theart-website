@@ -49,6 +49,14 @@
       margin: 10px 0;
       border-radius: 8px;
     }
+
+    .error {
+      color: red;
+    }
+
+    .success {
+      color: green;
+    }
   </style>
 </head>
 
@@ -56,298 +64,460 @@
 
   <h1>T-HEART Admin Panel</h1>
 
+  <!-- LOGIN -->
   <div id="loginBox" class="card">
     <h2>Admin Login</h2>
 
-    <input id="email" type="email" placeholder="Admin Email">
-    <input id="password" type="password" placeholder="Password">
+    <input
+      id="email"
+      type="email"
+      placeholder="Admin Email"
+    >
 
-    <button onclick="login()">Login</button>
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+    >
+
+    <button type="button" onclick="login()">Login</button>
 
     <p id="loginMessage"></p>
   </div>
 
+
+  <!-- ADMIN PANEL -->
   <div id="adminPanel" class="hidden">
 
     <div class="card">
       <h2>Dashboard</h2>
+
       <p id="welcome"></p>
-      <button onclick="logout()">Logout</button>
+
+      <button type="button" onclick="logout()">
+        Logout
+      </button>
     </div>
 
+
+    <!-- ADD PRODUCT -->
     <div class="card">
       <h2>Add Product</h2>
 
-      <input id="productName" placeholder="Product Name">
-      <textarea id="productDescription" placeholder="Description"></textarea>
-      <input id="productPrice" type="number" placeholder="Price">
-      <input id="productImage" placeholder="Image URL">
-      <input id="productSizes" placeholder="Sizes e.g. S,M,L,XL,XXL">
-      <input id="productStock" type="number" placeholder="Stock">
+      <input
+        id="productName"
+        placeholder="Product Name"
+      >
 
-      <button onclick="addProduct()">Add Product</button>
+      <textarea
+        id="productDescription"
+        placeholder="Description"
+      ></textarea>
+
+      <input
+        id="productPrice"
+        type="number"
+        placeholder="Price"
+      >
+
+      <input
+        id="productImage"
+        placeholder="Image URL"
+      >
+
+      <input
+        id="productSizes"
+        placeholder="Sizes e.g. S,M,L,XL,XXL"
+      >
+
+      <input
+        id="productStock"
+        type="number"
+        placeholder="Stock"
+      >
+
+      <button type="button" onclick="addProduct()">
+        Add Product
+      </button>
 
       <p id="productMessage"></p>
     </div>
 
+
+    <!-- PRODUCTS -->
     <div class="card">
       <h2>Products</h2>
-      <div id="productsList">Loading...</div>
+
+      <div id="productsList">
+        Loading...
+      </div>
     </div>
 
+
+    <!-- ORDERS -->
     <div class="card">
       <h2>Orders</h2>
-      <div id="ordersList">Loading...</div>
+
+      <div id="ordersList">
+        Loading...
+      </div>
     </div>
 
   </div>
 
-<script>
 
-const SUPABASE_URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
+  <!-- SUPABASE + JAVASCRIPT -->
+  <script>
 
-const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
+    const SUPABASE_URL =
+      "https://kxkmbqvsswfevrpdhjsh.supabase.co";
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+    const SUPABASE_KEY =
+      "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
 
 
-async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const message = document.getElementById("loginMessage");
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
 
-  if (!email || !password) {
-    message.textContent = "Please enter email and password.";
-    return;
-  }
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
-
-  if (error) {
-    message.textContent = error.message;
-    return;
-  }
+    // LOGIN
+    async function login() {
 
-  const { data: admin, error: adminError } = await supabaseClient
-    .from("admins")
-    .select("id, role")
-    .eq("id", data.user.id)
-    .maybeSingle();
+      const email =
+        document.getElementById("email").value.trim();
 
-  if (adminError || !admin) {
-    await supabaseClient.auth.signOut();
-    message.textContent = "You are not authorized as an admin.";
-    return;
-  }
+      const password =
+        document.getElementById("password").value;
 
-  document.getElementById("loginBox").classList.add("hidden");
-  document.getElementById("adminPanel").classList.remove("hidden");
-
-  document.getElementById("welcome").textContent =
-    "Logged in as " + data.user.email;
-
-  loadProducts();
-  loadOrders();
-}
+      const message =
+        document.getElementById("loginMessage");
 
-  const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
 
-  if (error) {
-    document.getElementById("loginMessage").textContent =
-      error.message;
-    return;
-  }
+      message.textContent = "";
 
-  const { data: admin, error: adminError } =
-    await supabaseClient
-      .from("admins")
-      .select("id, role")
-      .eq("id", data.user.id)
-      .maybeSingle();
 
-  if (adminError || !admin) {
+      if (!email || !password) {
 
-    await supabaseClient.auth.signOut();
+        message.textContent =
+          "Please enter email and password.";
 
-    document.getElementById("loginMessage").textContent =
-      "You are not authorized as an admin.";
+        return;
+      }
 
-    return;
-  }
 
-  document.getElementById("loginBox").classList.add("hidden");
-  document.getElementById("adminPanel").classList.remove("hidden");
+      const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
 
-  document.getElementById("welcome").textContent =
-    "Logged in as " + data.user.email;
 
-  loadProducts();
-  loadOrders();
-}
+      if (error) {
 
+        message.textContent =
+          error.message;
 
-async function logout() {
+        return;
+      }
 
-  await supabaseClient.auth.signOut();
 
-  document.getElementById("adminPanel").classList.add("hidden");
-  document.getElementById("loginBox").classList.remove("hidden");
-}
+      // CHECK ADMIN
+      const { data: admin, error: adminError } =
+        await supabaseClient
+          .from("admins")
+          .select("id, role")
+          .eq("id", data.user.id)
+          .maybeSingle();
 
 
-async function addProduct() {
+      if (adminError || !admin) {
 
-  const name = document.getElementById("productName").value;
-  const description =
-    document.getElementById("productDescription").value;
-  const price =
-    document.getElementById("productPrice").value;
-  const image_url =
-    document.getElementById("productImage").value;
-  const sizes =
-    document.getElementById("productSizes").value;
-  const stock =
-    document.getElementById("productStock").value;
+        await supabaseClient.auth.signOut();
 
-  const { error } = await supabaseClient
-    .from("Products")
-    .insert([{
-      name,
-      description,
-      price,
-      image_url,
-      sizes,
-      stock,
-      is_active: true
-    }]);
+        message.textContent =
+          "You are not authorized as an admin.";
 
-  if (error) {
+        return;
+      }
 
-    document.getElementById("productMessage").textContent =
-      error.message;
 
-    return;
-  }
+      // SHOW ADMIN PANEL
+      document
+        .getElementById("loginBox")
+        .classList
+        .add("hidden");
 
-  document.getElementById("productMessage").textContent =
-    "Product added successfully.";
 
-  document.getElementById("productName").value = "";
-  document.getElementById("productDescription").value = "";
-  document.getElementById("productPrice").value = "";
-  document.getElementById("productImage").value = "";
-  document.getElementById("productSizes").value = "";
-  document.getElementById("productStock").value = "";
+      document
+        .getElementById("adminPanel")
+        .classList
+        .remove("hidden");
 
-  loadProducts();
-}
 
+      document
+        .getElementById("welcome")
+        .textContent =
+          "Logged in as " + data.user.email;
 
-async function loadProducts() {
 
-  const { data, error } =
-    await supabaseClient
-      .from("Products")
-      .select("*")
-      .order("id", { ascending: false });
+      loadProducts();
+      loadOrders();
+    }
 
-  const container = document.getElementById("productsList");
 
-  if (error) {
+    // LOGOUT
+    async function logout() {
 
-    container.textContent = error.message;
-    return;
-  }
+      await supabaseClient.auth.signOut();
 
-  if (!data || data.length === 0) {
 
-    container.textContent = "No products yet.";
-    return;
-  }
+      document
+        .getElementById("adminPanel")
+        .classList
+        .add("hidden");
 
-  container.innerHTML = "";
 
-  data.forEach(product => {
+      document
+        .getElementById("loginBox")
+        .classList
+        .remove("hidden");
 
-    const div = document.createElement("div");
 
-    div.className = "product";
+      document
+        .getElementById("loginMessage")
+        .textContent = "";
+    }
 
-    div.innerHTML = `
-      <strong>${escapeHtml(product.name)}</strong>
-      <p>₹${product.price}</p>
-      <p>Stock: ${product.stock ?? 0}</p>
-    `;
 
-    container.appendChild(div);
-  });
-}
+    // ADD PRODUCT
+    async function addProduct() {
 
+      const name =
+        document
+          .getElementById("productName")
+          .value
+          .trim();
 
-async function loadOrders() {
+      const description =
+        document
+          .getElementById("productDescription")
+          .value
+          .trim();
 
-  const { data, error } =
-    await supabaseClient
-      .from("Orders table")
-      .select("*")
-      .order("id", { ascending: false });
+      const price =
+        document
+          .getElementById("productPrice")
+          .value;
 
-  const container = document.getElementById("ordersList");
+      const image_url =
+        document
+          .getElementById("productImage")
+          .value
+          .trim();
 
-  if (error) {
+      const sizes =
+        document
+          .getElementById("productSizes")
+          .value
+          .trim();
 
-    container.textContent = error.message;
-    return;
-  }
+      const stock =
+        document
+          .getElementById("productStock")
+          .value;
 
-  if (!data || data.length === 0) {
 
-    container.textContent = "No orders yet.";
-    return;
-  }
+      const { error } =
+        await supabaseClient
+          .from("Products")
+          .insert([{
+            name: name,
+            description: description,
+            price: price,
+            image_url: image_url,
+            sizes: sizes,
+            stock: stock,
+            is_active: true
+          }]);
 
-  container.innerHTML = "";
 
-  data.forEach(order => {
+      if (error) {
 
-    const div = document.createElement("div");
+        document
+          .getElementById("productMessage")
+          .textContent =
+            error.message;
 
-    div.className = "product";
+        return;
+      }
 
-    div.innerHTML = `
-      <strong>Order #${order.id}</strong>
-      <p>Customer: ${escapeHtml(order.customer_name || "")}</p>
-      <p>Total: ₹${order.total_amount || 0}</p>
-      <p>Payment: ${escapeHtml(order.payment_status || "")}</p>
-      <p>Status: ${escapeHtml(order.order_status || "")}</p>
-    `;
 
-    container.appendChild(div);
-  });
-}
+      document
+        .getElementById("productMessage")
+        .textContent =
+          "Product added successfully.";
 
 
-function escapeHtml(value) {
+      document
+        .getElementById("productName")
+        .value = "";
 
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+      document
+        .getElementById("productDescription")
+        .value = "";
 
-</script>
+      document
+        .getElementById("productPrice")
+        .value = "";
+
+      document
+        .getElementById("productImage")
+        .value = "";
+
+      document
+        .getElementById("productSizes")
+        .value = "";
+
+      document
+        .getElementById("productStock")
+        .value = "";
+
+
+      loadProducts();
+    }
+
+
+    // LOAD PRODUCTS
+    async function loadProducts() {
+
+      const { data, error } =
+        await supabaseClient
+          .from("Products")
+          .select("*")
+          .order("id", {
+            ascending: false
+          });
+
+
+      const container =
+        document.getElementById("productsList");
+
+
+      if (error) {
+
+        container.textContent =
+          error.message;
+
+        return;
+      }
+
+
+      if (!data || data.length === 0) {
+
+        container.textContent =
+          "No products yet.";
+
+        return;
+      }
+
+
+      container.innerHTML = "";
+
+
+      data.forEach(product => {
+
+        const div =
+          document.createElement("div");
+
+        div.className = "product";
+
+
+        div.innerHTML = `
+          <strong>${escapeHtml(product.name)}</strong>
+          <p>₹${product.price}</p>
+          <p>Stock: ${product.stock ?? 0}</p>
+        `;
+
+
+        container.appendChild(div);
+      });
+    }
+
+
+    // LOAD ORDERS
+    async function loadOrders() {
+
+      const { data, error } =
+        await supabaseClient
+          .from("Orders table")
+          .select("*")
+          .order("id", {
+            ascending: false
+          });
+
+
+      const container =
+        document.getElementById("ordersList");
+
+
+      if (error) {
+
+        container.textContent =
+          error.message;
+
+        return;
+      }
+
+
+      if (!data || data.length === 0) {
+
+        container.textContent =
+          "No orders yet.";
+
+        return;
+      }
+
+
+      container.innerHTML = "";
+
+
+      data.forEach(order => {
+
+        const div =
+          document.createElement("div");
+
+        div.className = "product";
+
+
+        div.innerHTML = `
+          <strong>Order #${order.id}</strong>
+          <p>Customer: ${escapeHtml(order.customer_name || "")}</p>
+          <p>Total: ₹${order.total_amount || 0}</p>
+          <p>Payment: ${escapeHtml(order.payment_status || "")}</p>
+          <p>Status: ${escapeHtml(order.order_status || "")}</p>
+        `;
+
+
+        container.appendChild(div);
+      });
+    }
+
+
+    // SECURITY: ESCAPE HTML
+    function escapeHtml(value) {
+
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+  </script>
 
 </body>
-  </html>
+</html>
