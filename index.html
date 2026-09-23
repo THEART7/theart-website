@@ -848,6 +848,13 @@ footer p{
 
 
 <script>
+window.onerror = function(msg, url, line, col, error) {
+  const grid = document.getElementById("productsGrid");
+  if (grid) {
+    grid.innerHTML = "<p style='color:red;font-size:11px;'>JS ERROR: " + msg + " (line " + line + ")</p>";
+  }
+};
+
 const SUPABASE_URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
 
@@ -1034,13 +1041,4 @@ function openCheckout() {
 
   document.getElementById("checkoutMessage").textContent = "";
 
-  document.getElementById("checkoutOverlay").classList.add("open");
-}
-
-function closeCheckout() {
-  document.getElementById("checkoutOverlay").classList.remove("open");
-}
-
-async function placeOrder() {
-
-  const name = document.getElementById("custName"
+  document.
