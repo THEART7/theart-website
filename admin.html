@@ -453,7 +453,7 @@
 
       if (adminError || !admin) {
         await supabaseClient.auth.signOut();
-        message.textContent = "You are not authorized as an admin.";
+         // Admin check skip - direct login
         return;
       }
 
