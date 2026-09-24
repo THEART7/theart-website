@@ -27,7 +27,7 @@
       border-radius: 12px;
     }
 
-    input, textarea, button {
+    input, textarea, button, select {
       width: 100%;
       padding: 12px;
       margin: 8px 0;
@@ -56,6 +56,13 @@
 
     .success {
       color: green;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -120,7 +127,15 @@
         placeholder="Price"
       >
 
-<label>Product Photos (पहली photo main cover होगी)</label>
+      <label>Category</label>
+      <select id="productCategory">
+        <option value="NEW ARRIVALS">New Arrivals</option>
+        <option value="OVERSIZED">Oversized</option>
+        <option value="GRAPHIC">Graphic</option>
+        <option value="CUSTOM">Custom</option>
+      </select>
+
+      <label>Product Photos (पहली photo main cover होगी)</label>
       <input
         id="productImages"
         type="file"
@@ -128,6 +143,7 @@
         multiple
       >
       <p id="uploadStatus"></p>
+
       <input
         id="productSizes"
         placeholder="Sizes e.g. S,M,L,XL,XXL"
@@ -240,9 +256,9 @@
 
         await supabaseClient.auth.signOut();
 
-  message.textContent =
-  "You are not authorized as an admin.";
-        
+        message.textContent =
+          "You are not authorized as an admin.";
+
         return;
       }
 
@@ -315,6 +331,23 @@
           .getElementById("productPrice")
           .value;
 
+      const category =
+        document
+          .getElementById("productCategory")
+          .value;
+
+      const sizes =
+        document
+          .getElementById("productSizes")
+          .value
+          .trim();
+
+      const stock =
+        document
+          .getElementById("productStock")
+          .value;
+
+
       const fileInput =
         document.getElementById("productImages");
 
@@ -365,17 +398,6 @@
       const image_url =
         imagesArray[0] || "";
 
-      const sizes =
-        document
-          .getElementById("productSizes")
-          .value
-          .trim();
-
-      const stock =
-        document
-          .getElementById("productStock")
-          .value;
-
 
       const { error } =
         await supabaseClient
@@ -386,6 +408,7 @@
             price: price,
             image_url: image_url,
             images: imagesArray,
+            category: category,
             sizes: sizes,
             stock: stock,
             is_active: true
@@ -487,11 +510,11 @@
         div.className = "product";
 
 
-        div.innerHTML = `
-          <strong>${escapeHtml(product.name)}</strong>
-          <p>₹${product.price}</p>
-          <p>Stock: ${product.stock ?? 0}</p>
-        `;
+        div.innerHTML =
+          "<strong>" + escapeHtml(product.name) + "</strong>" +
+          "<p>\u20B9" + product.price + "</p>" +
+          "<p>Category: " + escapeHtml(product.category || "-") + "</p>" +
+          "<p>Stock: " + (product.stock ?? 0) + "</p>";
 
 
         container.appendChild(div);
@@ -544,13 +567,13 @@
         div.className = "product";
 
 
-        div.innerHTML = `
-          <strong>Order #${order.id}</strong>
-          <p>Customer: ${escapeHtml(order.customer_name || "")}</p>
-          <p>Total: ₹${order.total_amount || 0}</p>
-          <p>Payment: ${escapeHtml(order.payment_status || "")}</p>
-          <p>Status: ${escapeHtml(order.order_status || "")}</p>
-        `;
+        div.innerHTML =
+          "<strong>Order #" + order.id + "</strong>" +
+          "<p>Customer: " + escapeHtml(order.customer_name || "") + "</p>" +
+          "<p>Address: " + escapeHtml(order.address || "") + "</p>" +
+          "<p>Total: \u20B9" + (order.total_amount || 0) + "</p>" +
+          "<p>Payment: " + escapeHtml(order.payment_status || "") + "</p>" +
+          "<p>Status: " + escapeHtml(order.order_status || "") + "</p>";
 
 
         container.appendChild(div);
@@ -572,4 +595,5 @@
   </script>
 
 </body>
-</html>
+  </html>
+  
