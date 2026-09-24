@@ -654,7 +654,7 @@ footer p{
 <!-- ANNOUNCEMENT -->
 
 <div class="announcement">
-    <div class="announcement-track">
+    <div class="announcement-track" id="announcementTrack">
         <span>FREE PAN-INDIA SHIPPING</span>
         <span>NEW DROP LIVE</span>
         <span>CUSTOM ORDERS AVAILABLE</span>
@@ -677,8 +677,8 @@ footer p{
     </div>
 
     <div class="brand">
-        T-HEART
-        <small>PREMIUM CLOTHING</small>
+        <span id="brandNameText">T-HEART</span>
+        <small id="brandTaglineText">PREMIUM CLOTHING</small>
     </div>
 
     <div class="right-icons">
@@ -694,7 +694,7 @@ footer p{
 
 <!-- HERO -->
 
-<section class="hero">
+<section class="hero" id="heroSection">
 
     <div class="slide active">
         <div class="slide-bg"></div>
@@ -732,7 +732,7 @@ footer p{
         </div>
     </div>
 
-    <div class="slider-dots">
+    <div class="slider-dots" id="sliderDots">
         <span class="dot active"></span>
         <span class="dot"></span>
         <span class="dot"></span>
@@ -886,6 +886,91 @@ const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
 const supabaseClient =
   window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+async function loadSiteSettings() {
+
+  const { data } = await supabaseClient.from("site_setting").select("*").limit(1).maybeSingle();
+
+  if (!data) return;
+
+  if (data.brand_name) {
+    document.getElementById("brandNameText").textContent = data.brand_name;
+    document.title = data.brand_name + " — Premium Clothing";
+  }
+
+  if (data.tagline) {
+    document.getElementById("brandTaglineText").textContent = data.tagline;
+  }
+
+  if (data.hero_product_ids && data.hero_product_ids.length > 0) {
+    loadHeroSlides(data.hero_product_ids);
+  }
+}
+
+async function loadAnnouncementsBar() {
+
+  const { data, error } = await supabaseClient.from("announcements").select("*").eq("is_active", true).order("sort_order", { ascending: true });
+
+  if (error || !data || data.length === 0) return;
+
+  const track = document.getElementById("announcementTrack");
+  let html = "";
+
+  data.forEach(a => {
+    html += "<span>" + escapeHtmlSite(a.text) + "</span>";
+  });
+
+  track.innerHTML = html + html;
+}
+
+function escapeHtmlSite(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+async function loadHeroSlides(heroIds) {
+
+  const { data, error } = await supabaseClient.from("Products").select("*").in("id", heroIds);
+
+  if (error || !data || data.length === 0) return;
+
+  const ordered = heroIds.map(id => data.find(p => p.id === id)).filter(p => p);
+
+  if (ordered.length === 0) return;
+
+  const heroSection = document.getElementById("heroSection");
+  let html = "";
+
+  ordered.forEach((product, index) => {
+
+    const img = (product.images && product.images.length > 0) ? product.images[0] : product.image_url;
+    const activeClass = index === 0 ? " active" : "";
+
+    html += "<div class='slide" + activeClass + "'>" +
+      "<div class='slide-bg' style=\"background-image:url('" + (img || "") + "');background-size:cover;background-position:center;\"></div>" +
+      "<div class='hero-content'>" +
+        "<div class='eyebrow'>FEATURED</div>" +
+        "<h1>" + escapeHtmlSite(product.name) + "</h1>" +
+        "<p>\u20B9" + product.price + "</p>" +
+        "<a href='#shop' class='button'>SHOP NOW</a>" +
+      "</div>" +
+    "</div>";
+  });
+
+  html += "<div class='slider-dots' id='sliderDots'></div>";
+
+  heroSection.innerHTML = html;
+
+  let dotsHtml = "";
+  ordered.forEach((p, i) => {
+    dotsHtml += "<span class='dot" + (i === 0 ? " active" : "") + "'></span>";
+  });
+  document.getElementById("sliderDots").innerHTML = dotsHtml;
+
+  initSlider();
+}
+
 async function loadShopProducts() {
 
  try {
@@ -913,7 +998,7 @@ async function loadShopProducts() {
 
   renderProductGrid(data);
 
- } catch (err) {
+} catch (err) {
    const grid = document.getElementById("productsGrid");
    if (grid) {
      grid.innerHTML = "<p style='color:red;font-size:11px;'>CAUGHT ERROR: " + err.message + "</p>";
@@ -1208,36 +1293,49 @@ function closeProductDetail() {
 
 /* HERO SLIDER */
 
-let slides = document.querySelectorAll(".slide");
-let dots = document.querySelectorAll(".dot");
+let sliderInterval = null;
 
-let current = 0;
+function initSlider() {
 
-function showSlide(index){
+  let slides = document.querySelectorAll(".slide");
+  let dots = document.querySelectorAll(".dot");
 
-    slides.forEach(slide => {
-        slide.classList.remove("active");
-    });
+  let current = 0;
 
-    dots.forEach(dot => {
-        dot.classList.remove("active");
-    });
+  function showSlide(index){
 
-    slides[index].classList.add("active");
-    dots[index].classList.add("active");
+      slides.forEach(slide => {
+          slide.classList.remove("active");
+      });
+
+      dots.forEach(dot => {
+          dot.classList.remove("active");
+      });
+
+      if (slides[index]) slides[index].classList.add("active");
+      if (dots[index]) dots[index].classList.add("active");
+  }
+
+  if (sliderInterval) clearInterval(sliderInterval);
+
+  if (slides.length > 1) {
+    sliderInterval = setInterval(() => {
+
+        current++;
+
+        if(current >= slides.length){
+            current = 0;
+        }
+
+        showSlide(current);
+
+    },5000);
+  }
 }
 
-setInterval(() => {
-
-    current++;
-
-    if(current >= slides.length){
-        current = 0;
-    }
-
-    showSlide(current);
-
-},5000);
+initSlider();
+loadSiteSettings();
+loadAnnouncementsBar();
 
 
 /* CATEGORY BUTTONS */
