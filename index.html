@@ -827,6 +827,20 @@ footer p{
 </div>
 
 
+<!-- PRODUCT DETAIL MODAL -->
+
+<div class="checkout-overlay" id="detailOverlay">
+    <div class="checkout-box" style="max-width:480px;">
+        <button class="close-cart" style="float:right;" onclick="closeProductDetail()">×</button>
+        <div id="detailImages" style="display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;"></div>
+        <h3 id="detailName" style="margin-bottom:6px;"></h3>
+        <p id="detailPrice" style="font-size:14px;font-weight:600;margin-bottom:10px;"></p>
+        <p id="detailDescription" style="font-size:12px;color:#555;line-height:1.6;margin-bottom:16px;"></p>
+        <button class="checkout-btn" id="detailAddBtn">ADD TO CART</button>
+    </div>
+</div>
+
+
 <!-- CHECKOUT MODAL -->
 
 <div class="checkout-overlay" id="checkoutOverlay">
@@ -836,7 +850,11 @@ footer p{
         <input id="custName" placeholder="Full Name">
         <input id="custEmail" type="email" placeholder="Email">
         <input id="custPhone" type="tel" placeholder="Phone Number">
-        <textarea id="custAddress" placeholder="Full Delivery Address"></textarea>
+        <input id="custHouse" placeholder="House / Flat No., Building Name">
+        <input id="custArea" placeholder="Street / Area / Landmark">
+        <input id="custCity" placeholder="City">
+        <input id="custState" placeholder="State">
+        <input id="custPincode" placeholder="Pincode">
 
         <p id="checkoutTotal" style="font-size:13px;font-weight:600;margin:10px 0;"></p>
         <p id="checkoutMessage" style="font-size:11px;color:#a33;margin-bottom:10px;"></p>
@@ -891,6 +909,21 @@ async function loadShopProducts() {
     return;
   }
 
+  allProducts = data;
+
+  renderProductGrid(data);
+
+ } catch (err) {
+   const grid = document.getElementById("productsGrid");
+   if (grid) {
+     grid.innerHTML = "<p style='color:red;font-size:11px;'>CAUGHT ERROR: " + err.message + "</p>";
+   }
+ }
+}
+
+function renderProductGrid(data) {
+
+  const grid = document.getElementById("productsGrid");
   grid.innerHTML = "";
 
   data.forEach(product => {
@@ -904,24 +937,26 @@ async function loadShopProducts() {
     card.className = "product-card";
 
     card.innerHTML =
-      '<div class="product-image">' +
+      '<div class="product-image" onclick="openProductDetail(' + product.id + ')" style="cursor:pointer;">' +
         '<img src="' + (img || '') + '" alt="' + product.name + '" style="width:100%;height:100%;object-fit:cover;">' +
       '</div>' +
       '<div class="product-info">' +
-        '<div class="product-name">' + product.name + '</div>' +
+        '<div class="product-name" onclick="openProductDetail(' + product.id + ')" style="cursor:pointer;">' + product.name + '</div>' +
         '<div class="product-price">' + '\u20B9' + product.price + '</div>' +
         '<button class="button" style="width:100%;margin-top:8px;padding:10px;text-align:center;" onclick="addToCart(' + product.id + ', \'' + product.name.replace(/'/g, "\\'") + '\', ' + product.price + ', \'' + (img || '').replace(/'/g, "\\'") + '\')">ADD TO CART</button>' +
       '</div>';
 
     grid.appendChild(card);
   });
+}
 
- } catch (err) {
-   const grid = document.getElementById("productsGrid");
-   if (grid) {
-     grid.innerHTML = "<p style='color:red;font-size:11px;'>CAUGHT ERROR: " + err.message + "</p>";
-   }
- }
+function filterByCategory(catLabel) {
+  if (catLabel === "ALL") {
+    renderProductGrid(allProducts);
+    return;
+  }
+  const filtered = allProducts.filter(p => (p.category || "").toUpperCase() === catLabel.toUpperCase());
+  renderProductGrid(filtered);
 }
 
 loadShopProducts();
@@ -1067,14 +1102,20 @@ async function placeOrder() {
   const name = document.getElementById("custName").value.trim();
   const email = document.getElementById("custEmail").value.trim();
   const phone = document.getElementById("custPhone").value.trim();
-  const address = document.getElementById("custAddress").value.trim();
+  const house = document.getElementById("custHouse").value.trim();
+  const area = document.getElementById("custArea").value.trim();
+  const city = document.getElementById("custCity").value.trim();
+  const state = document.getElementById("custState").value.trim();
+  const pincode = document.getElementById("custPincode").value.trim();
 
   const message = document.getElementById("checkoutMessage");
 
-  if (!name || !email || !phone || !address) {
+  if (!name || !email || !phone || !house || !area || !city || !state || !pincode) {
     message.textContent = "Please fill all fields.";
     return;
   }
+
+  const address = house + ", " + area + ", " + city + ", " + state + " - " + pincode;
 
   const cart = getCart();
 
@@ -1115,7 +1156,54 @@ async function placeOrder() {
   document.getElementById("custName").value = "";
   document.getElementById("custEmail").value = "";
   document.getElementById("custPhone").value = "";
-  document.getElementById("custAddress").value = "";
+  document.getElementById("custHouse").value = "";
+  document.getElementById("custArea").value = "";
+  document.getElementById("custCity").value = "";
+  document.getElementById("custState").value = "";
+  document.getElementById("custPincode").value = "";
+}
+
+/* PRODUCT DETAIL MODAL */
+
+let allProducts = [];
+
+function openProductDetail(id) {
+  const product = allProducts.find(p => p.id === id);
+  if (!product) return;
+
+  const images = (product.images && product.images.length > 0) ? product.images : [product.image_url];
+
+  const imagesDiv = document.getElementById("detailImages");
+  imagesDiv.innerHTML = "";
+
+  images.forEach(url => {
+    if (!url) return;
+    const img = document.createElement("img");
+    img.src = url;
+    img.style.width = "100px";
+    img.style.height = "120px";
+    img.style.objectFit = "cover";
+    img.style.flexShrink = "0";
+    imagesDiv.appendChild(img);
+  });
+
+  document.getElementById("detailName").textContent = product.name;
+  document.getElementById("detailPrice").textContent = "\u20B9" + product.price;
+  document.getElementById("detailDescription").textContent = product.description || "";
+
+  const img0 = images[0] || "";
+
+  const btn = document.getElementById("detailAddBtn");
+  btn.onclick = function() {
+    addToCart(product.id, product.name, product.price, img0);
+    closeProductDetail();
+  };
+
+  document.getElementById("detailOverlay").classList.add("open");
+}
+
+function closeProductDetail() {
+  document.getElementById("detailOverlay").classList.remove("open");
 }
 
 /* HERO SLIDER */
@@ -1163,6 +1251,8 @@ document.querySelectorAll(".category").forEach(button => {
         });
 
         button.classList.add("active");
+
+        filterByCategory(button.textContent.trim());
 
     });
 
