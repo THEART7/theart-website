@@ -1217,7 +1217,7 @@ async function placeOrder() {
 
   const { error } =
     await supabaseClient
-      .from("Orders table")
+      .from("Orders")
       .insert([{
         customer_name: name,
         customer_email: email,
