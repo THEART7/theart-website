@@ -272,12 +272,17 @@ async function loadShopProducts() {
     if (!data || data.length === 0) { grid.innerHTML = "<p>No products yet.</p>"; return; }
     allProducts = data;
     renderProductGrid(data);
-    checkUrlForProduct();
-  } catch (err) {
-    const grid = document.getElementById("productsGrid");
-    if (grid) grid.innerHTML = "<p style='color:red;font-size:11px;'>CAUGHT ERROR: " + err.message + "</p>";
+    function checkUrlForProduct() {
+  const hash = window.location.hash;
+  if (hash.startsWith("#product=")) {
+    const productId = hash.replace("#product=", "");
+    setTimeout(() => {
+      const product = allProducts.find(p => String(p.id) === String(productId));
+      if (product) showProductDetailPage(product);
+      else console.log("Product not found for hash:", productId);
+    }, 500);
   }
-}
+    }
 
 function renderProductGrid(data) {
   const grid = document.getElementById("productsGrid");
@@ -298,11 +303,15 @@ function filterByCategory(catLabel) {
 }
 
 function openProductDetail(productId) {
-  const product = allProducts.find(p => p.id === productId);
-  if (!product) return;
+  const product = allProducts.find(p => String(p.id) === String(productId));
+  if (!product) {
+    console.log("Product not found:", productId);
+    console.log("Available products:", allProducts.map(p => p.id));
+    return;
+  }
   currentProduct = product;
-  window.location.hash = "product=" + productId;
   showProductDetailPage(product);
+  setTimeout(() => { window.location.hash = "product=" + productId; }, 100);
 }
 
 function showProductDetailPage(product) {
