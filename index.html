@@ -268,7 +268,7 @@ async function loadShopProducts() {
   try {
     const { data, error } = await supabaseClient.from("Products").select("*").eq("is_active", true).order("id", { ascending: false });
     const grid = document.getElementById("productsGrid");
-    if (error) { grid.innerHTML = "<p style='color:red;font-size:11px;'>Could not load products: " + error.message + "</p>"; return; }
+    if (error) { alert("SUPABASE ERROR: " + error.message + " | Code: " + error.code); grid.innerHTML = "<p style='color:red;'>Error: " + error.message + "</p>"; return; }
     if (!data || data.length === 0) { grid.innerHTML = "<p>No products yet.</p>"; return; }
     allProducts = data;
     renderProductGrid(data);
