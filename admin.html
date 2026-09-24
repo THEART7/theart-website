@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>T-HEART Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <style>
 * { box-sizing: border-box; }
 body { font-family: Arial, sans-serif; max-width: 1100px; margin: auto; padding: 16px; background: #f2f1ec; color: #111; }
@@ -194,7 +196,22 @@ label { font-size: 12px; font-weight: bold; display: block; margin-top: 10px; co
     </div>
   </div>
 </div>
-
+  
+<!-- IMAGE CROPPER MODAL -->
+<div class="overlay" id="cropperOverlay">
+  <div class="modal-box" style="max-width:500px;">
+    <h3 style="margin-bottom:10px;">Crop Image to 1:1</h3>
+    <p style="font-size:12px;color:#777;margin-bottom:15px;">Drag the box to select the square area you want to keep.</p>
+    <div style="max-height:350px;overflow:hidden;background:#000;border-radius:8px;">
+      <img id="cropperImage" src="" style="max-width:100%;display:block;">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:15px;">
+      <button type="button" onclick="confirmCrop()" style="flex:1;">✓ Use This Crop</button>
+      <button type="button" class="secondary" onclick="cancelCrop()" style="flex:1;">Cancel</button>
+    </div>
+  </div>
+</div>
+  
 <div class="overlay" id="orderDetailOverlay">
   <div class="modal-box">
     <button type="button" class="secondary small" onclick="closeOrderDetail()">Close</button>
@@ -687,6 +704,144 @@ async function loadCustomers() {
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
+  // ---- IMAGE CROPPER LOGIC ----
+let cropperInstance = null;
+let pendingCropFiles = [];
+let currentCropIndex = 0;
+
+// File input change listener
+document.addEventListener("change", function(e) {
+  if (e.target && e.target.id === "productImages" && e.target.files.length > 0) {
+    pendingCropFiles = Array.from(e.target.files);
+    currentCropIndex = 0;
+    showCropperForNext();
+  }
+});
+
+function showCropperForNext() {
+  if (currentCropIndex >= pendingCropFiles.length) {
+    // All images cropped, clear the input so saveProduct uses cropped versions
+    document.getElementById("productImages").value = "";
+    processCroppedImages();
+    return;
+  }
+  const file = pendingCropFiles[currentCropIndex];
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById("cropperImage").src = ev.target.result;
+    document.getElementById("cropperOverlay").classList.add("open");
+    // Initialize cropper after image loads
+    setTimeout(() => {
+      if (cropperInstance) cropperInstance.destroy();
+      const img = document.getElementById("cropperImage");
+      cropperInstance = new Cropper(img, {
+        aspectRatio: 1,
+        viewMode: 1,
+        dragMode: "move",
+        autoCropArea: 0.9,
+        responsive: true,
+        guides: true,
+        center: true,
+        highlight: true,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        toggleDragModeOnDblclick: false,
+      });
+    }, 100);
+  };
+  reader.readAsDataURL(file);
+}
+
+function confirmCrop() {
+  if (!cropperInstance) return;
+  const canvas = cropperInstance.getCroppedCanvas({
+    width: 800,
+    height: 800,
+    imageSmoothingEnabled: true,
+    imageSmoothingQuality: "high",
+  });
+  canvas.toBlob(function(blob) {
+    const fileName = "cropped-" + Date.now() + "-" + currentCropIndex + ".png";
+    const croppedFile = new File([blob], fileName, { type: "image/png" });
+    if (!window._croppedFiles) window._croppedFiles = [];
+    window._croppedFiles.push(croppedFile);
+    currentCropIndex++;
+    cropperInstance.destroy();
+    cropperInstance = null;
+    document.getElementById("cropperOverlay").classList.remove("open");
+    showCropperForNext();
+  }, "image/png", 0.95);
+}
+
+function cancelCrop() {
+  if (cropperInstance) {
+    cropperInstance.destroy();
+    cropperInstance = null;
+  }
+  document.getElementById("cropperOverlay").classList.remove("open");
+  pendingCropFiles = [];
+  window._croppedFiles = [];
+  document.getElementById("productImages").value = "";
+}
+
+function processCroppedImages() {
+  // Replace the original file input behavior with cropped files
+  const uploadStatus = document.getElementById("uploadStatus");
+  uploadStatus.textContent = "Processing " + window._croppedFiles.length + " image(s)...";
+}
+
+// Override saveProduct to use cropped files
+const originalSaveProduct = saveProduct;
+saveProduct = async function() {
+  const fileInput = document.getElementById("productImages");
+  let filesToUpload = [];
+  
+  if (window._croppedFiles && window._croppedFiles.length > 0) {
+    filesToUpload = window._croppedFiles;
+    window._croppedFiles = [];
+  } else if (fileInput.files.length > 0) {
+    filesToUpload = Array.from(fileInput.files);
+  }
+  
+  const editingId = document.getElementById("editingProductId").value;
+  const name = document.getElementById("productName").value.trim();
+  const description = document.getElementById("productDescription").value.trim();
+  const price = document.getElementById("productPrice").value;
+  const category = document.getElementById("productCategory").value;
+  const stock = document.getElementById("productStock").value;
+  const sortOrder = document.getElementById("productSortOrder").value || 0;
+  const selectedSizes = [];
+  document.querySelectorAll(".sizeBox:checked").forEach(box => selectedSizes.push(box.value));
+  const sizes = selectedSizes.join(",");
+  const message = document.getElementById("productMessage");
+  const uploadStatus = document.getElementById("uploadStatus");
+  let imagesArray = [];
+  
+  if (filesToUpload.length > 0) {
+    uploadStatus.textContent = "Uploading " + filesToUpload.length + " image(s)...";
+    for (let i = 0; i < filesToUpload.length; i++) {
+      const file = filesToUpload[i];
+      const fileName = Date.now() + "-" + i + "-" + file.name;
+      const { error: uploadError } = await supabaseClient.storage.from("product-images").upload(fileName, file);
+      if (uploadError) { uploadStatus.textContent = "Upload failed: " + uploadError.message; return; }
+      const { data: publicUrlData } = supabaseClient.storage.from("product-images").getPublicUrl(fileName);
+      imagesArray.push(publicUrlData.publicUrl);
+    }
+    uploadStatus.textContent = "";
+  }
+  
+  const payload = { name, description, price, category, sizes, stock, sort_order: sortOrder, is_active: true };
+  if (imagesArray.length > 0) { payload.images = imagesArray; payload.image_url = imagesArray[0]; }
+  
+  let error;
+  if (editingId) { const result = await supabaseClient.from("Products").update(payload).eq("id", editingId); error = result.error; }
+  else { const result = await supabaseClient.from("Products").insert([payload]); error = result.error; }
+  
+  if (error) { message.textContent = error.message; return; }
+  message.textContent = "";
+  cancelEditProduct();
+  loadProducts();
+};
 </script>
 </body>
 </html>
