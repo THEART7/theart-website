@@ -855,6 +855,13 @@ window.onerror = function(msg, url, line, col, error) {
   }
 };
 
+window.addEventListener("unhandledrejection", function(event) {
+  const grid = document.getElementById("productsGrid");
+  if (grid) {
+    grid.innerHTML = "<p style='color:red;font-size:11px;'>PROMISE ERROR: " + (event.reason && event.reason.message ? event.reason.message : JSON.stringify(event.reason)) + "</p>";
+  }
+});
+
 const SUPABASE_URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
 
@@ -862,6 +869,8 @@ const supabaseClient =
   window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function loadShopProducts() {
+
+ try {
 
   const { data, error } =
     await supabaseClient
@@ -873,7 +882,7 @@ async function loadShopProducts() {
   const grid = document.getElementById("productsGrid");
 
   if (error) {
-    grid.innerHTML = "<p>Could not load products.</p>";
+    grid.innerHTML = "<p style='color:red;font-size:11px;'>Could not load products: " + error.message + "</p>";
     return;
   }
 
@@ -907,6 +916,13 @@ async function loadShopProducts() {
 
     grid.appendChild(card);
   });
+
+ } catch (err) {
+   const grid = document.getElementById("productsGrid");
+   if (grid) {
+     grid.innerHTML = "<p style='color:red;font-size:11px;'>CAUGHT ERROR: " + err.message + "</p>";
+   }
+ }
 }
 
 loadShopProducts();
@@ -1014,31 +1030,4 @@ function renderCartItems() {
 function openCart() {
   document.getElementById("cartOverlay").classList.add("open");
   document.getElementById("cartDrawer").classList.add("open");
-  renderCartItems();
-}
-
-function closeCart() {
-  document.getElementById("cartOverlay").classList.remove("open");
-  document.getElementById("cartDrawer").classList.remove("open");
-}
-
-document.getElementById("cartBtn").addEventListener("click", openCart);
-
-updateCartCount();
-
-/* CHECKOUT LOGIC */
-
-function openCheckout() {
-  const cart = getCart();
-
-  if (cart.length === 0) {
-    alert("Your cart is empty.");
-    return;
-  }
-
-  document.getElementById("checkoutTotal").textContent =
-    "Total: ₹" + cartSubtotal();
-
-  document.getElementById("checkoutMessage").textContent = "";
-
-  document.
+  renderC
