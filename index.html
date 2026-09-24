@@ -24,14 +24,7 @@ body{background:#f7f6f2;color:#111;font-family:Inter,Arial,sans-serif;}
 .hero{min-height:610px;position:relative;overflow:hidden;background:#dedbd4;}
 .slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease;display:flex;align-items:flex-end;justify-content:center;}
 .slide.active{opacity:1;}
-.slide-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 35%,#ffffff 0,#ddd9d1 38%,#bdb9b0 100%);}
-.slide.two .slide-bg{background:radial-gradient(circle at 50% 35%,#efefef 0,#c7c7c7 42%,#888 100%);}
-.slide.three .slide-bg{background:radial-gradient(circle at 50% 35%,#eee 0,#d0c8bf 40%,#9d9186 100%);}
-.product-visual{position:absolute;width:270px;height:330px;top:100px;border-radius:18px;background:#101010;box-shadow:0 30px 60px #0003;transform:rotate(-2deg);}
-.two .product-visual{background:#eee;transform:rotate(2deg);}
-.three .product-visual{background:#9d1018;transform:rotate(-1deg);}
-.product-visual:after{content:"T-HEART";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:white;font-weight:700;letter-spacing:4px;font-size:20px;}
-.two .product-visual:after{color:#111;}
+.slide-bg{position:absolute;inset:0;background-size:cover;background-position:center;}
 .hero-content{position:relative;z-index:2;width:100%;padding:35px 25px;text-align:center;background:linear-gradient(transparent,#0008);color:white;}
 .hero-content .eyebrow{font-size:10px;letter-spacing:3px;text-transform:uppercase;}
 .hero-content h1{font-family:"Playfair Display",serif;font-size:42px;font-weight:500;margin:8px 0;}
@@ -110,7 +103,6 @@ footer p{margin-top:12px;font-size:10px;}
 @media(min-width:700px){
 .header{padding:0 50px;}
 .hero{min-height:700px;}
-.product-visual{width:330px;height:410px;top:80px;}
 .hero-content h1{font-size:60px;}
 .products{grid-template-columns:repeat(4,1fr);gap:20px;}
 .product-image{height:380px;}
@@ -143,9 +135,9 @@ footer p{margin-top:12px;font-size:10px;}
 </header>
 <div id="mainContent">
     <section class="hero" id="heroSection">
-        <div class="slide active"><div class="slide-bg"></div><div class="product-visual"></div><div class="hero-content"><div class="eyebrow">THE NEW DROP</div><h1>Wear Your Story.</h1><p>Premium pieces designed for your everyday expression.</p><a href="#shop" class="button">SHOP COLLECTION</a></div></div>
-        <div class="slide two"><div class="slide-bg"></div><div class="product-visual"></div><div class="hero-content"><div class="eyebrow">SIGNATURE SERIES</div><h1>Less Noise.</h1><p>More identity.</p><a href="#shop" class="button">EXPLORE</a></div></div>
-        <div class="slide three"><div class="slide-bg"></div><div class="product-visual"></div><div class="hero-content"><div class="eyebrow">CUSTOM</div><h1>Make It Yours.</h1><p>Your idea. Your design. Your T-shirt.</p><a href="#custom" class="button">CUSTOM ORDER</a></div></div>
+        <div class="slide active"><div class="slide-bg" style="background:radial-gradient(circle at 50% 35%,#ffffff 0,#ddd9d1 38%,#bdb9b0 100%);"></div><div class="hero-content"><div class="eyebrow">THE NEW DROP</div><h1>Wear Your Story.</h1><p>Premium pieces designed for your everyday expression.</p><a href="#shop" class="button">SHOP COLLECTION</a></div></div>
+        <div class="slide two"><div class="slide-bg" style="background:radial-gradient(circle at 50% 35%,#efefef 0,#c7c7c7 42%,#888 100%);"></div><div class="hero-content"><div class="eyebrow">SIGNATURE SERIES</div><h1>Less Noise.</h1><p>More identity.</p><a href="#shop" class="button">EXPLORE</a></div></div>
+        <div class="slide three"><div class="slide-bg" style="background:radial-gradient(circle at 50% 35%,#eee 0,#d0c8bf 40%,#9d9186 100%);"></div><div class="hero-content"><div class="eyebrow">CUSTOM</div><h1>Make It Yours.</h1><p>Your idea. Your design. Your T-shirt.</p><a href="#custom" class="button">CUSTOM ORDER</a></div></div>
         <div class="slider-dots" id="sliderDots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span></div>
     </section>
     <section class="section" id="shop">
@@ -222,7 +214,44 @@ async function loadSiteSettings() {
     if (!data) return;
     if (data.brand_name) { document.getElementById("brandNameText").textContent = data.brand_name; document.title = data.brand_name + " — Premium Clothing"; }
     if (data.tagline) document.getElementById("brandTaglineText").textContent = data.tagline;
+    if (data.hero_product_ids && data.hero_product_ids.length > 0) {
+      await loadHeroSlides(data.hero_product_ids);
+    }
   } catch(e) { console.log("Settings error:", e); }
+}
+
+async function loadHeroSlides(heroIds) {
+  try {
+    const { data, error } = await supabaseClient.from("Products").select("*").in("id", heroIds);
+    if (error || !data || data.length === 0) {
+      console.log("Hero products error:", error);
+      return;
+    }
+    const ordered = heroIds.map(id => data.find(p => p.id === id)).filter(p => p);
+    if (ordered.length === 0) return;
+    const heroSection = document.getElementById("heroSection");
+    let html = "";
+    ordered.forEach((product, index) => {
+      const img = (product.images && product.images.length > 0) ? product.images[0] : product.image_url;
+      const activeClass = index === 0 ? " active" : "";
+      html += "<div class='slide" + activeClass + "'>" +
+        "<div class='slide-bg' style='background-image:url(" + (img || "") + ");background-size:cover;background-position:center;'></div>" +
+        "<div class='hero-content'>" +
+          "<div class='eyebrow'>FEATURED</div>" +
+          "<h1>" + escapeHtmlSite(product.name) + "</h1>" +
+          "<p>₹" + product.price + "</p>" +
+          "<a href='#shop' class='button'>SHOP NOW</a>" +
+        "</div>" +
+      "</div>";
+    });
+    html += "<div class='slider-dots' id='sliderDots'></div>";
+    heroSection.innerHTML = html;
+    let dotsHtml = "";
+    ordered.forEach((p, i) => dotsHtml += "<span class='dot" + (i === 0 ? " active" : "") + "'></span>");
+    document.getElementById("sliderDots").innerHTML = dotsHtml;
+    initSlider();
+    console.log("Hero slides loaded:", ordered.length);
+  } catch(e) { console.error("Hero slides error:", e); }
 }
 
 async function loadAnnouncementsBar() {
