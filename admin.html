@@ -391,6 +391,44 @@
     // ---------- LOGIN ----------
 
     async function login() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const message = document.getElementById("loginMessage");
+  message.textContent = "";
+
+  if (!email || !password) {
+    message.textContent = "Please enter email and password.";
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ 
+      email: email, 
+      password: password 
+    });
+
+    if (error) {
+      message.textContent = "Login failed: " + error.message;
+      return;
+    }
+
+    // Simple check - sirf tera email allow hai
+    if (email !== "zeokesz@gmail.com") {
+      message.textContent = "Access denied. Admin only.";
+      await supabaseClient.auth.signOut();
+      return;
+    }
+
+    // Login successful!
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("adminPanel").classList.remove("hidden");
+    document.getElementById("welcome").textContent = "Logged in as " + data.user.email;
+    showSection("overview");
+    loadCategories();
+  } catch (err) {
+    message.textContent = "Error: " + err.message;
+  }
+}
 
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
