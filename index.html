@@ -349,10 +349,9 @@ let siteSettings = { free_shipping_above: 5000, shipping_fee: 99 };
 let heroSlides = [];
 let currentHero = 0;
 
-setTimeout(() => {
-  document.getElementById("openingOverlay").classList.add("hide");
-  setTimeout(() => document.getElementById("openingOverlay").style.display = "none", 1000);
-}, 2400);
+// Opening animation skip - direct show
+document.getElementById("openingOverlay").classList.add("hide");
+setTimeout(() => document.getElementById("openingOverlay").style.display = "none", 500);
 
 function showToast(msg) {
   const t = document.getElementById("toast");
