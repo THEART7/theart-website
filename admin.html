@@ -202,8 +202,9 @@
       <button type="button" onclick="showSection('announcements')" id="nav-announcements">Announcements</button>
       <button type="button" onclick="showSection('orders')" id="nav-orders">Orders</button>
       <button type="button" onclick="showSection('bills')" id="nav-bills">Bills</button>
-      <button type="button" onclick="showSection('settings')" id="nav-settings">Settings</button>
-      <button type="button" class="secondary" onclick="logout()">Logout</button>
+      <button type="button" onclick="showSection('customers')" id="nav-customers">Customers</button>
+<button type="button" onclick="showSection('settings')" id="nav-settings">Settings</button>
+<button type="button" class="secondary" onclick="logout()">Logout</button>
     </div>
 
 
@@ -437,8 +438,7 @@
 
     function showSection(name) {
 
-      const sections = ["overview", "products", "coupons", "announcements", "orders", "bills", "settings"];
-
+      const sections = ["overview", "products", "coupons", "announcements", "orders", "bills", "customers", "settings"];
       sections.forEach(s => {
         document.getElementById("section-" + s).classList.add("hidden");
         document.getElementById("nav-" + s).classList.remove("active");
@@ -453,6 +453,7 @@
       if (name === "announcements") loadAnnouncements();
       if (name === "orders") loadOrders();
       if (name === "bills") loadBills();
+      if (name === "customers") loadCustomers();
       if (name === "settings") loadSettings();
     }
 
@@ -1037,7 +1038,16 @@
 
       loadOrders();
     }
-
+    
+<!-- CUSTOMERS -->
+<div id="section-customers" class="section hidden">
+  <div class="card">
+    <h2>Registered Customers</h2>
+    <p style="font-size:12px;color:#777;">Jo bhi customer ne profile banaya hai wo yahan dikhega.</p>
+    <div id="customersList" style="margin-top:15px;">Loading...</div>
+  </div>
+</div>
+    
     // ---------- SETTINGS ----------
 
     async function loadSettings() {
@@ -1199,6 +1209,24 @@
     }
 
   </script>
-
+async function loadCustomers() {
+  const container = document.getElementById("customersList");
+  try {
+    const { data, error } = await supabaseClient.from("customers").select("*").order("id", { ascending: false });
+    if (error) { container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
+    if (!data || data.length === 0) { container.innerHTML = "<p>No customers yet.</p>"; return; }
+    let html = "";
+    data.forEach(c => {
+      html += "<div class='item-row'>" +
+        "<strong>" + escapeHtml(c.name || "") + "</strong><br>" +
+        " " + escapeHtml(c.email || "") + "<br>" +
+        "📱 " + escapeHtml(c.phone || "") + "<br>" +
+        "<span style='font-size:10px;color:#777;'>" + (c.created_at ? new Date(c.created_at).toLocaleString() : "") + "</span>" +
+        "</div>";
+    });
+    container.innerHTML = html;
+  } catch(e) { container.innerHTML = "<p class='error'>" + e.message + "</p>"; }
+}
+  
 </body>
 </html>
