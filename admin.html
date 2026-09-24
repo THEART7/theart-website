@@ -1,396 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>T-HEART Admin</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 1100px;
-      margin: auto;
-      padding: 16px;
-      background: #f2f1ec;
-      color: #111;
-    }
-
-    h1 { margin-bottom: 20px; }
-    h2 { margin-bottom: 12px; }
-
-    .card {
-      background: white;
-      padding: 18px;
-      margin-bottom: 18px;
-      border-radius: 12px;
-    }
-
-    input, textarea, button, select {
-      width: 100%;
-      padding: 11px;
-      margin: 6px 0;
-      box-sizing: border-box;
-      font-size: 14px;
-    }
-
-    button {
-      cursor: pointer;
-      font-weight: bold;
-      background: #111;
-      color: white;
-      border: 0;
-      border-radius: 6px;
-      padding: 12px;
-    }
-
-    button.secondary {
-      background: #eee;
-      color: #111;
-    }
-
-    button.danger {
-      background: #a33;
-      color: white;
-    }
-
-    button.small {
-      width: auto;
-      padding: 6px 12px;
-      font-size: 12px;
-      margin: 3px 3px 3px 0;
-    }
-
-    .hidden { display: none; }
-
-    .item-row {
-      border: 1px solid #ddd;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 8px;
-    }
-
-    .error { color: #a33; font-size: 13px; }
-    .success { color: #2a7; font-size: 13px; }
-
-    label {
-      font-size: 12px;
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-      color: #444;
-    }
-
-    .navbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 18px;
-    }
-
-    .navbar button {
-      background: #eee;
-      color: #111;
-      flex: 1 1 auto;
-      min-width: 80px;
-    }
-
-    .navbar button.active {
-      background: #111;
-      color: white;
-    }
-
-    .size-options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 8px 0;
-    }
-
-    .size-options label {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 13px;
-      font-weight: normal;
-      margin: 0;
-      width: auto;
-    }
-
-    .size-options input {
-      width: auto;
-      margin: 0;
-    }
-
-    .stat-box {
-      display: inline-block;
-      background: #f5f5f5;
-      padding: 14px 18px;
-      border-radius: 8px;
-      margin: 4px 8px 4px 0;
-    }
-
-    .stat-box .num {
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    .stat-box .label {
-      font-size: 11px;
-      color: #666;
-    }
-
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: #0008;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 99;
-      padding: 16px;
-    }
-
-    .overlay.open { display: flex; }
-
-    .modal-box {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 480px;
-      width: 100%;
-      max-height: 88vh;
-      overflow-y: auto;
-    }
-
-    .thumb {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 6px;
-      margin-right: 6px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T-HEART Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; max-width: 1100px; margin: auto; padding: 16px; background: #f2f1ec; color: #111; }
+h1 { margin-bottom: 20px; }
+h2 { margin-bottom: 12px; }
+.card { background: white; padding: 18px; margin-bottom: 18px; border-radius: 12px; }
+input, textarea, button, select { width: 100%; padding: 11px; margin: 6px 0; box-sizing: border-box; font-size: 14px; }
+button { cursor: pointer; font-weight: bold; background: #111; color: white; border: 0; border-radius: 6px; padding: 12px; }
+button.secondary { background: #eee; color: #111; }
+button.danger { background: #a33; color: white; }
+button.small { width: auto; padding: 6px 12px; font-size: 12px; margin: 3px 3px 3px 0; }
+.hidden { display: none; }
+.item-row { border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 8px; }
+.error { color: #a33; font-size: 13px; }
+.success { color: #2a7; font-size: 13px; }
+label { font-size: 12px; font-weight: bold; display: block; margin-top: 10px; color: #444; }
+.navbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+.navbar button { background: #eee; color: #111; flex: 1 1 auto; min-width: 80px; }
+.navbar button.active { background: #111; color: white; }
+.size-options { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; }
+.size-options label { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: normal; margin: 0; width: auto; }
+.size-options input { width: auto; margin: 0; }
+.stat-box { display: inline-block; background: #f5f5f5; padding: 14px 18px; border-radius: 8px; margin: 4px 8px 4px 0; }
+.stat-box .num { font-size: 22px; font-weight: bold; }
+.stat-box .label { font-size: 11px; color: #666; }
+.overlay { position: fixed; inset: 0; background: #0008; display: none; align-items: center; justify-content: center; z-index: 99; padding: 16px; }
+.overlay.open { display: flex; }
+.modal-box { background: white; padding: 20px; border-radius: 12px; max-width: 480px; width: 100%; max-height: 88vh; overflow-y: auto; }
+.thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; margin-right: 6px; }
+</style>
 </head>
-
 <body>
+<h1>T-HEART Admin Panel</h1>
 
-  <h1>T-HEART Admin Panel</h1>
+<div id="loginBox" class="card">
+  <h2>Admin Login</h2>
+  <input id="email" type="email" placeholder="Admin Email">
+  <input id="password" type="password" placeholder="Password">
+  <button type="button" onclick="login()">Login</button>
+  <p id="loginMessage" class="error"></p>
+</div>
 
-  <!-- LOGIN -->
-  <div id="loginBox" class="card">
-    <h2>Admin Login</h2>
-    <input id="email" type="email" placeholder="Admin Email">
-    <input id="password" type="password" placeholder="Password">
-    <button type="button" onclick="alert('Button clicked!'); login();">Login</button>
-    <p id="loginMessage" class="error"></p>
+<div id="adminPanel" class="hidden">
+  <p id="welcome" style="font-size:13px;color:#555;"></p>
+  <div class="navbar">
+    <button type="button" onclick="showSection('overview')" id="nav-overview">Overview</button>
+    <button type="button" onclick="showSection('products')" id="nav-products">Products</button>
+    <button type="button" onclick="showSection('coupons')" id="nav-coupons">Coupons</button>
+    <button type="button" onclick="showSection('announcements')" id="nav-announcements">Announcements</button>
+    <button type="button" onclick="showSection('orders')" id="nav-orders">Orders</button>
+    <button type="button" onclick="showSection('bills')" id="nav-bills">Bills</button>
+    <button type="button" onclick="showSection('customers')" id="nav-customers">Customers</button>
+    <button type="button" onclick="showSection('settings')" id="nav-settings">Settings</button>
+    <button type="button" class="secondary" onclick="logout()">Logout</button>
   </div>
 
-
-  <!-- ADMIN PANEL -->
-  <div id="adminPanel" class="hidden">
-
-    <p id="welcome" style="font-size:13px;color:#555;"></p>
-
-    <div class="navbar">
-      <button type="button" onclick="showSection('overview')" id="nav-overview">Overview</button>
-      <button type="button" onclick="showSection('products')" id="nav-products">Products</button>
-      <button type="button" onclick="showSection('coupons')" id="nav-coupons">Coupons</button>
-      <button type="button" onclick="showSection('announcements')" id="nav-announcements">Announcements</button>
-      <button type="button" onclick="showSection('orders')" id="nav-orders">Orders</button>
-      <button type="button" onclick="showSection('bills')" id="nav-bills">Bills</button>
-      <button type="button" onclick="showSection('customers')" id="nav-customers">Customers</button>
-<button type="button" onclick="showSection('settings')" id="nav-settings">Settings</button>
-<button type="button" class="secondary" onclick="logout()">Logout</button>
-    </div>
-
-
-    <!-- OVERVIEW -->
-    <div id="section-overview" class="section">
-      <div class="card">
-        <h2>Overview</h2>
-        <div id="overviewStats"></div>
-        <h2 style="margin-top:18px;">Recent Orders</h2>
-        <div id="overviewOrders">Loading...</div>
-      </div>
-    </div>
-
-
-    <!-- PRODUCTS -->
-    <div id="section-products" class="section hidden">
-
-      <div class="card">
-        <h2>Categories</h2>
-        <input id="newCategoryName" placeholder="New category name (e.g. OVERSIZED)">
-        <button type="button" onclick="addCategory()">Add Category</button>
-        <p id="categoryMessage" class="error"></p>
-        <div id="categoriesList">Loading...</div>
-      </div>
-
-      <div class="card">
-        <h2 id="productFormTitle">Add Product</h2>
-        <input type="hidden" id="editingProductId" value="">
-
-        <input id="productName" placeholder="Product Name">
-        <textarea id="productDescription" placeholder="Description"></textarea>
-        <input id="productPrice" type="number" placeholder="Price">
-
-        <label>Category</label>
-        <select id="productCategory"></select>
-
-        <label>Sizes Available</label>
-        <div class="size-options">
-          <label><input type="checkbox" class="sizeBox" value="S"> S</label>
-          <label><input type="checkbox" class="sizeBox" value="M"> M</label>
-          <label><input type="checkbox" class="sizeBox" value="L"> L</label>
-          <label><input type="checkbox" class="sizeBox" value="XL"> XL</label>
-          <label><input type="checkbox" class="sizeBox" value="XXL"> XXL</label>
-          <label><input type="checkbox" id="allSizesBox" onclick="toggleAllSizes()"> All Available</label>
-        </div>
-
-        <label>Product Photos (पहली photo main cover होगी)</label>
-        <input id="productImages" type="file" accept="image/*" multiple>
-        <p id="uploadStatus" class="error"></p>
-
-        <label>Stock</label>
-        <input id="productStock" type="number" placeholder="Stock">
-
-        <label>Display Order (छोटा नंबर = ऊपर दिखेगा)</label>
-        <input id="productSortOrder" type="number" placeholder="0" value="0">
-
-        <button type="button" onclick="saveProduct()">Save Product</button>
-        <button type="button" class="secondary" onclick="cancelEditProduct()">Cancel Edit</button>
-        <p id="productMessage" class="error"></p>
-      </div>
-
-      <div class="card">
-        <h2>Products</h2>
-        <div id="productsList">Loading...</div>
-      </div>
-
-    </div>
-
-
-    <!-- COUPONS -->
-    <div id="section-coupons" class="section hidden">
-      <div class="card">
-        <h2>Add Coupon</h2>
-        <input id="couponCode" placeholder="Coupon Code (e.g. WELCOME10)">
-        <label>Minimum Order Amount (₹)</label>
-        <input id="couponMinOrder" type="number" placeholder="499">
-        <label>Discount Percent (%)</label>
-        <input id="couponDiscount" type="number" placeholder="10">
-        <label>Usage Limit (leave blank for unlimited)</label>
-        <input id="couponLimit" type="number" placeholder="200">
-        <button type="button" onclick="addCoupon()">Add Coupon</button>
-        <p id="couponMessage" class="error"></p>
-      </div>
-
-      <div class="card">
-        <h2>All Coupons</h2>
-        <div id="couponsList">Loading...</div>
-      </div>
-    </div>
-
-
-    <!-- ANNOUNCEMENTS -->
-    <div id="section-announcements" class="section hidden">
-      <div class="card">
-        <h2>Add Announcement</h2>
-        <input id="announcementText" placeholder="e.g. FLAT 10% OFF ABOVE ₹499">
-        <button type="button" onclick="addAnnouncement()">Add Announcement</button>
-        <p id="announcementMessage" class="error"></p>
-      </div>
-
-      <div class="card">
-        <h2>All Announcements</h2>
-        <div id="announcementsList">Loading...</div>
-      </div>
-    </div>
-
-
-    <!-- ORDERS -->
-    <div id="section-orders" class="section hidden">
-      <div class="card">
-        <h2>Active Orders</h2>
-        <p style="font-size:12px;color:#777;">Delivered orders older than 15 days move automatically to Bills.</p>
-        <div id="ordersList">Loading...</div>
-      </div>
-    </div>
-
-
-    <!-- BILLS -->
-    <div id="section-bills" class="section hidden">
-      <div class="card">
-        <h2>Bills (Completed Orders)</h2>
-        <div id="billsList">Loading...</div>
-      </div>
-    </div>
-
-
-    <!-- SETTINGS -->
-    <div id="section-settings" class="section hidden">
-
-      <div class="card">
-        <h2>Brand & Shipping</h2>
-        <label>Brand Name</label>
-        <input id="settingBrandName" placeholder="T-HEART">
-        <label>Tagline</label>
-        <input id="settingTagline" placeholder="Premium Clothing">
-        <label>Free Shipping Above (₹)</label>
-        <input id="settingFreeShipAbove" type="number" placeholder="499">
-        <label>Shipping Fee (₹)</label>
-        <input id="settingShipFee" type="number" placeholder="99">
-        <button type="button" onclick="saveSettings()">Save Settings</button>
-        <p id="settingsMessage" class="error"></p>
-      </div>
-
-      <div class="card">
-        <h2>Hero Products</h2>
-        <p style="font-size:12px;color:#777;">जिन products को hero slider में दिखाना है, उन्हें number दें (1, 2, 3...). खाली छोड़ने पर वो hero में नहीं आएगा.</p>
-        <div id="heroProductsList">Loading...</div>
-        <button type="button" onclick="saveHeroProducts()">Save Hero Order</button>
-        <p id="heroMessage" class="error"></p>
-      </div>
-
-      <div class="card">
-        <h2>Change Admin Password</h2>
-        <input id="newPassword" type="password" placeholder="New Password">
-        <button type="button" onclick="changePassword()">Update Password</button>
-        <p id="passwordMessage" class="error"></p>
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- ORDER DETAIL MODAL -->
-  <div class="overlay" id="orderDetailOverlay">
-    <div class="modal-box">
-      <button type="button" class="secondary small" onclick="closeOrderDetail()">Close</button>
-      <div id="orderDetailContent"></div>
+  <div id="section-overview" class="section">
+    <div class="card">
+      <h2>Overview</h2>
+      <div id="overviewStats"></div>
+      <h2 style="margin-top:18px;">Recent Orders</h2>
+      <div id="overviewOrders">Loading...</div>
     </div>
   </div>
 
+  <div id="section-products" class="section hidden">
+    <div class="card">
+      <h2>Categories</h2>
+      <input id="newCategoryName" placeholder="New category name (e.g. OVERSIZED)">
+      <button type="button" onclick="addCategory()">Add Category</button>
+      <p id="categoryMessage" class="error"></p>
+      <div id="categoriesList">Loading...</div>
+    </div>
+    <div class="card">
+      <h2 id="productFormTitle">Add Product</h2>
+      <input type="hidden" id="editingProductId" value="">
+      <input id="productName" placeholder="Product Name">
+      <textarea id="productDescription" placeholder="Description"></textarea>
+      <input id="productPrice" type="number" placeholder="Price">
+      <label>Category</label>
+      <select id="productCategory"></select>
+      <label>Sizes Available</label>
+      <div class="size-options">
+        <label><input type="checkbox" class="sizeBox" value="S"> S</label>
+        <label><input type="checkbox" class="sizeBox" value="M"> M</label>
+        <label><input type="checkbox" class="sizeBox" value="L"> L</label>
+        <label><input type="checkbox" class="sizeBox" value="XL"> XL</label>
+        <label><input type="checkbox" class="sizeBox" value="XXL"> XXL</label>
+        <label><input type="checkbox" id="allSizesBox" onclick="toggleAllSizes()"> All Available</label>
+      </div>
+      <label>Product Photos</label>
+      <input id="productImages" type="file" accept="image/*" multiple>
+      <p id="uploadStatus" class="error"></p>
+      <label>Stock</label>
+      <input id="productStock" type="number" placeholder="Stock">
+      <label>Display Order</label>
+      <input id="productSortOrder" type="number" placeholder="0" value="0">
+      <button type="button" onclick="saveProduct()">Save Product</button>
+      <button type="button" class="secondary" onclick="cancelEditProduct()">Cancel Edit</button>
+      <p id="productMessage" class="error"></p>
+    </div>
+    <div class="card">
+      <h2>Products</h2>
+      <div id="productsList">Loading...</div>
+    </div>
+  </div>
 
-  <script>
+  <div id="section-coupons" class="section hidden">
+    <div class="card">
+      <h2>Add Coupon</h2>
+      <input id="couponCode" placeholder="Coupon Code (e.g. WELCOME10)">
+      <label>Minimum Order Amount (₹)</label>
+      <input id="couponMinOrder" type="number" placeholder="499">
+      <label>Discount Percent (%)</label>
+      <input id="couponDiscount" type="number" placeholder="10">
+      <label>Usage Limit (leave blank for unlimited)</label>
+      <input id="couponLimit" type="number" placeholder="200">
+      <button type="button" onclick="addCoupon()">Add Coupon</button>
+      <p id="couponMessage" class="error"></p>
+    </div>
+    <div class="card">
+      <h2>All Coupons</h2>
+      <div id="couponsList">Loading...</div>
+    </div>
+  </div>
 
-    const SUPABASE_URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
+  <div id="section-announcements" class="section hidden">
+    <div class="card">
+      <h2>Add Announcement</h2>
+      <input id="announcementText" placeholder="e.g. FLAT 10% OFF ABOVE ₹499">
+      <button type="button" onclick="addAnnouncement()">Add Announcement</button>
+      <p id="announcementMessage" class="error"></p>
+    </div>
+    <div class="card">
+      <h2>All Announcements</h2>
+      <div id="announcementsList">Loading...</div>
+    </div>
+  </div>
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <div id="section-orders" class="section hidden">
+    <div class="card">
+      <h2>Active Orders</h2>
+      <div id="ordersList">Loading...</div>
+    </div>
+  </div>
 
-    let allCategories = [];
-    let allProductsAdmin = [];
-    let allOrdersAdmin = [];
+  <div id="section-bills" class="section hidden">
+    <div class="card">
+      <h2>Bills (Completed Orders)</h2>
+      <div id="billsList">Loading...</div>
+    </div>
+  </div>
 
-    // ---------- LOGIN ----------
+  <div id="section-customers" class="section hidden">
+    <div class="card">
+      <h2>Registered Customers</h2>
+      <p style="font-size:12px;color:#777;">Jo bhi customer ne profile banaya hai wo yahan dikhega.</p>
+      <div id="customersList" style="margin-top:15px;">Loading...</div>
+    </div>
+  </div>
 
-    async function login() {
+  <div id="section-settings" class="section hidden">
+    <div class="card">
+      <h2>Brand & Shipping</h2>
+      <label>Brand Name</label>
+      <input id="settingBrandName" placeholder="T-HEART">
+      <label>Tagline</label>
+      <input id="settingTagline" placeholder="Premium Clothing">
+      <label>Free Shipping Above ()</label>
+      <input id="settingFreeShipAbove" type="number" placeholder="499">
+      <label>Shipping Fee (₹)</label>
+      <input id="settingShipFee" type="number" placeholder="99">
+      <button type="button" onclick="saveSettings()">Save Settings</button>
+      <p id="settingsMessage" class="error"></p>
+    </div>
+    <div class="card">
+      <h2>Hero Products</h2>
+      <div id="heroProductsList">Loading...</div>
+      <button type="button" onclick="saveHeroProducts()">Save Hero Order</button>
+      <p id="heroMessage" class="error"></p>
+    </div>
+    <div class="card">
+      <h2>Change Admin Password</h2>
+      <input id="newPassword" type="password" placeholder="New Password">
+      <button type="button" onclick="changePassword()">Update Password</button>
+      <p id="passwordMessage" class="error"></p>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="orderDetailOverlay">
+  <div class="modal-box">
+    <button type="button" class="secondary small" onclick="closeOrderDetail()">Close</button>
+    <div id="orderDetailContent"></div>
+  </div>
+</div>
+<script>
+const SUPABASE_URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
+const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const ADMIN_EMAIL = "zeokesz@gmail.com";
+
+let allCategories = [];
+let allProductsAdmin = [];
+let allOrdersAdmin = [];
+
+async function login() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
   const message = document.getElementById("loginMessage");
@@ -398,6 +219,11 @@
 
   if (!email || !password) {
     message.textContent = "Please enter email and password.";
+    return;
+  }
+
+  if (email !== ADMIN_EMAIL) {
+    message.textContent = "Access denied. This panel is for admin only.";
     return;
   }
 
@@ -412,14 +238,6 @@
       return;
     }
 
-    // Simple check - sirf tera email allow hai
-    if (email !== "zeokesz@gmail.com") {
-      message.textContent = "Access denied. Admin only.";
-      await supabaseClient.auth.signOut();
-      return;
-    }
-
-    // Login successful!
     document.getElementById("loginBox").classList.add("hidden");
     document.getElementById("adminPanel").classList.remove("hidden");
     document.getElementById("welcome").textContent = "Logged in as " + data.user.email;
@@ -430,819 +248,429 @@
   }
 }
 
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-      const message = document.getElementById("loginMessage");
+async function logout() {
+  await supabaseClient.auth.signOut();
+  document.getElementById("adminPanel").classList.add("hidden");
+  document.getElementById("loginBox").classList.remove("hidden");
+  document.getElementById("loginMessage").textContent = "";
+}
 
-      message.textContent = "";
+function showSection(name) {
+  const sections = ["overview", "products", "coupons", "announcements", "orders", "bills", "customers", "settings"];
+  sections.forEach(s => {
+    document.getElementById("section-" + s).classList.add("hidden");
+    document.getElementById("nav-" + s).classList.remove("active");
+  });
+  document.getElementById("section-" + name).classList.remove("hidden");
+  document.getElementById("nav-" + name).classList.add("active");
 
-      if (!email || !password) {
-        message.textContent = "Please enter email and password.";
-        return;
-      }
+  if (name === "overview") loadOverview();
+  if (name === "products") loadProducts();
+  if (name === "coupons") loadCoupons();
+  if (name === "announcements") loadAnnouncements();
+  if (name === "orders") loadOrders();
+  if (name === "bills") loadBills();
+  if (name === "customers") loadCustomers();
+  if (name === "settings") loadSettings();
+}
 
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+async function loadOverview() {
+  const { data, error } = await supabaseClient.from("Orders table").select("*").order("id", { ascending: false });
+  const statsDiv = document.getElementById("overviewStats");
+  const ordersDiv = document.getElementById("overviewOrders");
+  if (error) { statsDiv.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
+  const totalOrders = data.length;
+  const totalValue = data.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  statsDiv.innerHTML = "<div class='stat-box'><div class='num'>" + totalOrders + "</div><div class='label'>TOTAL ORDERS</div></div>" +
+    "<div class='stat-box'><div class='num'>₹" + totalValue + "</div><div class='label'>TOTAL ORDER VALUE</div></div>";
+  if (data.length === 0) { ordersDiv.innerHTML = "<p>No orders yet.</p>"; return; }
+  let html = "";
+  data.slice(0, 10).forEach(order => {
+    html += "<div class='item-row'><strong>Order #" + order.id + "</strong> - " + escapeHtml(order.customer_name || "") +
+      " - ₹" + (order.total_amount || 0) + " - " + escapeHtml(order.order_status || "") + "</div>";
+  });
+  ordersDiv.innerHTML = html;
+}
 
-      if (error) {
-        message.textContent = error.message;
-        return;
-      }
-
-      const { data: admin, error: adminError } =
-        await supabaseClient.from("admins").select("id, role").eq("id", data.user.id).maybeSingle();
-
-     
-
-      document.getElementById("loginBox").classList.add("hidden");
-      document.getElementById("adminPanel").classList.remove("hidden");
-      document.getElementById("welcome").textContent = "Logged in as " + data.user.email;
-
-      showSection("overview");
-      loadCategories();
-    }
-
-    async function logout() {
-      await supabaseClient.auth.signOut();
-      document.getElementById("adminPanel").classList.add("hidden");
-      document.getElementById("loginBox").classList.remove("hidden");
-      document.getElementById("loginMessage").textContent = "";
-    }
-
-    // ---------- NAVIGATION ----------
-
-    function showSection(name) {
-
-      const sections = ["overview", "products", "coupons", "announcements", "orders", "bills", "customers", "settings"];
-      sections.forEach(s => {
-        document.getElementById("section-" + s).classList.add("hidden");
-        document.getElementById("nav-" + s).classList.remove("active");
-      });
-
-      document.getElementById("section-" + name).classList.remove("hidden");
-      document.getElementById("nav-" + name).classList.add("active");
-
-      if (name === "overview") loadOverview();
-      if (name === "products") loadProducts();
-      if (name === "coupons") loadCoupons();
-      if (name === "announcements") loadAnnouncements();
-      if (name === "orders") loadOrders();
-      if (name === "bills") loadBills();
-      if (name === "customers") loadCustomers();
-      if (name === "settings") loadSettings();
-    }
-
-    // ---------- OVERVIEW ----------
-
-    async function loadOverview() {
-
-      const { data, error } = await supabaseClient.from("Orders table").select("*").order("id", { ascending: false });
-
-      const statsDiv = document.getElementById("overviewStats");
-      const ordersDiv = document.getElementById("overviewOrders");
-
-      if (error) {
-        statsDiv.innerHTML = "<p class='error'>" + error.message + "</p>";
-        return;
-      }
-
-      const totalOrders = data.length;
-      const totalValue = data.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-
-      statsDiv.innerHTML =
-        "<div class='stat-box'><div class='num'>" + totalOrders + "</div><div class='label'>TOTAL ORDERS</div></div>" +
-        "<div class='stat-box'><div class='num'>\u20B9" + totalValue + "</div><div class='label'>TOTAL ORDER VALUE</div></div>";
-
-      if (data.length === 0) {
-        ordersDiv.innerHTML = "<p>No orders yet.</p>";
-        return;
-      }
-
+async function loadCategories() {
+  const { data, error } = await supabaseClient.from("categories").select("*").order("sort_order", { ascending: true });
+  const container = document.getElementById("categoriesList");
+  const select = document.getElementById("productCategory");
+  if (error) { if (container) container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
+  allCategories = data || [];
+  if (container) {
+    if (allCategories.length === 0) container.innerHTML = "<p>No categories yet.</p>";
+    else {
       let html = "";
-
-      data.slice(0, 10).forEach(order => {
-        html += "<div class='item-row'>" +
-          "<strong>Order #" + order.id + "</strong> - " + escapeHtml(order.customer_name || "") +
-          " - \u20B9" + (order.total_amount || 0) +
-          " - " + escapeHtml(order.order_status || "") +
-          "</div>";
+      allCategories.forEach(cat => {
+        html += "<div class='item-row'>" + escapeHtml(cat.name) + " (order: " + cat.sort_order + ")" +
+          "<br><button type='button' class='small' onclick='moveCategory(" + cat.id + ", -1)'>Up</button>" +
+          "<button type='button' class='small' onclick='moveCategory(" + cat.id + ", 1)'>Down</button>" +
+          "<button type='button' class='small danger' onclick='deleteCategory(" + cat.id + ")'>Delete</button></div>";
       });
-
-      ordersDiv.innerHTML = html;
-    }
-
-    // ---------- CATEGORIES ----------
-
-    async function loadCategories() {
-
-      const { data, error } = await supabaseClient.from("categories").select("*").order("sort_order", { ascending: true });
-
-      const container = document.getElementById("categoriesList");
-      const select = document.getElementById("productCategory");
-
-      if (error) {
-        if (container) container.innerHTML = "<p class='error'>" + error.message + "</p>";
-        return;
-      }
-
-      allCategories = data || [];
-
-      if (container) {
-        if (allCategories.length === 0) {
-          container.innerHTML = "<p>No categories yet.</p>";
-        } else {
-          let html = "";
-          allCategories.forEach(cat => {
-            html += "<div class='item-row'>" +
-              escapeHtml(cat.name) +
-              " (order: " + cat.sort_order + ")" +
-              "<br><button type='button' class='small' onclick='moveCategory(" + cat.id + ", -1)'>Up</button>" +
-              "<button type='button' class='small' onclick='moveCategory(" + cat.id + ", 1)'>Down</button>" +
-              "<button type='button' class='small danger' onclick='deleteCategory(" + cat.id + ")'>Delete</button>" +
-              "</div>";
-          });
-          container.innerHTML = html;
-        }
-      }
-
-      if (select) {
-        select.innerHTML = "";
-        allCategories.forEach(cat => {
-          const opt = document.createElement("option");
-          opt.value = cat.name;
-          opt.textContent = cat.name;
-          select.appendChild(opt);
-        });
-      }
-    }
-
-    async function addCategory() {
-
-      const name = document.getElementById("newCategoryName").value.trim().toUpperCase();
-      const message = document.getElementById("categoryMessage");
-
-      if (!name) {
-        message.textContent = "Enter a category name.";
-        return;
-      }
-
-      const { error } = await supabaseClient.from("categories").insert([{ name: name, sort_order: allCategories.length }]);
-
-      if (error) {
-        message.textContent = error.message;
-        return;
-      }
-
-      message.textContent = "";
-      document.getElementById("newCategoryName").value = "";
-      loadCategories();
-    }
-
-    async function deleteCategory(id) {
-      if (!confirm("Delete this category?")) return;
-      await supabaseClient.from("categories").delete().eq("id", id);
-      loadCategories();
-    }
-
-    async function moveCategory(id, direction) {
-
-      const index = allCategories.findIndex(c => c.id === id);
-      const swapIndex = index + direction;
-
-      if (swapIndex < 0 || swapIndex >= allCategories.length) return;
-
-      const a = allCategories[index];
-      const b = allCategories[swapIndex];
-
-      await supabaseClient.from("categories").update({ sort_order: b.sort_order }).eq("id", a.id);
-      await supabaseClient.from("categories").update({ sort_order: a.sort_order }).eq("id", b.id);
-
-      loadCategories();
-    }
-
-    // ---------- PRODUCTS ----------
-
-    function toggleAllSizes() {
-      const all = document.getElementById("allSizesBox").checked;
-      document.querySelectorAll(".sizeBox").forEach(box => { box.checked = all; });
-    }
-
-    async function saveProduct() {
-
-      const editingId = document.getElementById("editingProductId").value;
-
-      const name = document.getElementById("productName").value.trim();
-      const description = document.getElementById("productDescription").value.trim();
-      const price = document.getElementById("productPrice").value;
-      const category = document.getElementById("productCategory").value;
-      const stock = document.getElementById("productStock").value;
-      const sortOrder = document.getElementById("productSortOrder").value || 0;
-
-      const selectedSizes = [];
-      document.querySelectorAll(".sizeBox:checked").forEach(box => selectedSizes.push(box.value));
-      const sizes = selectedSizes.join(",");
-
-      const message = document.getElementById("productMessage");
-
-      const fileInput = document.getElementById("productImages");
-      const files = fileInput.files;
-      const uploadStatus = document.getElementById("uploadStatus");
-
-      let imagesArray = [];
-
-      if (files.length > 0) {
-
-        uploadStatus.textContent = "Uploading photos...";
-
-        for (let i = 0; i < files.length; i++) {
-
-          const file = files[i];
-          const fileName = Date.now() + "-" + i + "-" + file.name;
-
-          const { error: uploadError } = await supabaseClient.storage.from("product-images").upload(fileName, file);
-
-          if (uploadError) {
-            uploadStatus.textContent = "Upload failed: " + uploadError.message;
-            return;
-          }
-
-          const { data: publicUrlData } = supabaseClient.storage.from("product-images").getPublicUrl(fileName);
-          imagesArray.push(publicUrlData.publicUrl);
-        }
-
-        uploadStatus.textContent = "";
-      }
-
-      const payload = {
-        name: name,
-        description: description,
-        price: price,
-        category: category,
-        sizes: sizes,
-        stock: stock,
-        sort_order: sortOrder,
-        is_active: true
-      };
-
-      if (imagesArray.length > 0) {
-        payload.images = imagesArray;
-        payload.image_url = imagesArray[0];
-      }
-
-      let error;
-
-      if (editingId) {
-        const result = await supabaseClient.from("Products").update(payload).eq("id", editingId);
-        error = result.error;
-      } else {
-        const result = await supabaseClient.from("Products").insert([payload]);
-        error = result.error;
-      }
-
-      if (error) {
-        message.textContent = error.message;
-        return;
-      }
-
-      message.textContent = "";
-      cancelEditProduct();
-      loadProducts();
-    }
-
-    function cancelEditProduct() {
-      document.getElementById("editingProductId").value = "";
-      document.getElementById("productFormTitle").textContent = "Add Product";
-      document.getElementById("productName").value = "";
-      document.getElementById("productDescription").value = "";
-      document.getElementById("productPrice").value = "";
-      document.getElementById("productStock").value = "";
-      document.getElementById("productSortOrder").value = "0";
-      document.getElementById("productImages").value = "";
-      document.getElementById("uploadStatus").textContent = "";
-      document.querySelectorAll(".sizeBox").forEach(box => box.checked = false);
-      document.getElementById("allSizesBox").checked = false;
-      document.getElementById("productMessage").textContent = "";
-    }
-
-    function editProduct(id) {
-
-      const product = allProductsAdmin.find(p => p.id === id);
-      if (!product) return;
-
-      document.getElementById("editingProductId").value = product.id;
-      document.getElementById("productFormTitle").textContent = "Edit Product: " + product.name;
-      document.getElementById("productName").value = product.name || "";
-      document.getElementById("productDescription").value = product.description || "";
-      document.getElementById("productPrice").value = product.price || "";
-      document.getElementById("productStock").value = product.stock || "";
-      document.getElementById("productSortOrder").value = product.sort_order || 0;
-      document.getElementById("productCategory").value = product.category || "";
-
-      const sizes = (product.sizes || "").split(",").map(s => s.trim());
-      document.querySelectorAll(".sizeBox").forEach(box => {
-        box.checked = sizes.indexOf(box.value) !== -1;
-      });
-
-      window.scrollTo(0, 0);
-    }
-
-    async function toggleProductActive(id, current) {
-      await supabaseClient.from("Products").update({ is_active: !current }).eq("id", id);
-      loadProducts();
-    }
-
-    async function deleteProduct(id) {
-      if (!confirm("Delete this product permanently?")) return;
-      await supabaseClient.from("Products").delete().eq("id", id);
-      loadProducts();
-    }
-
-    async function loadProducts() {
-
-      const { data, error } = await supabaseClient.from("Products").select("*").order("sort_order", { ascending: true });
-
-      const container = document.getElementById("productsList");
-
-      if (error) {
-        container.innerHTML = "<p class='error'>" + error.message + "</p>";
-        return;
-      }
-
-      allProductsAdmin = data || [];
-
-      if (allProductsAdmin.length === 0) {
-        container.innerHTML = "<p>No products yet.</p>";
-        return;
-      }
-
-      let html = "";
-
-      allProductsAdmin.forEach(product => {
-
-        const img = (product.images && product.images.length > 0) ? product.images[0] : product.image_url;
-
-        html += "<div class='item-row'>" +
-          (img ? "<img class='thumb' src='" + img + "'>" : "") +
-          "<strong>" + escapeHtml(product.name) + "</strong>" +
-          " (order: " + (product.sort_order || 0) + ")" +
-          "<p>\u20B9" + product.price + " | Category: " + escapeHtml(product.category || "-") + " | Stock: " + (product.stock ?? 0) + "</p>" +
-          "<p>Sizes: " + escapeHtml(product.sizes || "-") + "</p>" +
-          "<p>Status: " + (product.is_active ? "Live" : "Hidden") + "</p>" +
-          "<button type='button' class='small' onclick='editProduct(" + product.id + ")'>Edit</button>" +
-          "<button type='button' class='small secondary' onclick='toggleProductActive(" + product.id + ", " + product.is_active + ")'>" + (product.is_active ? "Hide" : "Show") + "</button>" +
-          "<button type='button' class='small danger' onclick='deleteProduct(" + product.id + ")'>Delete</button>" +
-          "</div>";
-      });
-
       container.innerHTML = html;
     }
+  }
+  if (select) {
+    select.innerHTML = "";
+    allCategories.forEach(cat => {
+      const opt = document.createElement("option");
+      opt.value = cat.name;
+      opt.textContent = cat.name;
+      select.appendChild(opt);
+    });
+  }
+}
 
-    // ---------- COUPONS ----------
+async function addCategory() {
+  const name = document.getElementById("newCategoryName").value.trim().toUpperCase();
+  const message = document.getElementById("categoryMessage");
+  if (!name) { message.textContent = "Enter a category name."; return; }
+  const { error } = await supabaseClient.from("categories").insert([{ name: name, sort_order: allCategories.length }]);
+  if (error) { message.textContent = error.message; return; }
+  message.textContent = "";
+  document.getElementById("newCategoryName").value = "";
+  loadCategories();
+}
 
-    async function addCoupon() {
+async function deleteCategory(id) {
+  if (!confirm("Delete this category?")) return;
+  await supabaseClient.from("categories").delete().eq("id", id);
+  loadCategories();
+}
 
-      const code = document.getElementById("couponCode").value.trim().toUpperCase();
-      const minOrder = document.getElementById("couponMinOrder").value || 0;
-      const discount = document.getElementById("couponDiscount").value || 0;
-      const limitRaw = document.getElementById("couponLimit").value;
-      const limit = limitRaw ? limitRaw : null;
+async function moveCategory(id, direction) {
+  const index = allCategories.findIndex(c => c.id === id);
+  const swapIndex = index + direction;
+  if (swapIndex < 0 || swapIndex >= allCategories.length) return;
+  const a = allCategories[index];
+  const b = allCategories[swapIndex];
+  await supabaseClient.from("categories").update({ sort_order: b.sort_order }).eq("id", a.id);
+  await supabaseClient.from("categories").update({ sort_order: a.sort_order }).eq("id", b.id);
+  loadCategories();
+}
 
-      const message = document.getElementById("couponMessage");
+function toggleAllSizes() {
+  const all = document.getElementById("allSizesBox").checked;
+  document.querySelectorAll(".sizeBox").forEach(box => { box.checked = all; });
+}
 
-      if (!code) {
-        message.textContent = "Enter a coupon code.";
-        return;
-      }
-
-      const { error } = await supabaseClient.from("coupons").insert([{
-        code: code,
-        min_order_amount: minOrder,
-        discount_percent: discount,
-        usage_limit: limit,
-        used_count: 0,
-        is_active: true
-      }]);
-
-      if (error) {
-        message.textContent = error.message;
-        return;
-      }
-
-      message.textContent = "";
-      document.getElementById("couponCode").value = "";
-      document.getElementById("couponMinOrder").value = "";
-      document.getElementById("couponDiscount").value = "";
-      document.getElementById("couponLimit").value = "";
-
-      loadCoupons();
+async function saveProduct() {
+  const editingId = document.getElementById("editingProductId").value;
+  const name = document.getElementById("productName").value.trim();
+  const description = document.getElementById("productDescription").value.trim();
+  const price = document.getElementById("productPrice").value;
+  const category = document.getElementById("productCategory").value;
+  const stock = document.getElementById("productStock").value;
+  const sortOrder = document.getElementById("productSortOrder").value || 0;
+  const selectedSizes = [];
+  document.querySelectorAll(".sizeBox:checked").forEach(box => selectedSizes.push(box.value));
+  const sizes = selectedSizes.join(",");
+  const message = document.getElementById("productMessage");
+  const fileInput = document.getElementById("productImages");
+  const files = fileInput.files;
+  const uploadStatus = document.getElementById("uploadStatus");
+  let imagesArray = [];
+  if (files.length > 0) {
+    uploadStatus.textContent = "Uploading photos...";
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileName = Date.now() + "-" + i + "-" + file.name;
+      const { error: uploadError } = await supabaseClient.storage.from("product-images").upload(fileName, file);
+      if (uploadError) { uploadStatus.textContent = "Upload failed: " + uploadError.message; return; }
+      const { data: publicUrlData } = supabaseClient.storage.from("product-images").getPublicUrl(fileName);
+      imagesArray.push(publicUrlData.publicUrl);
     }
-
-    async function toggleCouponActive(id, current) {
-      await supabaseClient.from("coupons").update({ is_active: !current }).eq("id", id);
-      loadCoupons();
-    }
-
-    async function deleteCoupon(id) {
-      if (!confirm("Delete this coupon?")) return;
-      await supabaseClient.from("coupons").delete().eq("id", id);
-      loadCoupons();
-    }
-
-    async function loadCoupons() {
-
-      const { data, error } = await supabaseClient.from("coupons").select("*").order("id", { ascending: false });
-
-      const container = document.getElementById("couponsList");
-
-      if (error) {
-        container.innerHTML = "<p class='error'>" + error.message + "</p>";
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        container.innerHTML = "<p>No coupons yet.</p>";
-        return;
-      }
-
-      let html = "";
-
-      data.forEach(c => {
-        html += "<div class='item-row'>" +
-          "<strong>" + escapeHtml(c.code) + "</strong> - " + c.discount_percent + "% off on orders above \u20B9" + c.min_order_amount +
-          "<p>Used: " + (c.used_count || 0) + (c.usage_limit ? " / " + c.usage_limit : " / Unlimited") + "</p>" +
-          "<p>Status: " + (c.is_active ? "Active" : "Inactive") + "</p>" +
-          "<button type='button' class='small secondary' onclick='toggleCouponActive(" + c.id + ", " + c.is_active + ")'>" + (c.is_active ? "Deactivate" : "Activate") + "</button>" +
-          "<button type='button' class='small danger' onclick='deleteCoupon(" + c.id + ")'>Delete</button>" +
-          "</div>";
-      });
-
-      container.innerHTML = html;
-    }
-
-    // ---------- ANNOUNCEMENTS ----------
-
-    async function addAnnouncement() {
-
-      const text = document.getElementById("announcementText").value.trim();
-      const message = document.getElementById("announcementMessage");
-
-      if (!text) {
-        message.textContent = "Enter announcement text.";
-        return;
-      }
-
-      const { error } = await supabaseClient.from("announcements").insert([{ text: text, is_active: true, sort_order: 0 }]);
-
-      if (error) {
-        message.textContent = error.message;
-        return;
-      }
-
-      message.textContent = "";
-      document.getElementById("announcementText").value = "";
-      loadAnnouncements();
-    }
-
-    async function toggleAnnouncementActive(id, current) {
-      await supabaseClient.from("announcements").update({ is_active: !current }).eq("id", id);
-      loadAnnouncements();
-    }
-
-    async function deleteAnnouncement(id) {
-      if (!confirm("Delete this announcement?")) return;
-      await supabaseClient.from("announcements").delete().eq("id", id);
-      loadAnnouncements();
-    }
-
-    async function loadAnnouncements() {
-
-      const { data, error } = await supabaseClient.from("announcements").select("*").order("id", { ascending: false });
-
-      const container = document.getElementById("announcementsList");
-
-      if (error) {
-        container.innerHTML = "<p class='error'>" + error.message + "</p>";
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        container.innerHTML = "<p>No announcements yet.</p>";
-        return;
-      }
-
-      let html = "";
-
-      data.forEach(a => {
-        html += "<div class='item-row'>" +
-          escapeHtml(a.text) +
-          "<p>Status: " + (a.is_active ? "Live" : "Hidden") + "</p>" +
-          "<button type='button' class='small secondary' onclick='toggleAnnouncementActive(" + a.id + ", " + a.is_active + ")'>" + (a.is_active ? "Hide" : "Show") + "</button>" +
-          "<button type='button' class='small danger' onclick='deleteAnnouncement(" + a.id + ")'>Delete</button>" +
-          "</div>";
-      });
-
-      container.innerHTML = html;
-    }
-
-    // ---------- ORDERS ----------
-
-    function isOldDelivered(order) {
-      if (order.order_status !== "Delivered" || !order.delivered_at) return false;
-      const deliveredDate = new Date(order.delivered_at);
-      const daysSince = (Date.now() - deliveredDate.getTime()) / (1000 * 60 * 60 * 24);
-      return daysSince >= 15;
-    }
-
-    async function loadOrders() {
-
-      const { data, error } = await supabaseClient.from("Orders table").select("*").order("id", { ascending: false });
-
-      const container = document.getElementById("ordersList");
-
-      if (error) {
-        container.innerHTML = "<p class='error'>" + error.message + "</p>";
-        return;
-      }
-
-      allOrdersAdmin = data || [];
-
-      const activeOrders = allOrdersAdmin.filter(o => !isOldDelivered(o));
-
-      if (activeOrders.length === 0) {
-        container.innerHTML = "<p>No active orders.</p>";
-        return;
-      }
-
-      let html = "";
-
-      activeOrders.forEach(order => {
-        html += "<div class='item-row'>" +
-          "<strong>Order #" + order.id + "</strong> - " + escapeHtml(order.customer_name || "") +
-          " - \u20B9" + (order.total_amount || 0) +
-          " - " + escapeHtml(order.order_status || "") +
-          "<br><button type='button' class='small' onclick='openOrderDetail(" + order.id + ")'>View Details</button>" +
-          "</div>";
-      });
-
-      container.innerHTML = html;
-    }
-
-    async function loadBills() {
-
-      const container = document.getElementById("billsList");
-
-      const oldOrders = allOrdersAdmin.filter(o => isOldDelivered(o));
-
-      if (oldOrders.length === 0) {
-        container.innerHTML = "<p>No completed bills yet.</p>";
-        return;
-      }
-
-      let html = "";
-
-      oldOrders.forEach(order => {
-        html += "<div class='item-row'>" +
-          "<strong>Order #" + order.id + "</strong> - " + escapeHtml(order.customer_name || "") +
-          " - \u20B9" + (order.total_amount || 0) +
-          " - Delivered on " + new Date(order.delivered_at).toLocaleDateString() +
-          "</div>";
-      });
-
-      container.innerHTML = html;
-    }
-
-    function openOrderDetail(id) {
-
-      const order = allOrdersAdmin.find(o => o.id === id);
-      if (!order) return;
-
-      let itemsHtml = "";
-      (order.items || []).forEach(item => {
-        itemsHtml += "<div>" + escapeHtml(item.name) + " x " + item.qty + " - \u20B9" + item.price + "</div>";
-      });
-
-      const statuses = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
-      let statusOptions = "";
-      statuses.forEach(s => {
-        statusOptions += "<option value='" + s + "'" + (order.order_status === s ? " selected" : "") + ">" + s + "</option>";
-      });
-
-      const content =
-        "<h2>Order #" + order.id + "</h2>" +
-        "<p><strong>Name:</strong> " + escapeHtml(order.customer_name || "") + "</p>" +
-        "<p><strong>Email:</strong> " + escapeHtml(order.customer_email || "") + "</p>" +
-        "<p><strong>Phone:</strong> " + escapeHtml(order.customer_phone || "") + "</p>" +
-        "<p><strong>Address:</strong> " + escapeHtml(order.address || "") + "</p>" +
-        "<p><strong>Items:</strong></p>" + itemsHtml +
-        "<p><strong>Total:</strong> \u20B9" + (order.total_amount || 0) + "</p>" +
-        "<p><strong>Payment Status:</strong> " + escapeHtml(order.payment_status || "") + "</p>" +
-        "<label>Order Status</label>" +
-        "<select id='orderStatusSelect'>" + statusOptions + "</select>" +
-        "<button type='button' onclick='updateOrderStatus(" + order.id + ")'>Update Status</button>" +
-        "<p id='orderUpdateMessage' class='success'></p>";
-
-      document.getElementById("orderDetailContent").innerHTML = content;
-      document.getElementById("orderDetailOverlay").classList.add("open");
-    }
-
-    function closeOrderDetail() {
-      document.getElementById("orderDetailOverlay").classList.remove("open");
-    }
-
-    async function updateOrderStatus(id) {
-
-      const newStatus = document.getElementById("orderStatusSelect").value;
-      const payload = { order_status: newStatus };
-
-      if (newStatus === "Delivered") {
-        payload.delivered_at = new Date().toISOString();
-      }
-
-      const { error } = await supabaseClient.from("Orders table").update(payload).eq("id", id);
-
-      const msg = document.getElementById("orderUpdateMessage");
-
-      if (error) {
-        msg.className = "error";
-        msg.textContent = error.message;
-        return;
-      }
-
-      msg.className = "success";
-      msg.textContent = "Status updated.";
-
-      loadOrders();
-    }
-    
-<!-- CUSTOMERS -->
-<div id="section-customers" class="section hidden">
-  <div class="card">
-    <h2>Registered Customers</h2>
-    <p style="font-size:12px;color:#777;">Jo bhi customer ne profile banaya hai wo yahan dikhega.</p>
-    <div id="customersList" style="margin-top:15px;">Loading...</div>
-  </div>
-</div>
-    
-    // ---------- SETTINGS ----------
-
-    async function loadSettings() {
-
-      const { data, error } = await supabaseClient.from("site_setting").select("*").limit(1).maybeSingle();
-
-      const message = document.getElementById("settingsMessage");
-
-      if (error) {
-        message.textContent = error.message;
-        return;
-      }
-
-      if (data) {
-        document.getElementById("settingBrandName").value = data.brand_name || "";
-        document.getElementById("settingTagline").value = data.tagline || "";
-        document.getElementById("settingFreeShipAbove").value = data.free_shipping_above || "";
-        document.getElementById("settingShipFee").value = data.shipping_fee || "";
-      }
-
-      loadHeroProductsUI(data ? (data.hero_product_ids || []) : []);
-    }
-
-    async function saveSettings() {
-
-      const brandName = document.getElementById("settingBrandName").value.trim();
-      const tagline = document.getElementById("settingTagline").value.trim();
-      const freeShipAbove = document.getElementById("settingFreeShipAbove").value || 0;
-      const shipFee = document.getElementById("settingShipFee").value || 0;
-
-      const message = document.getElementById("settingsMessage");
-
-      const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
-
-      let error;
-
-      if (existing) {
-        const result = await supabaseClient.from("site_setting").update({
-          brand_name: brandName,
-          tagline: tagline,
-          free_shipping_above: freeShipAbove,
-          shipping_fee: shipFee
-        }).eq("id", existing.id);
-        error = result.error;
-      } else {
-        const result = await supabaseClient.from("site_setting").insert([{
-          brand_name: brandName,
-          tagline: tagline,
-          free_shipping_above: freeShipAbove,
-          shipping_fee: shipFee
-        }]);
-        error = result.error;
-      }
-
-      if (error) {
-        message.className = "error";
-        message.textContent = error.message;
-        return;
-      }
-
-      message.className = "success";
-      message.textContent = "Settings saved.";
-    }
-
-    function loadHeroProductsUI(heroIds) {
-
-      const container = document.getElementById("heroProductsList");
-
-      if (allProductsAdmin.length === 0) {
-        container.innerHTML = "<p>Load Products tab first to see the list.</p>";
-        return;
-      }
-
-      let html = "";
-
-      allProductsAdmin.forEach(p => {
-        const idx = heroIds.indexOf(p.id);
-        const orderValue = idx !== -1 ? (idx + 1) : "";
-
-        html += "<div class='item-row'>" +
-          escapeHtml(p.name) +
-          " <input type='number' style='width:70px;display:inline-block;' id='hero-order-" + p.id + "' value='" + orderValue + "' placeholder='-'>" +
-          "</div>";
-      });
-
-      container.innerHTML = html;
-    }
-
-    async function saveHeroProducts() {
-
-      const entries = [];
-
-      allProductsAdmin.forEach(p => {
-        const input = document.getElementById("hero-order-" + p.id);
-        if (input && input.value) {
-          entries.push({ id: p.id, order: Number(input.value) });
-        }
-      });
-
-      entries.sort((a, b) => a.order - b.order);
-      const heroIds = entries.map(e => e.id);
-
-      const message = document.getElementById("heroMessage");
-
-      const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
-
-      let error;
-
-      if (existing) {
-        const result = await supabaseClient.from("site_setting").update({ hero_product_ids: heroIds }).eq("id", existing.id);
-        error = result.error;
-      } else {
-        const result = await supabaseClient.from("site_setting").insert([{ hero_product_ids: heroIds }]);
-        error = result.error;
-      }
-
-      if (error) {
-        message.className = "error";
-        message.textContent = error.message;
-        return;
-      }
-
-      message.className = "success";
-      message.textContent = "Hero order saved.";
-    }
-
-    async function changePassword() {
-
-      const newPass = document.getElementById("newPassword").value;
-      const message = document.getElementById("passwordMessage");
-
-      if (!newPass || newPass.length < 6) {
-        message.textContent = "Password must be at least 6 characters.";
-        return;
-      }
-
-      const { error } = await supabaseClient.auth.updateUser({ password: newPass });
-
-      if (error) {
-        message.className = "error";
-        message.textContent = error.message;
-        return;
-      }
-
-      message.className = "success";
-      message.textContent = "Password updated successfully.";
-      document.getElementById("newPassword").value = "";
-    }
-
-    // ---------- UTIL ----------
-
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    async function loadCustomers() {
+    uploadStatus.textContent = "";
+  }
+  const payload = { name: name, description: description, price: price, category: category, sizes: sizes, stock: stock, sort_order: sortOrder, is_active: true };
+  if (imagesArray.length > 0) { payload.images = imagesArray; payload.image_url = imagesArray[0]; }
+  let error;
+  if (editingId) { const result = await supabaseClient.from("Products").update(payload).eq("id", editingId); error = result.error; }
+  else { const result = await supabaseClient.from("Products").insert([payload]); error = result.error; }
+  if (error) { message.textContent = error.message; return; }
+  message.textContent = "";
+  cancelEditProduct();
+  loadProducts();
+}
+
+function cancelEditProduct() {
+  document.getElementById("editingProductId").value = "";
+  document.getElementById("productFormTitle").textContent = "Add Product";
+  document.getElementById("productName").value = "";
+  document.getElementById("productDescription").value = "";
+  document.getElementById("productPrice").value = "";
+  document.getElementById("productStock").value = "";
+  document.getElementById("productSortOrder").value = "0";
+  document.getElementById("productImages").value = "";
+  document.getElementById("uploadStatus").textContent = "";
+  document.querySelectorAll(".sizeBox").forEach(box => box.checked = false);
+  document.getElementById("allSizesBox").checked = false;
+  document.getElementById("productMessage").textContent = "";
+}
+
+function editProduct(id) {
+  const product = allProductsAdmin.find(p => p.id === id);
+  if (!product) return;
+  document.getElementById("editingProductId").value = product.id;
+  document.getElementById("productFormTitle").textContent = "Edit Product: " + product.name;
+  document.getElementById("productName").value = product.name || "";
+  document.getElementById("productDescription").value = product.description || "";
+  document.getElementById("productPrice").value = product.price || "";
+  document.getElementById("productStock").value = product.stock || "";
+  document.getElementById("productSortOrder").value = product.sort_order || 0;
+  document.getElementById("productCategory").value = product.category || "";
+  const sizes = (product.sizes || "").split(",").map(s => s.trim());
+  document.querySelectorAll(".sizeBox").forEach(box => { box.checked = sizes.indexOf(box.value) !== -1; });
+  window.scrollTo(0, 0);
+}
+
+async function toggleProductActive(id, current) {
+  await supabaseClient.from("Products").update({ is_active: !current }).eq("id", id);
+  loadProducts();
+}
+
+async function deleteProduct(id) {
+  if (!confirm("Delete this product permanently?")) return;
+  await supabaseClient.from("Products").delete().eq("id", id);
+  loadProducts();
+}
+
+async function loadProducts() {
+  const { data, error } = await supabaseClient.from("Products").select("*").order("sort_order", { ascending: true });
+  const container = document.getElementById("productsList");
+  if (error) { container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
+  allProductsAdmin = data || [];
+  if (allProductsAdmin.length === 0) { container.innerHTML = "<p>No products yet.</p>"; return; }
+  let html = "";
+  allProductsAdmin.forEach(product => {
+    const img = (product.images && product.images.length > 0) ? product.images[0] : product.image_url;
+    html += "<div class='item-row'>" +
+      (img ? "<img class='thumb' src='" + img + "'>" : "") +
+      "<strong>" + escapeHtml(product.name) + "</strong> (order: " + (product.sort_order || 0) + ")" +
+      "<p>₹" + product.price + " | Category: " + escapeHtml(product.category || "-") + " | Stock: " + (product.stock ?? 0) + "</p>" +
+      "<p>Sizes: " + escapeHtml(product.sizes || "-") + "</p>" +
+      "<p>Status: " + (product.is_active ? "Live" : "Hidden") + "</p>" +
+      "<button type='button' class='small' onclick='editProduct(" + product.id + ")'>Edit</button>" +
+      "<button type='button' class='small secondary' onclick='toggleProductActive(" + product.id + ", " + product.is_active + ")'>" + (product.is_active ? "Hide" : "Show") + "</button>" +
+      "<button type='button' class='small danger' onclick='deleteProduct(" + product.id + ")'>Delete</button></div>";
+  });
+  container.innerHTML = html;
+}
+  async function addCoupon() {
+  const code = document.getElementById("couponCode").value.trim().toUpperCase();
+  const minOrder = document.getElementById("couponMinOrder").value || 0;
+  const discount = document.getElementById("couponDiscount").value || 0;
+  const limitRaw = document.getElementById("couponLimit").value;
+  const limit = limitRaw ? limitRaw : null;
+  const message = document.getElementById("couponMessage");
+  if (!code) { message.textContent = "Enter a coupon code."; return; }
+  const { error } = await supabaseClient.from("coupons").insert([{ code: code, min_order_amount: minOrder, discount_percent: discount, usage_limit: limit, used_count: 0, is_active: true }]);
+  if (error) { message.textContent = error.message; return; }
+  message.textContent = "";
+  document.getElementById("couponCode").value = "";
+  document.getElementById("couponMinOrder").value = "";
+  document.getElementById("couponDiscount").value = "";
+  document.getElementById("couponLimit").value = "";
+  loadCoupons();
+}
+
+async function toggleCouponActive(id, current) {
+  await supabaseClient.from("coupons").update({ is_active: !current }).eq("id", id);
+  loadCoupons();
+}
+
+async function deleteCoupon(id) {
+  if (!confirm("Delete this coupon?")) return;
+  await supabaseClient.from("coupons").delete().eq("id", id);
+  loadCoupons();
+}
+
+async function loadCoupons() {
+  const { data, error } = await supabaseClient.from("coupons").select("*").order("id", { ascending: false });
+  const container = document.getElementById("couponsList");
+  if (error) { container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
+  if (!data || data.length === 0) { container.innerHTML = "<p>No coupons yet.</p>"; return; }
+  let html = "";
+  data.forEach(c => {
+    html += "<div class='item-row'><strong>" + escapeHtml(c.code) + "</strong> - " + c.discount_percent + "% off on orders above ₹" + c.min_order_amount +
+      "<p>Used: " + (c.used_count || 0) + (c.usage_limit ? " / " + c.usage_limit : " / Unlimited") + "</p>" +
+      "<p>Status: " + (c.is_active ? "Active" : "Inactive") + "</p>" +
+      "<button type='button' class='small secondary' onclick='toggleCouponActive(" + c.id + ", " + c.is_active + ")'>" + (c.is_active ? "Deactivate" : "Activate") + "</button>" +
+      "<button type='button' class='small danger' onclick='deleteCoupon(" + c.id + ")'>Delete</button></div>";
+  });
+  container.innerHTML = html;
+}
+
+async function addAnnouncement() {
+  const text = document.getElementById("announcementText").value.trim();
+  const message = document.getElementById("announcementMessage");
+  if (!text) { message.textContent = "Enter announcement text."; return; }
+  const { error } = await supabaseClient.from("announcements").insert([{ text: text, is_active: true, sort_order: 0 }]);
+  if (error) { message.textContent = error.message; return; }
+  message.textContent = "";
+  document.getElementById("announcementText").value = "";
+  loadAnnouncements();
+}
+
+async function toggleAnnouncementActive(id, current) {
+  await supabaseClient.from("announcements").update({ is_active: !current }).eq("id", id);
+  loadAnnouncements();
+}
+
+async function deleteAnnouncement(id) {
+  if (!confirm("Delete this announcement?")) return;
+  await supabaseClient.from("announcements").delete().eq("id", id);
+  loadAnnouncements();
+}
+
+async function loadAnnouncements() {
+  const { data, error } = await supabaseClient.from("announcements").select("*").order("id", { ascending: false });
+  const container = document.getElementById("announcementsList");
+  if (error) { container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
+  if (!data || data.length === 0) { container.innerHTML = "<p>No announcements yet.</p>"; return; }
+  let html = "";
+  data.forEach(a => {
+    html += "<div class='item-row'>" + escapeHtml(a.text) +
+      "<p>Status: " + (a.is_active ? "Live" : "Hidden") + "</p>" +
+      "<button type='button' class='small secondary' onclick='toggleAnnouncementActive(" + a.id + ", " + a.is_active + ")'>" + (a.is_active ? "Hide" : "Show") + "</button>" +
+      "<button type='button' class='small danger' onclick='deleteAnnouncement(" + a.id + ")'>Delete</button></div>";
+  });
+  container.innerHTML = html;
+}
+
+async function loadOrders() {
+  const { data, error } = await supabaseClient.from("Orders table").select("*").order("id", { ascending: false });
+  const container = document.getElementById("ordersList");
+  if (error) { container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
+  allOrdersAdmin = data || [];
+  if (allOrdersAdmin.length === 0) { container.innerHTML = "<p>No active orders.</p>"; return; }
+  let html = "";
+  allOrdersAdmin.forEach(order => {
+    html += "<div class='item-row'><strong>Order #" + order.id + "</strong> - " + escapeHtml(order.customer_name || "") +
+      " - ₹" + (order.total_amount || 0) + " - " + escapeHtml(order.order_status || "") +
+      "<br><button type='button' class='small' onclick='openOrderDetail(" + order.id + ")'>View Details</button></div>";
+  });
+  container.innerHTML = html;
+}
+
+async function loadBills() {
+  const container = document.getElementById("billsList");
+  const oldOrders = allOrdersAdmin.filter(o => o.order_status === "Delivered");
+  if (oldOrders.length === 0) { container.innerHTML = "<p>No completed bills yet.</p>"; return; }
+  let html = "";
+  oldOrders.forEach(order => {
+    html += "<div class='item-row'><strong>Order #" + order.id + "</strong> - " + escapeHtml(order.customer_name || "") +
+      " - ₹" + (order.total_amount || 0) + " - Delivered on " + (order.delivered_at ? new Date(order.delivered_at).toLocaleDateString() : "N/A") + "</div>";
+  });
+  container.innerHTML = html;
+}
+
+function openOrderDetail(id) {
+  const order = allOrdersAdmin.find(o => o.id === id);
+  if (!order) return;
+  let itemsHtml = "";
+  (order.items || []).forEach(item => { itemsHtml += "<div>" + escapeHtml(item.name) + " x " + item.qty + " - ₹" + item.price + "</div>"; });
+  const statuses = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
+  let statusOptions = "";
+  statuses.forEach(s => { statusOptions += "<option value='" + s + "'" + (order.order_status === s ? " selected" : "") + ">" + s + "</option>"; });
+  const content = "<h2>Order #" + order.id + "</h2>" +
+    "<p><strong>Name:</strong> " + escapeHtml(order.customer_name || "") + "</p>" +
+    "<p><strong>Email:</strong> " + escapeHtml(order.customer_email || "") + "</p>" +
+    "<p><strong>Phone:</strong> " + escapeHtml(order.customer_phone || "") + "</p>" +
+    "<p><strong>Address:</strong> " + escapeHtml(order.address || "") + "</p>" +
+    "<p><strong>Items:</strong></p>" + itemsHtml +
+    "<p><strong>Total:</strong> ₹" + (order.total_amount || 0) + "</p>" +
+    "<p><strong>Payment Status:</strong> " + escapeHtml(order.payment_status || "") + "</p>" +
+    "<label>Order Status</label>" +
+    "<select id='orderStatusSelect'>" + statusOptions + "</select>" +
+    "<button type='button' onclick='updateOrderStatus(" + order.id + ")'>Update Status</button>" +
+    "<p id='orderUpdateMessage' class='success'></p>";
+  document.getElementById("orderDetailContent").innerHTML = content;
+  document.getElementById("orderDetailOverlay").classList.add("open");
+}
+
+function closeOrderDetail() { document.getElementById("orderDetailOverlay").classList.remove("open"); }
+
+async function updateOrderStatus(id) {
+  const newStatus = document.getElementById("orderStatusSelect").value;
+  const payload = { order_status: newStatus };
+  if (newStatus === "Delivered") payload.delivered_at = new Date().toISOString();
+  const { error } = await supabaseClient.from("Orders table").update(payload).eq("id", id);
+  const msg = document.getElementById("orderUpdateMessage");
+  if (error) { msg.className = "error"; msg.textContent = error.message; return; }
+  msg.className = "success"; msg.textContent = "Status updated.";
+  loadOrders();
+}
+
+async function loadSettings() {
+  const { data, error } = await supabaseClient.from("site_setting").select("*").limit(1).maybeSingle();
+  const message = document.getElementById("settingsMessage");
+  if (error) { message.textContent = error.message; return; }
+  if (data) {
+    document.getElementById("settingBrandName").value = data.brand_name || "";
+    document.getElementById("settingTagline").value = data.tagline || "";
+    document.getElementById("settingFreeShipAbove").value = data.free_shipping_above || "";
+    document.getElementById("settingShipFee").value = data.shipping_fee || "";
+  }
+  loadHeroProductsUI(data ? (data.hero_product_ids || []) : []);
+}
+
+async function saveSettings() {
+  const brandName = document.getElementById("settingBrandName").value.trim();
+  const tagline = document.getElementById("settingTagline").value.trim();
+  const freeShipAbove = document.getElementById("settingFreeShipAbove").value || 0;
+  const shipFee = document.getElementById("settingShipFee").value || 0;
+  const message = document.getElementById("settingsMessage");
+  const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
+  let error;
+  if (existing) { const result = await supabaseClient.from("site_setting").update({ brand_name: brandName, tagline: tagline, free_shipping_above: freeShipAbove, shipping_fee: shipFee }).eq("id", existing.id); error = result.error; }
+  else { const result = await supabaseClient.from("site_setting").insert([{ brand_name: brandName, tagline: tagline, free_shipping_above: freeShipAbove, shipping_fee: shipFee }]); error = result.error; }
+  if (error) { message.className = "error"; message.textContent = error.message; return; }
+  message.className = "success"; message.textContent = "Settings saved.";
+}
+
+function loadHeroProductsUI(heroIds) {
+  const container = document.getElementById("heroProductsList");
+  if (allProductsAdmin.length === 0) { container.innerHTML = "<p>Load Products tab first to see the list.</p>"; return; }
+  let html = "";
+  allProductsAdmin.forEach(p => {
+    const idx = heroIds.indexOf(p.id);
+    const orderValue = idx !== -1 ? (idx + 1) : "";
+    html += "<div class='item-row'>" + escapeHtml(p.name) +
+      " <input type='number' style='width:70px;display:inline-block;' id='hero-order-" + p.id + "' value='" + orderValue + "' placeholder='-'></div>";
+  });
+  container.innerHTML = html;
+}
+
+async function saveHeroProducts() {
+  const entries = [];
+  allProductsAdmin.forEach(p => {
+    const input = document.getElementById("hero-order-" + p.id);
+    if (input && input.value) entries.push({ id: p.id, order: Number(input.value) });
+  });
+  entries.sort((a, b) => a.order - b.order);
+  const heroIds = entries.map(e => e.id);
+  const message = document.getElementById("heroMessage");
+  const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
+  let error;
+  if (existing) { const result = await supabaseClient.from("site_setting").update({ hero_product_ids: heroIds }).eq("id", existing.id); error = result.error; }
+  else { const result = await supabaseClient.from("site_setting").insert([{ hero_product_ids: heroIds }]); error = result.error; }
+  if (error) { message.className = "error"; message.textContent = error.message; return; }
+  message.className = "success"; message.textContent = "Hero order saved.";
+}
+
+async function changePassword() {
+  const newPass = document.getElementById("newPassword").value;
+  const message = document.getElementById("passwordMessage");
+  if (!newPass || newPass.length < 6) { message.textContent = "Password must be at least 6 characters."; return; }
+  const { error } = await supabaseClient.auth.updateUser({ password: newPass });
+  if (error) { message.className = "error"; message.textContent = error.message; return; }
+  message.className = "success"; message.textContent = "Password updated successfully.";
+  document.getElementById("newPassword").value = "";
+}
+
+async function loadCustomers() {
   const container = document.getElementById("customersList");
   try {
     const { data, error } = await supabaseClient.from("customers").select("*").order("id", { ascending: false });
@@ -1250,18 +678,15 @@
     if (!data || data.length === 0) { container.innerHTML = "<p>No customers yet.</p>"; return; }
     let html = "";
     data.forEach(c => {
-      html += "<div class='item-row'>" +
-        "<strong>" + escapeHtml(c.name || "") + "</strong><br>" +
-        " " + escapeHtml(c.email || "") + "<br>" +
-        "📱 " + escapeHtml(c.phone || "") + "<br>" +
-        "<span style='font-size:10px;color:#777;'>" + (c.created_at ? new Date(c.created_at).toLocaleString() : "") + "</span>" +
-        "</div>";
+      html += "<div class='item-row'><strong>" + escapeHtml(c.name || "") + "</strong><br>📧 " + escapeHtml(c.email || "") + "<br>📱 " + escapeHtml(c.phone || "") + "<br><span style='font-size:10px;color:#777;'>" + (c.created_at ? new Date(c.created_at).toLocaleString() : "") + "</span></div>";
     });
     container.innerHTML = html;
   } catch(e) { container.innerHTML = "<p class='error'>" + e.message + "</p>"; }
-    }
-    
-  </script>
-  
+}
+
+function escapeHtml(value) {
+  return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+</script>
 </body>
 </html>
