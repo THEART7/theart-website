@@ -742,7 +742,13 @@ footer p{
 
 
 <!-- SHOP -->
-
+    
+<section class="section hidden" id="productDetailPage">
+    <a href="?" class="view-all">← BACK TO SHOP</a>
+    <div id="productDetailBody" style="margin-top:20px;"></div>
+    <h2 style="margin-top:50px;">You May Also Like</h2>
+    <div class="products" id="relatedProductsGrid"></div>
+</section>
 <section class="section" id="shop">
 
     <div class="section-head">
@@ -859,7 +865,7 @@ footer p{
         <p id="checkoutTotal" style="font-size:13px;font-weight:600;margin:10px 0;"></p>
         <p id="checkoutMessage" style="font-size:11px;color:#a33;margin-bottom:10px;"></p>
 
-        <button class="checkout-btn" onclick="placeOrder()">PLACE ORDER</button>
+        <button class="checkout-btn" onclick="placeOrder()">PLACE ORDER (Cash on Delivery)</button>
         <button class="button" style="width:100%;margin-top:8px;text-align:center;" onclick="closeCheckout()">CANCEL</button>
     </div>
 </div>
@@ -1022,11 +1028,11 @@ function renderProductGrid(data) {
     card.className = "product-card";
 
     card.innerHTML =
-      '<div class="product-image" onclick="openProductDetail(' + product.id + ')" style="cursor:pointer;">' +
+      '<a href="?product=' + product.id + '" class="product-image">' +
         '<img src="' + (img || '') + '" alt="' + product.name + '" style="width:100%;height:100%;object-fit:cover;">' +
-      '</div>' +
-      '<div class="product-info">' +
-        '<div class="product-name" onclick="openProductDetail(' + product.id + ')" style="cursor:pointer;">' + product.name + '</div>' +
+      '</a>' +
+'<div class="product-info">' +
+'<a href="?product=' + product.id + '" style="text-decoration:none;color:inherit;"><div class="product-name">' + product.name + '</div></a>' +
         '<div class="product-price">' + '\u20B9' + product.price + '</div>' +
         '<button class="button" style="width:100%;margin-top:8px;padding:10px;text-align:center;" onclick="addToCart(' + product.id + ', \'' + product.name.replace(/'/g, "\\'") + '\', ' + product.price + ', \'' + (img || '').replace(/'/g, "\\'") + '\')">ADD TO CART</button>' +
       '</div>';
@@ -1337,6 +1343,57 @@ initSlider();
 loadSiteSettings();
 loadAnnouncementsBar();
 
+    async function showProductDetailPage(id) {
+
+  document.getElementById("heroSection").classList.add("hidden");
+  document.getElementById("shop").classList.add("hidden");
+  document.getElementById("custom").classList.add("hidden");
+  document.getElementById("productDetailPage").classList.remove("hidden");
+
+  const { data: product } = await supabaseClient.from("Products").select("*").eq("id", id).maybeSingle();
+
+  if (!product) {
+    document.getElementById("productDetailBody").innerHTML = "<p>Product not found.</p>";
+    return;
+  }
+
+  const images = (product.images && product.images.length > 0) ? product.images : [product.image_url];
+  let imgHtml = "";
+  images.forEach(url => {
+    if (url) imgHtml += "<img src='" + url + "' style='width:100%;max-width:400px;display:block;margin-bottom:8px;'>";
+  });
+
+  document.getElementById("productDetailBody").innerHTML =
+    imgHtml +
+    "<h1 style='font-family:\"Playfair Display\",serif;margin-top:15px;'>" + escapeHtmlSite(product.name) + "</h1>" +
+    "<p style='font-size:16px;font-weight:600;margin:8px 0;'>\u20B9" + product.price + "</p>" +
+    "<p style='font-size:13px;color:#555;line-height:1.7;margin-bottom:15px;'>" + escapeHtmlSite(product.description || "") + "</p>" +
+    "<p style='font-size:11px;color:#777;'>Sizes: " + escapeHtmlSite(product.sizes || "-") + "</p>" +
+    "<button class='button' style='margin-top:15px;' onclick=\"addToCart(" + product.id + ", '" + product.name.replace(/'/g, "\\'") + "', " + product.price + ", '" + (images[0] || "").replace(/'/g, "\\'") + "')\">ADD TO CART</button>";
+
+  const { data: related } = await supabaseClient.from("Products").select("*").eq("is_active", true).neq("id", id).limit(4);
+
+  const relatedGrid = document.getElementById("relatedProductsGrid");
+  relatedGrid.innerHTML = "";
+
+  (related || []).forEach(p => {
+    const rimg = (p.images && p.images.length > 0) ? p.images[0] : p.image_url;
+    const card = document.createElement("div");
+    card.className = "product-card";
+    card.innerHTML =
+      "<a href='?product=" + p.id + "' class='product-image'><img src='" + (rimg || "") + "' style='width:100%;height:100%;object-fit:cover;'></a>" +
+      "<div class='product-info'><div class='product-name'>" + escapeHtmlSite(p.name) + "</div><div class='product-price'>\u20B9" + p.price + "</div></div>";
+    relatedGrid.appendChild(card);
+  });
+
+  window.scrollTo(0, 0);
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const productIdParam = urlParams.get("product");
+if (productIdParam) {
+  showProductDetailPage(Number(productIdParam));
+}
 
 /* CATEGORY BUTTONS */
 
