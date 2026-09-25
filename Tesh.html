@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body style="padding:20px;font-family:monospace;">
+<h2>Supabase Test</h2>
+<div id="result">Loading...</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
+const KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
+const db = window.supabase.createClient(URL, KEY);
+
+async function test() {
+  let html = "";
+  
+  // Test 1: Products
+  const { data: p, error: pe } = await db.from("Products").select("*");
+  html += "<h3>Products:</h3>";
+  if(pe) html += "ERROR: " + pe.message + "<br>";
+  else html += "Count: " + (p?p.length:0) + "<br>";
+  if(p) p.forEach(x => html += "- " + x.name + " (" + x.id + ")<br>");
+  
+  // Test 2: Categories
+  const { data: c, error: ce } = await db.from("categories").select("*");
+  html += "<h3>Categories:</h3>";
+  if(ce) html += "ERROR: " + ce.message + "<br>";
+  else html += "Count: " + (c?c.length:0) + "<br>";
+  if(c) c.forEach(x => html += "- " + x.name + "<br>");
+  
+  // Test 3: Site Setting
+  const { data: s } = await db.from("site_setting").select("*").limit(1).maybeSingle();
+  html += "<h3>Site Setting:</h3>";
+  if(s) html += "Brand: " + s.brand_name + "<br>Hero IDs: " + JSON.stringify(s.hero_product_ids) + "<br>";
+  else html += "No site setting<br>";
+  
+  document.getElementById("result").innerHTML = html;
+}
+test();
+</script>
+</body>
+</html>
