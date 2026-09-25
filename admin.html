@@ -334,24 +334,27 @@ function confirmCrop() {
     
     if(currentCropType === 'hero') {
       const fname = "hero-"+Date.now()+"-"+file.name;
-      const { error: upErr } = await supabaseClient.storage.from("product-images").upload(fname, file);
+      const { error: upErr } = await supabaseClient.storage.from("product-images").upload(fname, file, { upsert: true });
       if(upErr) { alert("Upload failed: "+upErr.message); return; }
       const { data } = supabaseClient.storage.from("product-images").getPublicUrl(fname);
-      await supabaseClient.from("Products").update({hero_image_url: data.publicUrl}).eq("id", currentHeroPid);
-      alert("Hero Image Updated (3:4)!");
+      const { error: dbErr } = await supabaseClient.from("Products").update({hero_image_url: data.publicUrl}).eq("id", currentHeroPid);
+      if(dbErr) { alert("DB error: "+dbErr.message); return; }
+      alert("Hero Image Updated! Website refresh kar.");
       currentHeroPid = null;
-      loadProducts(); loadSettings();
+      loadProducts(); 
+      loadSettings();
     } else {
       croppedFiles.push(file);
       currentCropIndex++;
     }
     
-    cropperInstance.destroy(); cropperInstance = null;
+    cropperInstance.destroy(); 
+    cropperInstance = null;
     document.getElementById("cropperOverlay").classList.remove("open");
     
     if(currentCropType === 'product') showCropperNext();
   }, "image/png", 0.9);
-}
+      }
 
 function cancelCrop() { 
   if(cropperInstance) cropperInstance.destroy(); 
@@ -364,22 +367,30 @@ function triggerHeroCrop(pid) {
   const fileInput = document.getElementById("hero-file-"+pid);
   const file = fileInput.files[0];
   if(!file) return alert("Pehle image select karo!");
+  
+  // Direct upload without crop for now (testing)
   currentCropType = 'hero';
   currentHeroPid = pid;
+  
   const reader = new FileReader();
-  reader.onload = ev => {
+  reader.onload = async ev => {
+    // Show cropper
     document.getElementById("cropperImage").src = ev.target.result;
     const prod = allProductsAdmin.find(p=>p.id===pid);
     document.getElementById("cropperTitle").textContent = "Crop Hero Image for: " + (prod?prod.name:"");
     document.getElementById("cropperOverlay").classList.add("open");
+    
     setTimeout(() => {
       if(cropperInstance) cropperInstance.destroy();
-      cropperInstance = new Cropper(document.getElementById("cropperImage"), { aspectRatio: 3/4, viewMode: 1 });
-    }, 100);
+      cropperInstance = new Cropper(document.getElementById("cropperImage"), { 
+        aspectRatio: 3/4, 
+        viewMode: 1,
+        autoCropArea: 1
+      });
+    }, 200);
   };
   reader.readAsDataURL(file);
 }
-
 function toggleAllSizes() { const all = document.getElementById("allSizesBox").checked; document.querySelectorAll(".sizeBox").forEach(b=>b.checked=all); }
 
 async function saveProduct() {
