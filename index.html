@@ -350,8 +350,8 @@ function oDet(id){
   const sd=document.getElementById("detSz");
   sd.innerHTML=(p.sizes||"S,M,L,XL").split(",").map((s,i)=>`<button class="sbtn ${i===0?'active':''}" onclick="this.parentElement.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('active'));this.classList.add('active');">${s.trim()}</button>`).join("");
   document.getElementById("detAdd").onclick=()=>aCart(p.id,p.name,p.price,imgs[0]||"");
-  document.getElementById("detPg").classList.add("open");}
-  
+  document.getElementById("detPg").classList.add("open");
+}
 function cDet(){document.getElementById("detPg").classList.remove("open");}
   function gCart(){return JSON.parse(localStorage.getItem("th_c")||"[]");}
 function sCart(c){localStorage.setItem("th_c",JSON.stringify(c));uCnt();rCart();}
