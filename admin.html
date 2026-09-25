@@ -29,6 +29,9 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
 .overlay.open{display:flex;}
 .modal-box{background:#141414;padding:20px;border-radius:12px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;border:1px solid #1f1f1f;}
 .thumb{width:60px;height:80px;object-fit:cover;border-radius:4px;margin-right:6px;}
+.filter-row{display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;}
+.filter-row button{flex:1;min-width:80px;padding:10px;}
+.filter-row button.active{background:#c9a96e;color:#000;}
 </style>
 </head>
 <body>
@@ -54,17 +57,32 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
     <button class="secondary" onclick="logout()">Logout</button>
   </div>
 
-  <div id="section-overview" class="section"><div class="card"><h2>Overview</h2><div id="overviewStats"></div></div></div>
-  
+  <div id="section-overview" class="section">
+    <div class="card">
+      <h2>Overview</h2>
+      <div class="filter-row">
+        <button onclick="setOverviewFilter('day')" id="f-day">Today</button>
+        <button onclick="setOverviewFilter('week')" id="f-week">This Week</button>
+        <button onclick="setOverviewFilter('month')" id="f-month">This Month</button>
+        <button onclick="setOverviewFilter('30days')" id="f-30days" class="active">Last 30 Days</button>
+        <button onclick="setOverviewFilter('all')" id="f-all">All Time</button>
+      </div>
+      <div id="overviewStats"></div>
+      <h3 style="margin-top:20px;color:#c9a96e;">Recent Orders</h3>
+      <div id="overviewOrders" style="margin-top:10px;"></div>
+    </div>
+  </div>
   <div id="section-categories" class="section hidden">
     <div class="card">
       <h2>Categories</h2>
       <input id="newCategoryName" placeholder="New category name">
       <button onclick="addCategory()">Add Category</button>
+      <p id="catMsg" class="success"></p>
       <div id="categoriesList" style="margin-top:15px;"></div>
     </div>
   </div>
-<div id="section-products" class="section hidden">
+
+  <div id="section-products" class="section hidden">
     <div class="card">
       <h2 id="productFormTitle">Add Product</h2>
       <input type="hidden" id="editingProductId">
@@ -109,7 +127,7 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
     </div>
     <div class="card">
       <h2>Hero Products (Slider)</h2>
-      <p style="font-size:12px;color:#888;margin-bottom:10px;">Number daal (1,2,3) jo hero me dikhana hai. 'Upload Hero Img' se 3:4 ratio me crop karke upload kar.</p>
+      <p style="font-size:12px;color:#888;margin-bottom:10px;">Number daal (1,2,3) jo hero me dikhana hai. 'Upload & Crop' se 3:4 ratio me crop karke upload kar.</p>
       <div id="heroProductsList"></div>
       <button onclick="saveHeroProducts()" style="margin-top:10px;">Save Hero Order</button>
     </div>
@@ -127,9 +145,11 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
 <!-- CROPPER MODAL -->
 <div class="overlay" id="cropperOverlay">
   <div class="modal-box">
-    <h3 id="cropperTitle" style="margin-bottom:10px;color:#c9a96e;">Crop Image (3:4 Ratio)</h3>
-    <p style="font-size:12px;color:#888;margin-bottom:15px;">Box ko drag karke adjust karo.</p>
-    <div style="max-height:350px;overflow:hidden;background:#000;margin:15px 0;border-radius:6px;"><img id="cropperImage" style="max-width:100%;display:block;"></div>
+    <h3 id="cropperTitle" style="margin-bottom:10px;color:#c9a96e;">Crop Image (3:4)</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:15px;">Box drag karke adjust karo.</p>
+    <div style="max-height:350px;overflow:hidden;background:#000;margin:15px 0;border-radius:6px;">
+      <img id="cropperImage" style="max-width:100%;display:block;">
+    </div>
     <div style="display:flex;gap:10px;">
       <button onclick="confirmCrop()" style="flex:1;">✓ Use Crop</button>
       <button class="secondary" onclick="cancelCrop()" style="flex:1;">Cancel</button>
@@ -142,8 +162,8 @@ const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let allCategories=[], allProductsAdmin=[], allOrdersAdmin=[];
 let cropperInstance=null, pendingCropFiles=[], currentCropIndex=0, croppedFiles=[];
-let currentCropType = 'product'; // 'product' or 'hero'
-let currentHeroPid = null;
+let currentCropType='product', currentHeroPid=null;
+let overviewFilter='30days';
 
 async function login() {
   const email = document.getElementById("email").value.trim();
@@ -174,10 +194,57 @@ function showSection(name) {
   if(name==="settings") loadSettings();
 }
 
+function setOverviewFilter(f) {
+  overviewFilter = f;
+  document.querySelectorAll(".filter-row button").forEach(b=>b.classList.remove("active"));
+  document.getElementById("f-"+f).classList.add("active");
+  loadOverview();
+}
+
+function getDateFilter() {
+  const now = new Date();
+  if(overviewFilter==='day') {
+    return now.toISOString().split('T')[0];
+  }
+  if(overviewFilter==='week') {
+    const d = new Date(now); d.setDate(d.getDate()-7); return d.toISOString();
+  }
+  if(overviewFilter==='month') {
+    return now.toISOString().slice(0,7);
+  }
+  if(overviewFilter==='30days') {
+    const d = new Date(now); d.setDate(d.getDate()-30); return d.toISOString();
+  }
+  return null;
+}
+
 async function loadOverview() {
-  const { data } = await supabaseClient.from("Orders table").select("*");
-  const total = data ? data.reduce((s,o)=>s+Number(o.total_amount||0),0) : 0;
-  document.getElementById("overviewStats").innerHTML = `<div style="font-size:20px;color:#c9a96e;">Total Orders: ${data?data.length:0}</div><div style="font-size:20px;color:#c9a96e;margin-top:10px;">Revenue: ₹${total}</div>`;
+  const { data } = await supabaseClient.from("Orders table").select("*").order("id",{ascending:false});
+  const allOrders = data || [];
+  const filterDate = getDateFilter();
+  let filtered = allOrders;
+  
+  if(filterDate) {
+    if(overviewFilter==='day') {
+      filtered = allOrders.filter(o => o.created_at && o.created_at.startsWith(filterDate));
+    } else if(overviewFilter==='month') {
+      filtered = allOrders.filter(o => o.created_at && o.created_at.startsWith(filterDate));
+    } else {
+      const fd = new Date(filterDate);
+      filtered = allOrders.filter(o => o.created_at && new Date(o.created_at) >= fd);
+    }
+  }
+  
+  const total = filtered.reduce((s,o)=>s+Number(o.total_amount||0),0);
+  document.getElementById("overviewStats").innerHTML = `
+    <div style="font-size:22px;color:#c9a96e;margin-bottom:10px;">Orders: ${filtered.length}</div>
+    <div style="font-size:22px;color:#c9a96e;">Revenue: ₹${total}</div>
+    <div style="font-size:12px;color:#888;margin-top:5px;">Filter: ${overviewFilter}</div>
+  `;
+  
+  document.getElementById("overviewOrders").innerHTML = filtered.length ? 
+    filtered.slice(0,10).map(o => `<div class="item-row"><strong>#${o.id.substring(0,8)}</strong> - ${o.customer_name} - ₹${o.total_amount} - ${o.order_status} <button class="small" onclick="openOrderDetail('${o.id}')">View</button></div>`).join("") 
+    : "<p>No orders in this period.</p>";
 }
 
 async function loadCategories() {
@@ -185,9 +252,22 @@ async function loadCategories() {
   allCategories = data || [];
   const container = document.getElementById("categoriesList");
   const select = document.getElementById("productCategory");
-  container.innerHTML = allCategories.map(c => `<div class="item-row">${c.name} <button class="small danger" onclick="delCat('${c.id}')">Delete</button></div>`).join("");
+  
+  container.innerHTML = allCategories.map((c,i) => `
+    <div class="item-row" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>${c.name} <small style="color:#888;">(order: ${c.sort_order})</small></span>
+      <div>
+        <button class="small" onclick="moveCat('${c.id}',-1)" ${i===0?'disabled':''}>↑ Up</button>
+        <button class="small" onclick="moveCat('${c.id}',1)" ${i===allCategories.length-1?'disabled':''}>↓ Down</button>
+        <button class="small secondary" onclick="editCat('${c.id}','${c.name}')">Edit</button>
+        <button class="small danger" onclick="delCat('${c.id}')">Delete</button>
+      </div>
+    </div>
+  `).join("");
+  
   select.innerHTML = '<option value="">Select Category</option>' + allCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
 }
+
 async function addCategory() {
   const name = document.getElementById("newCategoryName").value.trim().toUpperCase();
   if(!name) return;
@@ -195,9 +275,29 @@ async function addCategory() {
   document.getElementById("newCategoryName").value="";
   loadCategories();
 }
+
+async function editCat(id, oldName) {
+  const newName = prompt("Edit category name:", oldName);
+  if(newName && newName.trim() && newName.trim().toUpperCase() !== oldName) {
+    await supabaseClient.from("categories").update({name: newName.trim().toUpperCase()}).eq("id",id);
+    loadCategories();
+  }
+}
+
+async function moveCat(id, dir) {
+  const idx = allCategories.findIndex(c=>c.id===id);
+  const swapIdx = idx + dir;
+  if(swapIdx < 0 || swapIdx >= allCategories.length) return;
+  const a = allCategories[idx], b = allCategories[swapIdx];
+  const tempOrder = a.sort_order;
+  await supabaseClient.from("categories").update({sort_order: b.sort_order}).eq("id",a.id);
+  await supabaseClient.from("categories").update({sort_order: tempOrder}).eq("id",b.id);
+  loadCategories();
+}
+
 async function delCat(id) { if(confirm("Delete?")) { await supabaseClient.from("categories").delete().eq("id",id); loadCategories(); } }
 
-// --- CROPPER LOGIC ---
+// --- CROPPER ---
 document.getElementById("productImages").addEventListener("change", function(e) {
   if(e.target.files.length) {
     currentCropType = 'product';
@@ -209,14 +309,14 @@ document.getElementById("productImages").addEventListener("change", function(e) 
 function showCropperNext() {
   if(currentCropIndex >= pendingCropFiles.length) {
     document.getElementById("productImages").value="";
-    document.getElementById("productMessage").textContent = croppedFiles.length + " images ready to save.";
+    document.getElementById("productMessage").textContent = croppedFiles.length + " images ready.";
     document.getElementById("productMessage").className = "success";
     return;
   }
   const reader = new FileReader();
   reader.onload = ev => {
     document.getElementById("cropperImage").src = ev.target.result;
-    document.getElementById("cropperTitle").textContent = "Crop Product Image (3:4)";
+    document.getElementById("cropperTitle").textContent = "Crop Product Image (3:4) - " + (currentCropIndex+1) + "/" + pendingCropFiles.length;
     document.getElementById("cropperOverlay").classList.add("open");
     setTimeout(() => {
       if(cropperInstance) cropperInstance.destroy();
@@ -233,16 +333,15 @@ function confirmCrop() {
     const file = new File([blob], "crop-"+Date.now()+".png", {type:"image/png"});
     
     if(currentCropType === 'hero') {
-      // Upload Hero Image directly
       const fname = "hero-"+Date.now()+"-"+file.name;
       const { error: upErr } = await supabaseClient.storage.from("product-images").upload(fname, file);
       if(upErr) { alert("Upload failed: "+upErr.message); return; }
       const { data } = supabaseClient.storage.from("product-images").getPublicUrl(fname);
       await supabaseClient.from("Products").update({hero_image_url: data.publicUrl}).eq("id", currentHeroPid);
-      alert("Hero Image Updated!");
+      alert("Hero Image Updated (3:4)!");
       currentHeroPid = null;
+      loadProducts(); loadSettings();
     } else {
-      // Add to product array
       croppedFiles.push(file);
       currentCropIndex++;
     }
@@ -251,7 +350,6 @@ function confirmCrop() {
     document.getElementById("cropperOverlay").classList.remove("open");
     
     if(currentCropType === 'product') showCropperNext();
-    else { loadProducts(); loadSettings(); }
   }, "image/png", 0.9);
 }
 
@@ -260,6 +358,26 @@ function cancelCrop() {
   cropperInstance = null; currentHeroPid = null;
   document.getElementById("cropperOverlay").classList.remove("open"); 
   pendingCropFiles=[]; croppedFiles=[]; 
+}
+
+function triggerHeroCrop(pid) {
+  const fileInput = document.getElementById("hero-file-"+pid);
+  const file = fileInput.files[0];
+  if(!file) return alert("Pehle image select karo!");
+  currentCropType = 'hero';
+  currentHeroPid = pid;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById("cropperImage").src = ev.target.result;
+    const prod = allProductsAdmin.find(p=>p.id===pid);
+    document.getElementById("cropperTitle").textContent = "Crop Hero Image for: " + (prod?prod.name:"");
+    document.getElementById("cropperOverlay").classList.add("open");
+    setTimeout(() => {
+      if(cropperInstance) cropperInstance.destroy();
+      cropperInstance = new Cropper(document.getElementById("cropperImage"), { aspectRatio: 3/4, viewMode: 1 });
+    }, 100);
+  };
+  reader.readAsDataURL(file);
 }
 
 function toggleAllSizes() { const all = document.getElementById("allSizesBox").checked; document.querySelectorAll(".sizeBox").forEach(b=>b.checked=all); }
@@ -329,26 +447,32 @@ async function loadProducts() {
   }).join("");
 }
   async function loadOrders() {
-  const { data } = await supabaseClient.from("Orders table").select("*").order("id",{ascending:false});
+  const { data, error } = await supabaseClient.from("Orders table").select("*").order("id",{ascending:false});
+  if(error) { document.getElementById("ordersList").innerHTML = `<p class="error">Error: ${error.message}</p>`; return; }
   allOrdersAdmin = data || [];
-  document.getElementById("ordersList").innerHTML = allOrdersAdmin.map(o => 
-    `<div class="item-row"><strong>#${o.id.substring(0,8)}</strong> - ${o.customer_name} - ₹${o.total_amount} - ${o.order_status} <button class="small" onclick="openOrderDetail('${o.id}')">View Details</button></div>`
-  ).join("");
+  document.getElementById("ordersList").innerHTML = allOrdersAdmin.length ? 
+    allOrdersAdmin.map(o => `<div class="item-row"><strong>#${o.id.substring(0,8)}</strong> - ${o.customer_name||'N/A'} - ₹${o.total_amount} - ${o.order_status||'Pending'} <button class="small" onclick="openOrderDetail('${o.id}')">View Details</button></div>`).join("")
+    : "<p>No orders yet.</p>";
 }
 
 function openOrderDetail(id) {
   const o = allOrdersAdmin.find(x=>x.id===id); if(!o) return;
-  let items = (o.items||[]).map(i=>`<div style="padding:5px;background:#1f1f1f;margin:5px 0;border-radius:4px;">${i.name} x${i.qty} - ₹${i.price}</div>`).join("");
+  let items = (o.items||[]).map(i=>`<div style="padding:8px;background:#1f1f1f;margin:5px 0;border-radius:4px;">${i.name} x${i.qty} - ₹${i.price}</div>`).join("");
   document.getElementById("orderDetailContent").innerHTML = `
-    <h2 style="margin-bottom:15px;">Order #${o.id.substring(0,8)}</h2>
+    <h2 style="margin-bottom:15px;color:#c9a96e;">Order #${o.id.substring(0,8)}</h2>
     <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin-bottom:15px;">
-      <p><b>Customer:</b> ${o.customer_name}</p><p><b>Email:</b> ${o.customer_email}</p><p><b>Phone:</b> ${o.customer_phone}</p>
-      <p><b>Address:</b> ${o.address}</p>
+      <p><b>Customer:</b> ${o.customer_name||'N/A'}</p>
+      <p><b>Email:</b> ${o.customer_email||'N/A'}</p>
+      <p><b>Phone:</b> ${o.customer_phone||'N/A'}</p>
+      <p><b>Address:</b> ${o.address||'N/A'}</p>
+      <p><b>Date:</b> ${o.created_at ? new Date(o.created_at).toLocaleString() : 'N/A'}</p>
     </div>
-    <h3 style="margin:15px 0 5px;">Items:</h3>${items}
+    <h3 style="margin:15px 0 5px;">Items:</h3>${items || "<p>No items</p>"}
     <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin:15px 0;">
-      <p><b>Total:</b> ₹${o.total_amount}</p>
-      ${o.coupon_code?`<p>Coupon: ${o.coupon_code} (-₹${o.discount_amount||0})</p>`:""}
+      <p><b>Subtotal:</b> ₹${o.total_amount}</p>
+      ${o.discount_amount?`<p><b>Discount:</b> -₹${o.discount_amount}</p>`:""}
+      ${o.coupon_code?`<p><b>Coupon:</b> ${o.coupon_code}</p>`:""}
+      <p style="font-size:18px;margin-top:10px;"><b>Total Paid: ₹${o.total_amount}</b></p>
     </div>
     <label>Update Status</label>
     <select id="orderStatusSelect">
@@ -364,15 +488,15 @@ async function updateOrderStatus(id) {
   const payload = {order_status: status};
   if(status==="Delivered") payload.delivered_at = new Date().toISOString();
   await supabaseClient.from("Orders table").update(payload).eq("id",id);
-  alert("Status updated!"); closeOrderDetail(); loadOrders();
+  alert("Status updated!"); closeOrderDetail(); loadOrders(); loadOverview();
 }
 
 async function loadCustomers() {
   const { data, error } = await supabaseClient.from("customers").select("*").order("created_at",{ascending:false});
   const container = document.getElementById("customersList");
-  if(error) { container.innerHTML = `<p class="error">Error: ${error.message}. (Run SQL to disable RLS on customers table)</p>`; return; }
+  if(error) { container.innerHTML = `<p class="error">Error: ${error.message}.<br>Supabase SQL Editor me ye chala:<br><code>ALTER TABLE customers DISABLE ROW LEVEL SECURITY;</code></p>`; return; }
   if(!data || !data.length) { container.innerHTML = "<p>No customers yet.</p>"; return; }
-  container.innerHTML = data.map(c => `<div class="item-row"><b>${c.name}</b><br>${c.email}<br>${c.phone}<br><small style="color:#888;">${new Date(c.created_at).toLocaleString()}</small></div>`).join("");
+  container.innerHTML = data.map(c => `<div class="item-row"><b>${c.name||'N/A'}</b><br>📧 ${c.email||'N/A'}<br>📱 ${c.phone||'N/A'}<br><small style="color:#888;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small></div>`).join("");
 }
 
 async function loadSettings() {
@@ -407,31 +531,13 @@ function loadHeroUI(heroIds) {
       ${img?`<img class="thumb" src="${img}">`:""}
       <div style="flex:1;">
         <b>${p.name}</b> <span style="font-size:11px;color:#888;">(₹${p.price})</span><br>
-        <input type="number" id="hero-ord-${p.id}" value="${val}" placeholder="#" style="width:60px;display:inline-block;margin-top:5px;" title="Hero Order Number">
-        <br><label style="font-size:10px;margin-top:8px;">Hero Image (3:4):</label>
+        <input type="number" id="hero-ord-${p.id}" value="${val}" placeholder="#" style="width:60px;display:inline-block;margin-top:5px;" title="Hero Order (1,2,3)">
+        <br><label style="font-size:10px;margin-top:8px;">Hero Image (3:4 crop):</label>
         <input type="file" id="hero-file-${p.id}" accept="image/*" style="font-size:10px;margin-top:5px;">
         <button class="small" onclick="triggerHeroCrop('${p.id}')" style="margin-top:5px;">Upload & Crop Hero Img</button>
       </div>
     </div>`;
   }).join("");
-}
-
-function triggerHeroCrop(pid) {
-  const file = document.getElementById("hero-file-"+pid).files[0];
-  if(!file) return alert("Pehle image select karo!");
-  currentCropType = 'hero';
-  currentHeroPid = pid;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    document.getElementById("cropperImage").src = ev.target.result;
-    document.getElementById("cropperTitle").textContent = "Crop Hero Image for: " + allProductsAdmin.find(p=>p.id===pid).name;
-    document.getElementById("cropperOverlay").classList.add("open");
-    setTimeout(() => {
-      if(cropperInstance) cropperInstance.destroy();
-      cropperInstance = new Cropper(document.getElementById("cropperImage"), { aspectRatio: 3/4, viewMode: 1 });
-    }, 100);
-  };
-  reader.readAsDataURL(file);
 }
 
 async function saveHeroProducts() {
@@ -445,10 +551,8 @@ async function saveHeroProducts() {
   const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
   if(existing) await supabaseClient.from("site_setting").update({hero_product_ids: heroIds}).eq("id",existing.id);
   else await supabaseClient.from("site_setting").insert([{hero_product_ids: heroIds}]);
-  alert("Hero order saved!");
+  alert("Hero order saved! Website refresh kar.");
 }
-
-function escapeHtml(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
 </script>
 </body>
-</html
+</html>
