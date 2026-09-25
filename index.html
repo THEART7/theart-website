@@ -9,12 +9,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;} html{scroll-behavior:smooth;}
 body{background:#F8F7F4;color:#1A1A1A;font-family:Inter,sans-serif;}
-.opening{position:fixed;inset:0;background:#F8F7F4;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.opening.hide{opacity:0;pointer-events:none;transition:opacity 0.8s;}
-.opening h1{font-family:'Playfair Display';font-size:48px;letter-spacing:12px;animation:up 1s 0.2s both;}
-.opening p{font-size:10px;letter-spacing:5px;color:#888;margin-top:10px;animation:up 1s 0.6s both;}
-.opening .icons{margin-top:20px;font-size:24px;animation:up 1s 1s both;}
-@keyframes up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 .ann-bar{background:#1A1A1A;color:#fff;padding:10px;text-align:center;font-size:11px;letter-spacing:1px;display:none;}
 .header{display:flex;justify-content:space-between;align-items:center;padding:20px 25px;background:#fff;border-bottom:1px solid #E5E5E5;position:sticky;top:0;z-index:100;}
 .header h1{font-family:'Playfair Display';font-size:24px;letter-spacing:4px;}
@@ -89,11 +83,6 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:5px 0;font-size
 </style>
 </head>
 <body>
-<div class="opening hide" id="opening" style="display:none;">
-  <h1>T-HEART</h1>
-  <p>PREMIUM CLOTHING</p>
-  <div class="icons">👕 👖 👔</div>
-</div>
 <div class="ann-bar" id="annBar"><span id="annText"></span></div>
 <header class="header">
   <button class="menu-btn" onclick="toggleMenu()">☰</button>
@@ -112,7 +101,6 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:5px 0;font-size
   <div id="menuAccount" style="display:none;">
     <h4>My Account</h4>
     <a href="#" onclick="toggleMenu();showOrders();return false;">My Orders</a>
-    <a href="#" onclick="toggleMenu();showWishlist();return false;">Wishlist</a>
   </div>
   <h4>Account</h4>
   <a href="#" onclick="toggleMenu();openProfile();return false;" id="loginLink">Login</a>
@@ -178,7 +166,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:5px 0;font-size
     </div>
     <p id="couponMsg" style="font-size:12px;color:#a33;"></p>
     <div style="display:flex;justify-content:space-between;margin:8px 0;"><span>Subtotal</span><span id="cSub">₹0</span></div>
-    <div style="display:flex;justify-content:space-between;margin:8px 0;"><span>Discount</span><span id="cDisc">₹0</span></div>
+    <div style="display:flex;justify-content:space-between;margin:8px 0;"><span>Discount</span><span id="cDisc">0</span></div>
     <div style="display:flex;justify-content:space-between;margin:8px 0;"><span>Shipping</span><span id="cShip">0</span></div>
     <div style="display:flex;justify-content:space-between;margin:15px 0;font-weight:600;font-size:16px;"><span>Total</span><span id="cTotal">₹0</span></div>
     <button class="add-btn" onclick="openCheckout()" style="padding:14px;">Checkout</button>
@@ -215,63 +203,64 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:5px 0;font-size
 const URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
 const KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
 const db = window.supabase.createClient(URL, KEY);
+
 let products=[], categories=[], heroSlides=[], currentHero=0, heroInt=null;
 let settings = {free_ship:5000, ship_fee:99};
 let coupon = null, profile = null;
-
-setTimeout(() => {
-  const ov = document.getElementById("opening");
-  ov.classList.add("hide");
-  setTimeout(() => ov.style.display="none", 800);
-}, 2500);
 
 function toast(m) { const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
 function toggleMenu() { document.getElementById("menuOverlay").classList.toggle("open"); document.getElementById("menuDropdown").classList.toggle("open"); }
 
 function loadProfile() {
-  const s = localStorage.getItem("th_profile");
-  if(s) {
-    profile = JSON.parse(s);
-    document.getElementById("menuAccount").style.display="block";
-    document.getElementById("loginLink").textContent="My Profile";
-    document.getElementById("cName").value = profile.name||"";
-    document.getElementById("cEmail").value = profile.email||"";
-    document.getElementById("cPhone").value = profile.phone||"";
-  }
+  try {
+    const s = localStorage.getItem("th_profile");
+    if(s) {
+      profile = JSON.parse(s);
+      document.getElementById("menuAccount").style.display="block";
+      document.getElementById("loginLink").textContent="My Profile";
+      document.getElementById("cName").value = profile.name||"";
+      document.getElementById("cEmail").value = profile.email||"";
+      document.getElementById("cPhone").value = profile.phone||"";
+    }
+  } catch(e) {}
 }
 
 async function loadSettings() {
-  const { data } = await db.from("site_setting").select("*").limit(1).maybeSingle();
-  if(!data) return;
-  if(data.brand_name) { document.getElementById("siteBrand").textContent=data.brand_name; document.getElementById("footBrand").textContent=data.brand_name; }
-  if(data.tagline) { document.getElementById("siteTagline").textContent=data.tagline; document.getElementById("footTag").textContent=data.tagline; }
-  if(data.free_shipping_above) settings.free_ship = Number(data.free_shipping_above);
-  if(data.shipping_fee) settings.ship_fee = Number(data.shipping_fee);
-  if(data.hero_product_ids && data.hero_product_ids.length) loadHero(data.hero_product_ids);
+  try {
+    const { data } = await db.from("site_setting").select("*").limit(1).maybeSingle();
+    if(!data) return;
+    if(data.brand_name) { document.getElementById("siteBrand").textContent=data.brand_name; document.getElementById("footBrand").textContent=data.brand_name; }
+    if(data.tagline) { document.getElementById("siteTagline").textContent=data.tagline; document.getElementById("footTag").textContent=data.tagline; }
+    if(data.free_shipping_above) settings.free_ship = Number(data.free_shipping_above);
+    if(data.shipping_fee) settings.ship_fee = Number(data.shipping_fee);
+    if(data.hero_product_ids && data.hero_product_ids.length) loadHero(data.hero_product_ids);
+  } catch(e) { console.log("Settings error:", e); }
 }
 
 async function loadHero(ids) {
-  const { data } = await db.from("Products").select("*").in("id", ids);
-  if(!data) return;
-  heroSlides = ids.map(id => data.find(p=>p.id===id)).filter(p=>p);
-  if(!heroSlides.length) return;
-  renderHero(0);
-  renderDots();
-  if(heroInt) clearInterval(heroInt);
-  if(heroSlides.length>1) {
-    heroInt = setInterval(() => { currentHero=(currentHero+1)%heroSlides.length; renderHero(currentHero); renderDots(); }, 4000);
-  }
-  let sx=0;
-  const hc = document.getElementById("heroCard");
-  hc.addEventListener("touchstart", e=>sx=e.touches[0].clientX);
-  hc.addEventListener("touchend", e => {
-    const diff = sx - e.changedTouches[0].clientX;
-    if(Math.abs(diff)>50) {
-      currentHero = diff>0 ? (currentHero+1)%heroSlides.length : (currentHero-1+heroSlides.length)%heroSlides.length;
-      renderHero(currentHero); renderDots();
+  try {
+    const { data } = await db.from("Products").select("*").in("id", ids);
+    if(!data || !data.length) return;
+    heroSlides = ids.map(id => data.find(p=>p.id===id)).filter(p=>p);
+    if(!heroSlides.length) return;
+    renderHero(0);
+    renderDots();
+    if(heroInt) clearInterval(heroInt);
+    if(heroSlides.length>1) {
+      heroInt = setInterval(() => { currentHero=(currentHero+1)%heroSlides.length; renderHero(currentHero); renderDots(); }, 4000);
     }
-  });
-  hc.onclick = () => { const pid = document.getElementById("heroImg").dataset.pid; if(pid) openDetail(pid); };
+    let sx=0;
+    const hc = document.getElementById("heroCard");
+    hc.addEventListener("touchstart", e=>sx=e.touches[0].clientX);
+    hc.addEventListener("touchend", e => {
+      const diff = sx - e.changedTouches[0].clientX;
+      if(Math.abs(diff)>50) {
+        currentHero = diff>0 ? (currentHero+1)%heroSlides.length : (currentHero-1+heroSlides.length)%heroSlides.length;
+        renderHero(currentHero); renderDots();
+      }
+    });
+    hc.onclick = () => { const pid = document.getElementById("heroImg").dataset.pid; if(pid) openDetail(pid); };
+  } catch(e) { console.log("Hero error:", e); }
 }
 
 function renderHero(i) {
@@ -291,31 +280,38 @@ function renderDots() {
 }
 
 async function loadAnn() {
-  const { data } = await db.from("announcements").select("*").eq("is_active",true).limit(1);
-  if(data && data.length) { document.getElementById("annText").textContent=data[0].text; document.getElementById("annBar").style.display="block"; }
+  try {
+    const { data } = await db.from("announcements").select("*").eq("is_active",true).limit(1);
+    if(data && data.length) { document.getElementById("annText").textContent=data[0].text; document.getElementById("annBar").style.display="block"; }
+  } catch(e) {}
 }
 
 async function loadCats() {
-  const { data } = await db.from("categories").select("*").order("sort_order");
-  if(!data) return;
-  categories = data;
-  const f = document.getElementById("filters");
-  f.innerHTML = '<button class="active" onclick="filterCat(\'ALL\')">ALL</button>';
-  data.forEach(c => {
-    const b = document.createElement("button");
-    b.textContent = c.name;
-    b.onclick = () => { f.querySelectorAll("button").forEach(x=>x.classList.remove("active")); b.classList.add("active"); filterCat(c.name); };
-    f.appendChild(b);
-  });
+  try {
+    const { data, error } = await db.from("categories").select("*").order("sort_order");
+    if(error) { console.log("Cat error:", error); return; }
+    if(!data) return;
+    categories = data;
+    const f = document.getElementById("filters");
+    f.innerHTML = '<button class="active" onclick="filterCat(\'ALL\')">ALL</button>';
+    data.forEach(c => {
+      const b = document.createElement("button");
+      b.textContent = c.name;
+      b.onclick = () => { f.querySelectorAll("button").forEach(x=>x.classList.remove("active")); b.classList.add("active"); filterCat(c.name); };
+      f.appendChild(b);
+    });
+  } catch(e) { console.log("Cat error:", e); }
 }
 
 async function loadProds() {
-  const { data, error } = await db.from("Products").select("*").order("sort_order");
-  if(error) { document.getElementById("grid").innerHTML = `<p style="grid-column:1/-1;color:red;">Error: ${error.message}</p>`; return; }
-  products = (data||[]).filter(p=>p.is_active!==false);
-  if(categories.length === 0) await loadCats();
-  renderCategorySections();
-  renderGrid(products);
+  try {
+    const { data, error } = await db.from("Products").select("*").order("sort_order");
+    if(error) { document.getElementById("grid").innerHTML = `<p style="grid-column:1/-1;color:red;">Error: ${error.message}</p>`; return; }
+    products = (data||[]).filter(p=>p.is_active!==false);
+    if(categories.length === 0) await loadCats();
+    renderCategorySections();
+    renderGrid(products);
+  } catch(e) { console.log("Prod error:", e); }
 }
 
 function renderCategorySections() {
@@ -467,8 +463,8 @@ async function showOrders() {
   if(!data||!data.length) { toast("No orders"); return; }
   alert("Your Orders:\n\n"+data.slice(0,5).map(o=>`#${o.id.substring(0,8)} - ₹${o.total_amount} - ${o.order_status}`).join("\n"));
 }
-function showWishlist() { toast("Wishlist coming soon"); }
 
+// INIT - SAB KUCH LOAD KARO
 loadProfile();
 loadSettings();
 loadAnn();
