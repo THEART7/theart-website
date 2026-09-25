@@ -457,12 +457,16 @@ async function loadProducts() {
     </div>`;
   }).join("");
 }
-  async function loadOrders() {
-  const { data, error } = await supabaseClient.from("Orders table").select("*").order("id",{ascending:false});
-  if(error) { document.getElementById("ordersList").innerHTML = `<p class="error">Error: ${error.message}</p>`; return; }
+async function loadOrders() {
+  const { data, error } = await supabaseClient.from("Orders table").select("*").order("created_at",{ascending:false});
+  if(error) { 
+    document.getElementById("ordersList").innerHTML = `<p class="error">Error: ${error.message}</p>`; 
+    return; 
+  }
   allOrdersAdmin = data || [];
+  console.log("Orders loaded:", allOrdersAdmin.length);
   document.getElementById("ordersList").innerHTML = allOrdersAdmin.length ? 
-    allOrdersAdmin.map(o => `<div class="item-row"><strong>#${o.id.substring(0,8)}</strong> - ${o.customer_name||'N/A'} - ₹${o.total_amount} - ${o.order_status||'Pending'} <button class="small" onclick="openOrderDetail('${o.id}')">View Details</button></div>`).join("")
+    allOrdersAdmin.map(o => `<div class="item-row"><strong>#${String(o.id).substring(0,8)}</strong> - ${o.customer_name||'N/A'} - ₹${o.total_amount||0} - ${o.order_status||'Pending'} <button class="small" onclick="openOrderDetail('${o.id}')">View Details</button></div>`).join("")
     : "<p>No orders yet.</p>";
 }
 
@@ -510,15 +514,19 @@ async function loadCustomers() {
   container.innerHTML = data.map(c => `<div class="item-row"><b>${c.name||'N/A'}</b><br>📧 ${c.email||'N/A'}<br>📱 ${c.phone||'N/A'}<br><small style="color:#888;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small></div>`).join("");
 }
 
-async function loadSettings() {
-  const { data } = await supabaseClient.from("site_setting").select("*").limit(1).maybeSingle();
-  if(data) {
-    document.getElementById("settingBrandName").value = data.brand_name||"";
-    document.getElementById("settingTagline").value = data.tagline||"";
-    document.getElementById("settingFreeShipAbove").value = data.free_shipping_above||0;
-    document.getElementById("settingShipFee").value = data.shipping_fee||0;
-    loadHeroUI(data.hero_product_ids||[]);
+async function loadCustomers() {
+  const { data, error } = await supabaseClient.from("customers").select("*").order("created_at",{ascending:false});
+  const container = document.getElementById("customersList");
+  if(error) { 
+    container.innerHTML = `<p class="error">Error: ${error.message}.<br>Supabase SQL Editor me ye chala:<br><code>ALTER TABLE customers DISABLE ROW LEVEL SECURITY;</code></p>`; 
+    return; 
   }
+  if(!data || !data.length) { 
+    container.innerHTML = "<p>No customers yet.</p>"; 
+    return; 
+  }
+  container.innerHTML = data.map(c => `<div class="item-row"><b>${c.name||'N/A'}</b><br>📧 ${c.email||'N/A'}<br>📱 ${c.phone||'N/A'}<br><small style="color:#888;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small></div>`).join("");
+}
 }
 async function saveSettings() {
   const payload = {
