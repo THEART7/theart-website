@@ -241,7 +241,7 @@ async function loadHero(ids) {
   try {
     const { data } = await db.from("Products").select("*").in("id", ids);
     if(!data || !data.length) return;
-    heroSlides = ids.map(id => data.find(p=>p.id===id)).filter(p=>p);
+    heroSlides = ids.map(id => data.find(p=>String(p.id)===String(id))).filter(p=>p);
     if(!heroSlides.length) return;
     renderHero(0);
     renderDots();
