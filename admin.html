@@ -431,9 +431,24 @@ async function updateOrderStatus(id) {
 async function loadCustomers() {
   const { data, error } = await supabaseClient.from("customers").select("*").order("created_at",{ascending:false});
   const container = document.getElementById("customersList");
-  if(error) { container.innerHTML = `<p class="error">Error: ${error.message}.<br>Supabase SQL Editor me ye chala:<br><code>ALTER TABLE customers DISABLE ROW LEVEL SECURITY;</code></p>`; return; }
-  if(!data || !data.length) { container.innerHTML = "<p>No customers yet.</p>"; return; }
-  container.innerHTML = data.map(c => `<div class="item-row"><b>${c.name||'N/A'}</b><br>📧 ${c.email||'N/A'}<br>📱 ${c.phone||'N/A'}<br><small style="color:#888;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small></div>`).join("");
+  
+  if(error) { 
+    console.log("Customer error:", error);
+    container.innerHTML = `<p class="error">Error: ${error.message}</p>`; 
+    return; 
+  }
+  
+  if(!data || !data.length) { 
+    container.innerHTML = "<p>No customers yet.</p>"; 
+    return; 
+  }
+  
+  container.innerHTML = data.map(c => `<div class="item-row">
+    <b>${c.name||'N/A'}</b><br>
+     ${c.email||'N/A'}<br>
+    📱 ${c.phone||'N/A'}<br>
+    <small style="color:#888;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small>
+  </div>`).join("");
 }
 
 async function loadSettings() {
