@@ -234,16 +234,15 @@ async function moveCat(id, dir) {
   const swapIdx = idx + dir;
   if(swapIdx < 0 || swapIdx >= allCategories.length) return;
   
-  const a = allCategories[idx];
-  const b = allCategories[swapIdx];
+  // Array me position swap karo
+  const temp = allCategories[idx];
+  allCategories[idx] = allCategories[swapIdx];
+  allCategories[swapIdx] = temp;
   
-  // Swap sort_order
-  const tempOrder = a.sort_order;
-  
-  // Pehle dono ko update kar
-  await supabaseClient.from("categories").update({sort_order: -1}).eq("id", a.id);
-  await supabaseClient.from("categories").update({sort_order: tempOrder}).eq("id", b.id);
-  await supabaseClient.from("categories").update({sort_order: b.sort_order}).eq("id", a.id);
+  // Puri list ko re-number karo (0, 1, 2, 3...)
+  for(let i=0; i<allCategories.length; i++) {
+    await supabaseClient.from("categories").update({sort_order: i}).eq("id", allCategories[i].id);
+  }
   
   // Reload kar
   await loadCategories();
