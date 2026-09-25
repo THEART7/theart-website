@@ -402,7 +402,8 @@ async function plOrd(){
   if(!n||!e||!p||!a||!c||!pi){msg.textContent="Fill all fields";return;}
   localStorage.setItem("th_p",JSON.stringify({name:n,email:e,phone:p}));
   ldProf();
-  const{error}=await db.from("Orders table").insert([{customer_name:n,customer_email:e,customer_phone:p,address:`${a}, ${c} - ${pi}`,items:gCart(),total_amount:tot(),discount_amount:gDsc(),coupon_code:cpn?cpn.code:null,payment_status:"Pending",order_status:"Pending"}]);
+  const{error}=await db.from("Orders table").insert([{customer_name:n,customer_email:e,customer_phone:p,address:`${a}, ${c} - ${pi}`,items:gCart(),total_amount:tot(),discount_amount:gDsc(),coupon_code:cpn?(cpn.code||null):null,
+discount_amount:gDsc()||0,payment_status:"Pending",order_status:"Pending"}]);
   if(error){msg.textContent="Error: "+error.message;return;}
   localStorage.removeItem("th_c");cpn=null;uCnt();cCheck();t("Order placed! ✓");
   ["chN","chE","chP","chA","chC","chPi"].forEach(id=>document.getElementById(id).value="");
