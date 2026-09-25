@@ -412,17 +412,28 @@ function cancelEditProduct() {
 }
 
 function editProduct(id) {
-  const p = allProductsAdmin.find(x=>x.id===id); if(!p) return;
+  const p = allProductsAdmin.find(x=>String(x.id)===String(id)); 
+  if(!p) { alert("Product not found!"); return; }
+  
   document.getElementById("editingProductId").value = p.id;
   document.getElementById("productFormTitle").textContent = "Edit: "+p.name;
-  document.getElementById("productName").value = p.name;
+  document.getElementById("productName").value = p.name||"";
   document.getElementById("productDescription").value = p.description||"";
-  document.getElementById("productPrice").value = p.price;
+  document.getElementById("productPrice").value = p.price||"";
   document.getElementById("productStock").value = p.stock||0;
   document.getElementById("productCategory").value = p.category||"";
+  
+  // Sizes check
   const sizes = (p.sizes||"").split(",");
   document.querySelectorAll(".sizeBox").forEach(b=>b.checked = sizes.includes(b.value));
-  window.scrollTo(0,0);
+  
+  // Products section me scroll karo
+  showSection('products');
+  
+  // Form ke upar scroll karo
+  setTimeout(()=>{
+    document.getElementById("productFormTitle").scrollIntoView({behavior:"smooth", block:"start"});
+  }, 100);
 }
 
 async function toggleActive(id, cur) { await supabaseClient.from("Products").update({is_active:!cur}).eq("id",id); loadProducts(); }
@@ -568,6 +579,8 @@ async function saveSettings() {
 function loadHeroUI(heroIds) {
   let hids = heroIds;
   if(typeof hids==='string') try{hids=JSON.parse(hids);}catch(e){hids=[];}
+  if(!Array.isArray(hids)) hids=[];
+  
   document.getElementById("heroProductsList").innerHTML = allProductsAdmin.map(p => {
     const idx = hids.indexOf(p.id);
     const val = idx !== -1 ? idx+1 : "";
@@ -575,8 +588,8 @@ function loadHeroUI(heroIds) {
     return `<div class="item-row" style="display:flex;gap:10px;align-items:start;">
       ${img?`<img class="thumb" src="${img}">`:""}
       <div style="flex:1;">
-        <b>${p.name}</b> <span style="font-size:11px;color:#888;">(₹${p.price})</span><br>
-        <input type="number" id="hero-ord-${p.id}" value="${val}" placeholder="#" style="width:60px;display:inline-block;margin-top:5px;" title="Hero Order (1,2,3)">
+        <b>${p.name}</b> <span style="font-size:11px;color:#888;">(${p.price})</span><br>
+        <input type="number" id="hero-ord-${p.id}" value="${val}" placeholder="#" min="1" style="width:60px;display:inline-block;margin-top:5px;" title="Hero Order (1,2,3...). Khali chhodo agar hero me nahi chahiye">
         <br><label style="font-size:10px;margin-top:8px;">Hero Image (3:4 crop):</label>
         <input type="file" id="hero-file-${p.id}" accept="image/*" style="font-size:10px;margin-top:5px;">
         <button class="small" onclick="triggerHeroCrop('${p.id}')" style="margin-top:5px;">Upload & Crop Hero Img</button>
@@ -608,14 +621,23 @@ function triggerHeroCrop(pid) {
 async function saveHeroProducts() {
   const ids = [];
   allProductsAdmin.forEach(p => {
-    const val = document.getElementById("hero-ord-"+p.id).value;
-    if(val) ids.push({id:p.id, ord:Number(val)});
+    const val = document.getElementById("hero-ord-"+p.id).value.trim();
+    // Sirf valid numbers (1 se upar) ko hi hero me add karo
+    const num = Number(val);
+    if(val && !isNaN(num) && num > 0) {
+      ids.push({id:p.id, ord:num});
+    }
   });
+  
   ids.sort((a,b)=>a.ord-b.ord);
   const heroIds = ids.map(x=>x.id);
+  
+  console.log("Saving hero IDs:", heroIds);
+  
   const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
   if(existing) await supabaseClient.from("site_setting").update({hero_product_ids: heroIds}).eq("id",existing.id);
   else await supabaseClient.from("site_setting").insert([{hero_product_ids: heroIds}]);
+  
   alert("Hero order saved! Website refresh kar.");
 }
 
