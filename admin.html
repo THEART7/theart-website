@@ -231,32 +231,32 @@ async function editCat(id, oldName) {
 
 async function moveCat(id, dir) {
   try {
-    console.log("Moving category:", id, "direction:", dir);
+    console.log("Moving category ID:", id, "Direction:", dir);
     
-    // Fresh data load karo
-    const { data: freshData, error: fetchError } = await supabaseClient
+    // Fresh data load karo database se
+    const { data: cats, error } = await supabaseClient
       .from("categories")
       .select("*")
       .order("sort_order", { ascending: true });
     
-    if(fetchError) {
-      alert("Error loading categories: " + fetchError.message);
+    if(error) {
+      alert("Error: " + error.message);
       return;
     }
     
-    if(!freshData || freshData.length === 0) {
+    if(!cats || cats.length === 0) {
       alert("No categories found!");
       return;
     }
     
-    allCategories = freshData;
-    console.log("Loaded categories:", allCategories);
+    console.log("All categories:", cats);
     
-    // Find current position
-    const idx = allCategories.findIndex(c => c && c.id === id);
+    // ID se category dhundho (string comparison)
+    const idx = cats.findIndex(c => String(c.id) === String(id));
     
     if(idx === -1) {
-      alert("Category not found!");
+      console.log("Available IDs:", cats.map(c => c.id));
+      alert("Category not found! ID: " + id);
       return;
     }
     
@@ -268,50 +268,39 @@ async function moveCat(id, dir) {
       return;
     }
     
-    if(swapIdx >= allCategories.length) {
+    if(swapIdx >= cats.length) {
       alert("Already at bottom!");
       return;
     }
     
-    // Validate both items exist
-    if(!allCategories[idx] || !allCategories[swapIdx]) {
-      alert("Invalid category data!");
-      return;
-    }
+    // Swap karo array me
+    const temp = cats[idx];
+    cats[idx] = cats[swapIdx];
+    cats[swapIdx] = temp;
     
-    // Swap in array
-    const temp = allCategories[idx];
-    allCategories[idx] = allCategories[swapIdx];
-    allCategories[swapIdx] = temp;
+    console.log("After swap:", cats);
     
-    console.log("Swapped array:", allCategories);
-    
-    // Update database with new order
-    let success = true;
-    for(let i = 0; i < allCategories.length; i++) {
-      if(!allCategories[i] || !allCategories[i].id) {
-        console.log("Invalid category at index:", i);
-        continue;
-      }
-      
-      const { error } = await supabaseClient
+    // Ab har category ko naya sort_order do
+    let allSuccess = true;
+    for(let i = 0; i < cats.length; i++) {
+      const { error: updateError } = await supabaseClient
         .from("categories")
         .update({ sort_order: i })
-        .eq("id", allCategories[i].id);
+        .eq("id", cats[i].id);
       
-      if(error) {
-        console.log("Error updating", allCategories[i].name, ":", error);
-        success = false;
+      if(updateError) {
+        console.log("Error updating", cats[i].name, ":", updateError);
+        allSuccess = false;
       } else {
-        console.log("Updated", allCategories[i].name, "to order:", i);
+        console.log("Updated", cats[i].name, "to order:", i);
       }
     }
     
-    if(success) {
-      alert("Order updated successfully!");
+    if(allSuccess) {
+      alert("Order updated! Refresh website to see changes.");
       await loadCategories();
     } else {
-      alert("Some updates failed. Check console for details.");
+      alert("Some updates failed. Try again.");
     }
     
   } catch(e) {
