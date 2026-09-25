@@ -757,10 +757,40 @@ function loadHeroProductsUI(heroIds) {
   allProductsAdmin.forEach(p => {
     const idx = heroIds.indexOf(p.id);
     const orderValue = idx !== -1 ? (idx + 1) : "";
-    html += "<div class='item-row'>" + escapeHtml(p.name) +
-      " <input type='number' style='width:70px;display:inline-block;' id='hero-order-" + p.id + "' value='" + orderValue + "' placeholder='-'></div>";
+    const heroImg = p.hero_image_url || (p.images && p.images.length > 0) ? p.images[0] : p.image_url;
+    html += "<div class='item-row'>" +
+      (heroImg ? "<img class='thumb' src='" + heroImg + "'>" : "") +
+      "<strong>" + escapeHtml(p.name) + "</strong>" +
+      " <input type='number' style='width:70px;display:inline-block;' id='hero-order-" + p.id + "' value='" + orderValue + "' placeholder='-' title='Hero order (1,2,3...)'>" +
+      "<br><label style='font-size:11px;margin-top:8px;'>Hero Image (1:1 ratio recommended):</label>" +
+      "<input type='file' accept='image/*' id='hero-img-" + p.id + "' style='margin-top:5px;'>" +
+      "<button type='button' class='small' onclick='uploadHeroImage(\"" + p.id + "\")' style='margin-top:5px;'>Upload Hero Image</button>" +
+      "</div>";
   });
   container.innerHTML = html;
+}
+
+async function uploadHeroImage(productId) {
+  const fileInput = document.getElementById("hero-img-" + productId);
+  if (!fileInput.files || fileInput.files.length === 0) {
+    alert("Pehle image select karo!");
+    return;
+  }
+  const file = fileInput.files[0];
+  const fileName = "hero-" + Date.now() + "-" + file.name;
+  const { error: uploadError } = await supabaseClient.storage.from("product-images").upload(fileName, file);
+  if (uploadError) {
+    alert("Upload failed: " + uploadError.message);
+    return;
+  }
+  const { data: publicUrlData } = supabaseClient.storage.from("product-images").getPublicUrl(fileName);
+  const { error } = await supabaseClient.from("Products").update({ hero_image_url: publicUrlData.publicUrl }).eq("id", productId);
+  if (error) {
+    alert("Error: " + error.message);
+    return;
+  }
+  alert("Hero image uploaded successfully!");
+  loadProducts();
 }
 
 async function saveHeroProducts() {
