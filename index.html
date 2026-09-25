@@ -128,7 +128,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:5px 0;}
 </head><body>
 
 <!-- OPENING ANIMATION -->
-<div class="opening-overlay" id="openingOverlay">
+<div class="opening-overlay hide" id="openingOverlay" style="display:none;">
   <div class="opening-brand">T-HEART</div>
   <div class="opening-tagline">Premium Clothing</div>
   <div class="opening-icons">
@@ -306,10 +306,16 @@ let currentHero = 0;
 let heroInterval = null;
 
 // Hide opening animation after 3 seconds
-setTimeout(() => {
-  document.getElementById("openingOverlay").classList.add("hide");
-  setTimeout(() => document.getElementById("openingOverlay").style.display = "none", 800);
-}, 3000);
+// Auto hide opening animation
+window.addEventListener("load", function() {
+  setTimeout(() => {
+    const ov = document.getElementById("openingOverlay");
+    if (ov) {
+      ov.classList.add("hide");
+      setTimeout(() => ov.style.display = "none", 800);
+    }
+  }, 2000);
+});
 
 function showToast(msg) {
   const t = document.getElementById("toast");
@@ -743,10 +749,20 @@ async function saveProfile() {
 }
 
 // INIT
-loadSavedProfile();
-loadProducts();
-loadSiteSettings();
-updateCartCount();
+try {
+  loadSavedProfile();
+  loadProducts();
+  loadSiteSettings();
+  updateCartCount();
+} catch(e) {
+  console.log("Init error:", e);
+  // Force hide opening even if error
+  const ov = document.getElementById("openingOverlay");
+  if (ov) {
+    ov.classList.add("hide");
+    setTimeout(() => ov.style.display = "none", 500);
+  }
+}
 </script>
 </body>
 </html>
