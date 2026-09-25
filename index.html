@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>T-HEART</title>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{background:#F8F7F4;color:#1A1A1A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.5;}
 .ann{background:#1A1A1A;color:#fff;padding:10px;text-align:center;font-size:11px;letter-spacing:0.5px;display:none;}
-.ann .x{position:absolute;right:15px;cursor:pointer;font-size:14px;}
 .hdr{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;background:#fff;border-bottom:1px solid #E5E5E5;position:sticky;top:0;z-index:100;}
-.hdr h1{font-family:Georgia,'Times New Roman',serif;font-size:22px;letter-spacing:4px;}
+.hdr h1{font-family:Georgia,serif;font-size:22px;letter-spacing:4px;}
 .hdr small{display:block;font-size:9px;color:#888;letter-spacing:3px;text-align:center;}
 .mbtn,.cbtn{background:none;border:none;font-size:22px;cursor:pointer;padding:5px;}
 .cbtn{position:relative;}
@@ -107,7 +106,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
     <h1 id="sBrand">T-HEART</h1>
     <small id="sTag">Premium Clothing</small>
   </div>
-  <button class="cbtn" onclick="oCart()">🛍️<span class="ccnt" id="cCnt">0</span></button>
+  <button class="cbtn" onclick="oCart()">️<span class="ccnt" id="cCnt">0</span></button>
 </header>
 <div class="mov" id="mOv" onclick="tMnu()"></div>
 <div class="mnu" id="mDr">
@@ -187,8 +186,8 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
       <button onclick="aCpn()" style="background:#1A1A1A;color:#fff;border:none;padding:10px;font-family:inherit;cursor:pointer;">Apply</button>
     </div>
     <p id="cpMsg" style="font-size:11px;color:#a33;margin:4px 0;"></p>
-    <div style="display:flex;justify-content:space-between;margin:6px 0;font-size:13px;"><span>Subtotal</span><span id="cSub">0</span></div>
-    <div style="display:flex;justify-content:space-between;margin:6px 0;font-size:13px;"><span>Discount</span><span id="cDsc">₹0</span></div>
+    <div style="display:flex;justify-content:space-between;margin:6px 0;font-size:13px;"><span>Subtotal</span><span id="cSub">₹0</span></div>
+    <div style="display:flex;justify-content:space-between;margin:6px 0;font-size:13px;"><span>Discount</span><span id="cDsc">-₹0</span></div>
     <div style="display:flex;justify-content:space-between;margin:6px 0;font-size:13px;"><span>Shipping</span><span id="cShp">₹0</span></div>
     <div style="display:flex;justify-content:space-between;margin:12px 0;font-weight:600;font-size:15px;"><span>Total</span><span id="cTot">₹0</span></div>
     <button class="abtn" onclick="oCheck()" style="padding:12px;font-size:13px;">Checkout</button>
@@ -205,7 +204,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
     <input id="chPi" placeholder="Pincode">
     <div id="chTot" style="font-weight:600;margin:12px 0;font-size:15px;"></div>
     <p id="chMsg" style="color:#a33;font-size:11px;"></p>
-    <button class="abtn" onclick="plOrd()" style="padding:12px;font-size:13px;">Place Order</button>
+    <button class="abtn" onclick="plOrd()" style="padding:12px;font-size:13px;">Pay with Razorpay</button>
     <button class="abtn" onclick="cCheck()" style="padding:12px;background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:8px;font-size:13px;">Cancel</button>
   </div>
 </div>
@@ -221,10 +220,10 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
   </div>
 </div>
 <div class="tst" id="tst"></div>
-<script>
+  <script>
 const U="https://kxkmbqvsswfevrpdhjsh.supabase.co";
-  const RAZORPAY_KEY_ID = "rzp_test_TgNr27xWAuxouz";
 const K="sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
+const RAZORPAY_KEY_ID="rzp_test_TgNr27xWAuxouz";
 const db=window.supabase.createClient(U,K);
 let prods=[],cats=[],hSlides=[],cHero=0,hInt=null;
 let sSet={fs:5000,sf:99},cpn=null,prof=null;
@@ -252,8 +251,9 @@ async function ldSet(){
     if(!data)return;
     if(data.brand_name){document.getElementById("sBrand").textContent=data.brand_name;document.getElementById("fBrand").textContent=data.brand_name;}
     if(data.tagline){document.getElementById("sTag").textContent=data.tagline;document.getElementById("fTag").textContent=data.tagline;}
-    if(data.free_shipping_above)sSet.fs=Number(data.free_shipping_above);
-    if(data.shipping_fee)sSet.sf=Number(data.shipping_fee);
+    if(data.free_shipping_above!==undefined&&data.free_shipping_above!==null&&data.free_shipping_above!=="")sSet.fs=Number(data.free_shipping_above);
+    if(data.shipping_fee!==undefined&&data.shipping_fee!==null&&data.shipping_fee!=="")sSet.sf=Number(data.shipping_fee);
+    console.log("Shipping settings:",sSet);
     let hids=data.hero_product_ids;
     if(typeof hids==='string')try{hids=JSON.parse(hids);}catch(e){hids=null;}
     if(hids&&Array.isArray(hids)&&hids.length)ldHero(hids);
@@ -266,7 +266,6 @@ async function ldHero(ids){
     if(error||!data||!data.length)return;
     hSlides=ids.map(id=>data.find(p=>String(p.id)===String(id))).filter(p=>p);
     if(!hSlides.length)return;
-    // Preload all hero images
     hSlides.forEach(p=>{
       const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;
       if(img){const i=new Image();i.src=img;}
@@ -376,17 +375,12 @@ function fCat(c){rGrd(c==="ALL"?prods:prods.filter(p=>p.category&&p.category.toU
 function oDet(id){
   const p=prods.find(x=>String(x.id)===String(id));if(!p)return;
   const imgs=(p.images&&p.images.length)?p.images:[p.image_url];
-  
-  // Main image
   document.getElementById("detImg").innerHTML=`<img src="${imgs[0]||''}" id="mainDetImg">`;
-  
-  // Thumbnails
   const th=document.getElementById("detThumbs");
   if(imgs.length>1){
     th.innerHTML=imgs.map((img,idx)=>`<img src="${img}" class="${idx===0?'active':''}" onclick="document.getElementById('mainDetImg').src='${img}';this.parentElement.querySelectorAll('img').forEach(x=>x.classList.remove('active'));this.classList.add('active');">`).join("");
     th.style.display="flex";
   }else{th.innerHTML="";th.style.display="none";}
-  
   document.getElementById("detCat").textContent=p.category||"";
   document.getElementById("detName").textContent=p.name;
   document.getElementById("detPr").textContent="₹"+p.price;
@@ -399,8 +393,6 @@ function oDet(id){
     const sz=activeSz?activeSz.textContent:"M";
     aCart(p.id,p.name,p.price,imgs[0]||"",sz);
   };
-  
-  // You May Also Like
   const yal=prods.filter(x=>String(x.id)!==String(p.id)).slice(0,4);
   const yalGrd=document.getElementById("detYalGrd");
   yalGrd.innerHTML="";
@@ -410,8 +402,6 @@ function oDet(id){
   }else{
     document.getElementById("detYal").style.display="none";
   }
-  
-  // Shareable link
   window.location.hash="product="+p.id;
   document.getElementById("detPg").classList.add("open");
   document.body.style.overflow="hidden";
@@ -422,11 +412,10 @@ function cDet(){
   document.body.style.overflow="";
   if(window.location.hash.startsWith("#product="))window.location.hash="";
 }
-  function gCart(){try{return JSON.parse(localStorage.getItem("th_c")||"[]");}catch(e){return[];}}
+    function gCart(){try{return JSON.parse(localStorage.getItem("th_c")||"[]");}catch(e){return[];}}
 function sCart(c){localStorage.setItem("th_c",JSON.stringify(c));uCnt();rCart();}
 function aCart(id,name,price,img,size){
-  const c=gCart();
-  const ex=c.find(i=>String(i.id)===String(id)&&i.size===size);
+  const c=gCart();const ex=c.find(i=>String(i.id)===String(id)&&i.size===size);
   if(ex)ex.qty++;else c.push({id,name,price,img,qty:1,size:size||"M"});
   sCart(c);t("Added to bag ✓");
 }
@@ -434,7 +423,11 @@ function uCnt(){const t=gCart().reduce((s,i)=>s+i.qty,0);const b=document.getEle
 function chQty(id,d){const c=gCart();const i=c.find(x=>String(x.id)===String(id));if(!i)return;i.qty+=d;if(i.qty<=0)sCart(c.filter(x=>String(x.id)!==String(id)));else sCart(c);}
 function sTot(){return gCart().reduce((s,i)=>s+i.price*i.qty,0);}
 function gDsc(){if(!cpn)return 0;const s=sTot();return s>=cpn.min_order_amount?Math.round(s*cpn.discount_percent/100):0;}
-function gShp(){return(sTot()-gDsc())>=sSet.fs?0:sSet.sf;}
+function gShp(){
+  const subtotal = sTot() - gDsc();
+  if(sSet.fs === 0) return 0;
+  return subtotal >= sSet.fs ? 0 : sSet.sf;
+}
 function tot(){return Math.max(0,sTot()-gDsc()+gShp());}
 
 async function aCpn(){
@@ -451,16 +444,22 @@ async function aCpn(){
 
 function rCart(){
   const c=gCart();
-  document.getElementById("cIt").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-weight:500;font-size:13px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: <b>${i.size||'M'}</b> • ₹${i.price}</div><div style="color:#888;font-size:12px;">₹${i.price}</div><div style="display:flex;align-items:center;gap:8px;margin-top:5px;"><button onclick="chQty('${i.id}',-1)" style="width:24px;height:24px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">-</button><span style="font-size:13px;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:24px;height:24px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">+</button></div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:4px;cursor:pointer;">Remove</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
+  document.getElementById("cIt").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-weight:500;font-size:13px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: <b>${i.size||'M'}</b> • ₹${i.price}</div><div style="display:flex;align-items:center;gap:8px;margin-top:5px;"><button onclick="chQty('${i.id}',-1)" style="width:24px;height:24px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">-</button><span style="font-size:13px;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:24px;height:24px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">+</button></div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:4px;cursor:pointer;">Remove</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
   document.getElementById("cSub").textContent="₹"+sTot();
   document.getElementById("cDsc").textContent="-₹"+gDsc();
-  document.getElementById("cShp").textContent=gShp()===0?"FREE":"₹"+gShp();
-  document.getElementById("cTot").textContent=""+tot();
+  const shippingCost = gShp();
+  document.getElementById("cShp").textContent = shippingCost === 0 ? "FREE" : "₹" + shippingCost;
+  document.getElementById("cTot").textContent="₹"+tot();
 }
 
-function oCart(){document.getElementById("cOv").classList.add("open");document.getElementById("cDr").classList.add("open");rCart();}
+function oCheck(){
+  const cart=gCart();
+  if(!cart.length){t("Your bag is empty!");return;}
+  document.getElementById("chTot").textContent="Total: ₹"+tot();
+  document.getElementById("chOv").classList.add("open");
+  cCart();
+}
 function cCart(){document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");}
-function oCheck(){if(!gCart().length){t("Empty bag");return;}document.getElementById("chTot").textContent="Total: ₹"+tot();document.getElementById("chOv").classList.add("open");cCart();}
 function cCheck(){document.getElementById("chOv").classList.remove("open");}
 
 async function plOrd(){
@@ -471,83 +470,43 @@ async function plOrd(){
   const c=document.getElementById("chC").value.trim();
   const pi=document.getElementById("chPi").value.trim();
   const msg=document.getElementById("chMsg");
-  
   if(!n||!e||!p||!a||!c||!pi){msg.textContent="Please fill all fields";return;}
   msg.textContent="Processing payment...";
-  
   const totalAmount = tot();
   if(totalAmount <= 0){msg.textContent="Invalid amount";return;}
-  
   const options = {
     key: RAZORPAY_KEY_ID,
-    amount: totalAmount * 100, // Razorpay paise me leta hai
+    amount: totalAmount * 100,
     currency: "INR",
     name: "T-HEART",
     description: "Order Payment",
-    prefill: {
-      name: n,
-      email: e,
-      contact: p
-    },
+    prefill: { name: n, email: e, contact: p },
     theme: { color: "#1A1A1A" },
     handler: async function(response){
-      // Payment Successful! Ab Supabase me save karo
       msg.textContent = "Verifying payment...";
       try {
         const orderData = {
-          customer_name: n,
-          customer_email: e,
-          customer_phone: p,
+          customer_name: n, customer_email: e, customer_phone: p,
           address: `${a}, ${c} - ${pi}`,
-          items: gCart(),
-          total_amount: totalAmount,
-          discount_amount: gDsc(),
-          coupon_code: cpn ? cpn.code : null,
-          payment_status: "Paid",
-          payment_method: "Razorpay",
+          items: gCart(), total_amount: totalAmount,
+          discount_amount: gDsc(), coupon_code: cpn ? cpn.code : null,
+          payment_status: "Paid", payment_method: "Razorpay",
           razorpay_payment_id: response.razorpay_payment_id,
           razorpay_order_id: response.razorpay_order_id,
           razorpay_signature: response.razorpay_signature,
           order_status: "Confirmed"
         };
-
         const { error } = await db.from("Orders table").insert([orderData]);
-        
-        if (error) {
-          msg.textContent = "Order save error: " + error.message;
-          return;
-        }
-
-        // Customer save karo
+        if (error) { msg.textContent = "Order save error: " + error.message; return; }
         try { await db.from("customers").insert([{name:n, email:e, phone:p}]); } catch(err){}
-
-        // Success! Cart clear karo
-        localStorage.removeItem("th_c");
-        cpn = null;
-        uCnt();
-        cCheck();
-        
+        localStorage.removeItem("th_c"); cpn = null; uCnt(); cCheck();
         alert("✅ Payment Successful!\nOrder ID: " + response.razorpay_payment_id + "\nThank you for shopping with T-HEART!");
         ["chN","chE","chP","chA","chC","chPi"].forEach(id=>document.getElementById(id).value="");
-        
-      } catch (err) {
-        msg.textContent = "Error: " + err.message;
-      }
+      } catch (err) { msg.textContent = "Error: " + err.message; }
     },
-    modal: {
-      ondismiss: function(){
-        msg.textContent = "Payment cancelled. Please try again.";
-        msg.style.color = "#a33";
-      }
-    }
+    modal: { ondismiss: function(){ msg.textContent = "Payment cancelled. Please try again."; msg.style.color = "#a33"; } }
   };
-  
-  try {
-    const rzp = new Razorpay(options);
-    rzp.open();
-  } catch (e) {
-    msg.textContent = "Payment gateway error. Please try again.";
-  }
+  try { const rzp = new Razorpay(options); rzp.open(); } catch (e) { msg.textContent = "Payment gateway error. Please try again."; }
 }
 
 function oProf(){
@@ -578,11 +537,7 @@ async function shOrd(){
   }catch(e){t("Error loading orders");}
 }
 
-// INIT
-ldProf();
-ldSet();
-ldAnn();
-ldCats();
+ldProf(); ldSet(); ldAnn(); ldCats();
 ldProds().then(()=>{
   const hash=window.location.hash;
   if(hash.startsWith("#product=")){
@@ -591,7 +546,6 @@ ldProds().then(()=>{
   }
 });
 uCnt();
-
 window.addEventListener("hashchange",()=>{
   if(!window.location.hash.startsWith("#product=")){
     const det=document.getElementById("detPg");
