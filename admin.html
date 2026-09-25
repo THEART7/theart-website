@@ -384,8 +384,12 @@ async function loadProducts() {
 }
 
 function openOrderDetail(id) {
-  const o = allOrdersAdmin.find(x=>x.id===id); if(!o) return;
+  console.log("Opening order:", id);
+  const o = allOrdersAdmin.find(x=>String(x.id)===String(id)); 
+  if(!o) { alert("Order not found!"); return; }
+  
   let items = (o.items||[]).map(i=>`<div style="padding:8px;background:#1f1f1f;margin:5px 0;border-radius:4px;">${i.name} x${i.qty} - ₹${i.price}</div>`).join("");
+  
   document.getElementById("orderDetailContent").innerHTML = `
     <h2 style="margin-bottom:15px;color:#c9a96e;">Order #${String(o.id).substring(0,8)}</h2>
     <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin-bottom:15px;">
@@ -397,18 +401,21 @@ function openOrderDetail(id) {
     </div>
     <h3 style="margin:15px 0 5px;">Items:</h3>${items || "<p>No items</p>"}
     <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin:15px 0;">
-      <p><b>Subtotal:</b> ₹${o.total_amount||0}</p>
-      ${o.discount_amount?`<p><b>Discount:</b> -₹${o.discount_amount}</p>`:""}
-      ${o.coupon_code?`<p><b>Coupon:</b> ${o.coupon_code}</p>`:""}
-      <p style="font-size:18px;margin-top:10px;"><b>Total Paid: ₹${o.total_amount||0}</b></p>
+      <p><b>Total:</b> ₹${o.total_amount||0}</p>
     </div>
     <label>Update Status</label>
-    <select id="orderStatusSelect">
+    <select id="orderStatusSelect" style="margin:10px 0;">
       ${["Pending","Confirmed","Shipped","Delivered"].map(s=>`<option ${o.order_status===s?"selected":""}>${s}</option>`).join("")}
     </select>
     <button onclick="updateOrderStatus('${o.id}')" style="margin-top:10px;">Update Status</button>
   `;
-  document.getElementById("orderDetailOverlay").classList.add("open");
+  
+  const overlay = document.getElementById("orderDetailOverlay");
+  if(overlay) {
+    overlay.classList.add("open");
+  } else {
+    alert("Modal not found!");
+  }
 }
 
 function closeOrderDetail() { document.getElementById("orderDetailOverlay").classList.remove("open"); }
