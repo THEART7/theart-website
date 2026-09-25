@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>T-HEART</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -222,6 +223,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
 <div class="tst" id="tst"></div>
 <script>
 const U="https://kxkmbqvsswfevrpdhjsh.supabase.co";
+  const RAZORPAY_KEY_ID = "rzp_test_TgNr27xWAuxouz";
 const K="sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
 const db=window.supabase.createClient(U,K);
 let prods=[],cats=[],hSlides=[],cHero=0,hInt=null;
@@ -469,25 +471,83 @@ async function plOrd(){
   const c=document.getElementById("chC").value.trim();
   const pi=document.getElementById("chPi").value.trim();
   const msg=document.getElementById("chMsg");
+  
   if(!n||!e||!p||!a||!c||!pi){msg.textContent="Please fill all fields";return;}
-  msg.textContent="";
-  localStorage.setItem("th_p",JSON.stringify({name:n,email:e,phone:p}));
-  ldProf();
-  try{
-    const{error}=await db.from("Orders table").insert([{
-      customer_name:n,customer_email:e,customer_phone:p,
-      address:`${a}, ${c} - ${pi}`,
-      items:gCart(),total_amount:tot(),
-      discount_amount:gDsc(),coupon_code:cpn?cpn.code:null,
-      payment_status:"Pending",order_status:"Pending"
-    }]);
-    if(error){msg.textContent="Error: "+error.message;return;}
-    // Save customer
-    try{await db.from("customers").insert([{name:n,email:e,phone:p}]);}catch(err){}
-    localStorage.removeItem("th_c");cpn=null;uCnt();cCheck();
-    t("Order placed successfully! ✓");
-    ["chN","chE","chP","chA","chC","chPi"].forEach(id=>document.getElementById(id).value="");
-  }catch(err){msg.textContent="Network error. Try again.";}
+  msg.textContent="Processing payment...";
+  
+  const totalAmount = tot();
+  if(totalAmount <= 0){msg.textContent="Invalid amount";return;}
+  
+  const options = {
+    key: RAZORPAY_KEY_ID,
+    amount: totalAmount * 100, // Razorpay paise me leta hai
+    currency: "INR",
+    name: "T-HEART",
+    description: "Order Payment",
+    prefill: {
+      name: n,
+      email: e,
+      contact: p
+    },
+    theme: { color: "#1A1A1A" },
+    handler: async function(response){
+      // Payment Successful! Ab Supabase me save karo
+      msg.textContent = "Verifying payment...";
+      try {
+        const orderData = {
+          customer_name: n,
+          customer_email: e,
+          customer_phone: p,
+          address: `${a}, ${c} - ${pi}`,
+          items: gCart(),
+          total_amount: totalAmount,
+          discount_amount: gDsc(),
+          coupon_code: cpn ? cpn.code : null,
+          payment_status: "Paid",
+          payment_method: "Razorpay",
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_signature: response.razorpay_signature,
+          order_status: "Confirmed"
+        };
+
+        const { error } = await db.from("Orders table").insert([orderData]);
+        
+        if (error) {
+          msg.textContent = "Order save error: " + error.message;
+          return;
+        }
+
+        // Customer save karo
+        try { await db.from("customers").insert([{name:n, email:e, phone:p}]); } catch(err){}
+
+        // Success! Cart clear karo
+        localStorage.removeItem("th_c");
+        cpn = null;
+        uCnt();
+        cCheck();
+        
+        alert("✅ Payment Successful!\nOrder ID: " + response.razorpay_payment_id + "\nThank you for shopping with T-HEART!");
+        ["chN","chE","chP","chA","chC","chPi"].forEach(id=>document.getElementById(id).value="");
+        
+      } catch (err) {
+        msg.textContent = "Error: " + err.message;
+      }
+    },
+    modal: {
+      ondismiss: function(){
+        msg.textContent = "Payment cancelled. Please try again.";
+        msg.style.color = "#a33";
+      }
+    }
+  };
+  
+  try {
+    const rzp = new Razorpay(options);
+    rzp.open();
+  } catch (e) {
+    msg.textContent = "Payment gateway error. Please try again.";
+  }
 }
 
 function oProf(){
