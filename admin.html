@@ -29,9 +29,6 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
 .overlay.open{display:flex;}
 .modal-box{background:#141414;padding:20px;border-radius:12px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;border:1px solid #1f1f1f;}
 .thumb{width:60px;height:80px;object-fit:cover;border-radius:4px;margin-right:6px;}
-.filter-row{display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;}
-.filter-row button{flex:1;min-width:80px;padding:10px;}
-.filter-row button.active{background:#c9a96e;color:#000;}
 </style>
 </head>
 <body>
@@ -39,12 +36,11 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
 
 <div id="loginBox" class="card">
   <h2>Admin Login</h2>
-  <input id="email" type="email" placeholder="Admin Email">
+  <input id="email" type="email" placeholder="Admin Email" value="zeokesz@gmail.com">
   <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
   <p id="loginMessage" class="error"></p>
 </div>
-
 <div id="adminPanel" class="hidden">
   <p id="welcome" style="font-size:13px;color:#888;margin-bottom:15px;"></p>
   <div class="navbar">
@@ -57,27 +53,13 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
     <button class="secondary" onclick="logout()">Logout</button>
   </div>
 
-  <div id="section-overview" class="section">
-    <div class="card">
-      <h2>Overview</h2>
-      <div class="filter-row">
-        <button onclick="setOverviewFilter('day')" id="f-day">Today</button>
-        <button onclick="setOverviewFilter('week')" id="f-week">This Week</button>
-        <button onclick="setOverviewFilter('month')" id="f-month">This Month</button>
-        <button onclick="setOverviewFilter('30days')" id="f-30days" class="active">Last 30 Days</button>
-        <button onclick="setOverviewFilter('all')" id="f-all">All Time</button>
-      </div>
-      <div id="overviewStats"></div>
-      <h3 style="margin-top:20px;color:#c9a96e;">Recent Orders</h3>
-      <div id="overviewOrders" style="margin-top:10px;"></div>
-    </div>
-  </div>
+  <div id="section-overview" class="section"><div class="card"><h2>Overview</h2><div id="overviewStats"></div></div></div>
+  
   <div id="section-categories" class="section hidden">
     <div class="card">
       <h2>Categories</h2>
       <input id="newCategoryName" placeholder="New category name">
       <button onclick="addCategory()">Add Category</button>
-      <p id="catMsg" class="success"></p>
       <div id="categoriesList" style="margin-top:15px;"></div>
     </div>
   </div>
@@ -163,41 +145,35 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let allCategories=[], allProductsAdmin=[], allOrdersAdmin=[];
 let cropperInstance=null, pendingCropFiles=[], currentCropIndex=0, croppedFiles=[];
 let currentCropType='product', currentHeroPid=null;
-let overviewFilter='30days';
 
 async function login() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
   const msg = document.getElementById("loginMessage");
   
-  msg.textContent = "Logging in...";
-  msg.style.color = "#888";
-
-  if (email !== "zeokesz@gmail.com") { 
-    msg.textContent = "Access denied. Admin email only."; 
-    msg.style.color = "#e57373";
-    return; 
-  }
-
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    
-    if (error) { 
-      msg.textContent = "Supabase Error: " + error.message; 
-      msg.style.color = "#e57373";
-      console.log("Full error:", error);
-      return; 
+  if (email === "zeokesz@gmail.com" && password.length >= 6) {
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) { 
+        msg.textContent = "Error: " + error.message; 
+        return; 
+      }
+      document.getElementById("loginBox").classList.add("hidden");
+      document.getElementById("adminPanel").classList.remove("hidden");
+      document.getElementById("welcome").textContent = "Logged in as " + email;
+      showSection("overview");
+    } catch(e) {
+      msg.textContent = "Login failed. Check password.";
     }
-    
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("adminPanel").classList.remove("hidden");
-    document.getElementById("welcome").textContent = "Logged in as " + data.user.email;
-    showSection("overview");
-  } catch (err) {
-    msg.textContent = "Network Error: " + err.message;
-    msg.style.color = "#e57373";
+  } else {
+    msg.textContent = "Invalid credentials.";
   }
-async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
+}
+
+function logout() { 
+  supabaseClient.auth.signOut(); 
+  location.reload(); 
+}
 
 function showSection(name) {
   ["overview","products","categories","orders","customers","settings"].forEach(s => {
@@ -214,57 +190,10 @@ function showSection(name) {
   if(name==="settings") loadSettings();
 }
 
-function setOverviewFilter(f) {
-  overviewFilter = f;
-  document.querySelectorAll(".filter-row button").forEach(b=>b.classList.remove("active"));
-  document.getElementById("f-"+f).classList.add("active");
-  loadOverview();
-}
-
-function getDateFilter() {
-  const now = new Date();
-  if(overviewFilter==='day') {
-    return now.toISOString().split('T')[0];
-  }
-  if(overviewFilter==='week') {
-    const d = new Date(now); d.setDate(d.getDate()-7); return d.toISOString();
-  }
-  if(overviewFilter==='month') {
-    return now.toISOString().slice(0,7);
-  }
-  if(overviewFilter==='30days') {
-    const d = new Date(now); d.setDate(d.getDate()-30); return d.toISOString();
-  }
-  return null;
-}
-
 async function loadOverview() {
-  const { data } = await supabaseClient.from("Orders table").select("*").order("id",{ascending:false});
-  const allOrders = data || [];
-  const filterDate = getDateFilter();
-  let filtered = allOrders;
-  
-  if(filterDate) {
-    if(overviewFilter==='day') {
-      filtered = allOrders.filter(o => o.created_at && o.created_at.startsWith(filterDate));
-    } else if(overviewFilter==='month') {
-      filtered = allOrders.filter(o => o.created_at && o.created_at.startsWith(filterDate));
-    } else {
-      const fd = new Date(filterDate);
-      filtered = allOrders.filter(o => o.created_at && new Date(o.created_at) >= fd);
-    }
-  }
-  
-  const total = filtered.reduce((s,o)=>s+Number(o.total_amount||0),0);
-  document.getElementById("overviewStats").innerHTML = `
-    <div style="font-size:22px;color:#c9a96e;margin-bottom:10px;">Orders: ${filtered.length}</div>
-    <div style="font-size:22px;color:#c9a96e;">Revenue: ₹${total}</div>
-    <div style="font-size:12px;color:#888;margin-top:5px;">Filter: ${overviewFilter}</div>
-  `;
-  
-  document.getElementById("overviewOrders").innerHTML = filtered.length ? 
-    filtered.slice(0,10).map(o => `<div class="item-row"><strong>#${o.id.substring(0,8)}</strong> - ${o.customer_name} - ₹${o.total_amount} - ${o.order_status} <button class="small" onclick="openOrderDetail('${o.id}')">View</button></div>`).join("") 
-    : "<p>No orders in this period.</p>";
+  const { data } = await supabaseClient.from("Orders table").select("*");
+  const total = data ? data.reduce((s,o)=>s+Number(o.total_amount||0),0) : 0;
+  document.getElementById("overviewStats").innerHTML = `<div style="font-size:20px;color:#c9a96e;">Total Orders: ${data?data.length:0}</div><div style="font-size:20px;color:#c9a96e;margin-top:10px;">Revenue: ₹${total}</div>`;
 }
 
 async function loadCategories() {
@@ -272,19 +201,15 @@ async function loadCategories() {
   allCategories = data || [];
   const container = document.getElementById("categoriesList");
   const select = document.getElementById("productCategory");
-  
-  container.innerHTML = allCategories.map((c,i) => `
-    <div class="item-row" style="display:flex;justify-content:space-between;align-items:center;">
-      <span>${c.name} <small style="color:#888;">(order: ${c.sort_order})</small></span>
-      <div>
-        <button class="small" onclick="moveCat('${c.id}',-1)" ${i===0?'disabled':''}>↑ Up</button>
-        <button class="small" onclick="moveCat('${c.id}',1)" ${i===allCategories.length-1?'disabled':''}>↓ Down</button>
-        <button class="small secondary" onclick="editCat('${c.id}','${c.name}')">Edit</button>
-        <button class="small danger" onclick="delCat('${c.id}')">Delete</button>
-      </div>
+  container.innerHTML = allCategories.map((c,i) => `<div class="item-row" style="display:flex;justify-content:space-between;align-items:center;">
+    <span>${c.name} <small style="color:#888;">(order: ${c.sort_order})</small></span>
+    <div>
+      <button class="small" onclick="moveCat('${c.id}',-1)" ${i===0?'disabled':''}>↑ Up</button>
+      <button class="small" onclick="moveCat('${c.id}',1)" ${i===allCategories.length-1?'disabled':''}>↓ Down</button>
+      <button class="small secondary" onclick="editCat('${c.id}','${c.name}')">Edit</button>
+      <button class="small danger" onclick="delCat('${c.id}')">Delete</button>
     </div>
-  `).join("");
-  
+  </div>`).join("");
   select.innerHTML = '<option value="">Select Category</option>' + allCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
 }
 
@@ -317,7 +242,7 @@ async function moveCat(id, dir) {
 
 async function delCat(id) { if(confirm("Delete?")) { await supabaseClient.from("categories").delete().eq("id",id); loadCategories(); } }
 
-// --- CROPPER ---
+// CROPPER
 document.getElementById("productImages").addEventListener("change", function(e) {
   if(e.target.files.length) {
     currentCropType = 'product';
@@ -354,27 +279,24 @@ function confirmCrop() {
     
     if(currentCropType === 'hero') {
       const fname = "hero-"+Date.now()+"-"+file.name;
-      const { error: upErr } = await supabaseClient.storage.from("product-images").upload(fname, file, { upsert: true });
+      const { error: upErr } = await supabaseClient.storage.from("product-images").upload(fname, file);
       if(upErr) { alert("Upload failed: "+upErr.message); return; }
       const { data } = supabaseClient.storage.from("product-images").getPublicUrl(fname);
-      const { error: dbErr } = await supabaseClient.from("Products").update({hero_image_url: data.publicUrl}).eq("id", currentHeroPid);
-      if(dbErr) { alert("DB error: "+dbErr.message); return; }
-      alert("Hero Image Updated! Website refresh kar.");
+      await supabaseClient.from("Products").update({hero_image_url: data.publicUrl}).eq("id", currentHeroPid);
+      alert("Hero Image Updated (3:4)!");
       currentHeroPid = null;
-      loadProducts(); 
-      loadSettings();
+      loadProducts(); loadSettings();
     } else {
       croppedFiles.push(file);
       currentCropIndex++;
     }
     
-    cropperInstance.destroy(); 
-    cropperInstance = null;
+    cropperInstance.destroy(); cropperInstance = null;
     document.getElementById("cropperOverlay").classList.remove("open");
     
     if(currentCropType === 'product') showCropperNext();
   }, "image/png", 0.9);
-      }
+}
 
 function cancelCrop() { 
   if(cropperInstance) cropperInstance.destroy(); 
@@ -383,34 +305,6 @@ function cancelCrop() {
   pendingCropFiles=[]; croppedFiles=[]; 
 }
 
-function triggerHeroCrop(pid) {
-  const fileInput = document.getElementById("hero-file-"+pid);
-  const file = fileInput.files[0];
-  if(!file) return alert("Pehle image select karo!");
-  
-  // Direct upload without crop for now (testing)
-  currentCropType = 'hero';
-  currentHeroPid = pid;
-  
-  const reader = new FileReader();
-  reader.onload = async ev => {
-    // Show cropper
-    document.getElementById("cropperImage").src = ev.target.result;
-    const prod = allProductsAdmin.find(p=>p.id===pid);
-    document.getElementById("cropperTitle").textContent = "Crop Hero Image for: " + (prod?prod.name:"");
-    document.getElementById("cropperOverlay").classList.add("open");
-    
-    setTimeout(() => {
-      if(cropperInstance) cropperInstance.destroy();
-      cropperInstance = new Cropper(document.getElementById("cropperImage"), { 
-        aspectRatio: 3/4, 
-        viewMode: 1,
-        autoCropArea: 1
-      });
-    }, 200);
-  };
-  reader.readAsDataURL(file);
-}
 function toggleAllSizes() { const all = document.getElementById("allSizesBox").checked; document.querySelectorAll(".sizeBox").forEach(b=>b.checked=all); }
 
 async function saveProduct() {
@@ -440,6 +334,7 @@ async function saveProduct() {
   
   cancelEditProduct(); loadProducts();
 }
+
 function cancelEditProduct() {
   document.getElementById("editingProductId").value="";
   document.getElementById("productFormTitle").textContent="Add Product";
@@ -447,6 +342,7 @@ function cancelEditProduct() {
   document.querySelectorAll(".sizeBox").forEach(b=>b.checked=false);
   croppedFiles=[];
 }
+
 function editProduct(id) {
   const p = allProductsAdmin.find(x=>x.id===id); if(!p) return;
   document.getElementById("editingProductId").value = p.id;
@@ -460,6 +356,7 @@ function editProduct(id) {
   document.querySelectorAll(".sizeBox").forEach(b=>b.checked = sizes.includes(b.value));
   window.scrollTo(0,0);
 }
+
 async function toggleActive(id, cur) { await supabaseClient.from("Products").update({is_active:!cur}).eq("id",id); loadProducts(); }
 async function deleteProduct(id) { if(confirm("Delete?")) { await supabaseClient.from("Products").delete().eq("id",id); loadProducts(); } }
 
@@ -477,14 +374,10 @@ async function loadProducts() {
     </div>`;
   }).join("");
 }
-async function loadOrders() {
+  async function loadOrders() {
   const { data, error } = await supabaseClient.from("Orders table").select("*").order("created_at",{ascending:false});
-  if(error) { 
-    document.getElementById("ordersList").innerHTML = `<p class="error">Error: ${error.message}</p>`; 
-    return; 
-  }
+  if(error) { document.getElementById("ordersList").innerHTML = `<p class="error">Error: ${error.message}</p>`; return; }
   allOrdersAdmin = data || [];
-  console.log("Orders loaded:", allOrdersAdmin.length);
   document.getElementById("ordersList").innerHTML = allOrdersAdmin.length ? 
     allOrdersAdmin.map(o => `<div class="item-row"><strong>#${String(o.id).substring(0,8)}</strong> - ${o.customer_name||'N/A'} - ₹${o.total_amount||0} - ${o.order_status||'Pending'} <button class="small" onclick="openOrderDetail('${o.id}')">View Details</button></div>`).join("")
     : "<p>No orders yet.</p>";
@@ -494,7 +387,7 @@ function openOrderDetail(id) {
   const o = allOrdersAdmin.find(x=>x.id===id); if(!o) return;
   let items = (o.items||[]).map(i=>`<div style="padding:8px;background:#1f1f1f;margin:5px 0;border-radius:4px;">${i.name} x${i.qty} - ₹${i.price}</div>`).join("");
   document.getElementById("orderDetailContent").innerHTML = `
-    <h2 style="margin-bottom:15px;color:#c9a96e;">Order #${o.id.substring(0,8)}</h2>
+    <h2 style="margin-bottom:15px;color:#c9a96e;">Order #${String(o.id).substring(0,8)}</h2>
     <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin-bottom:15px;">
       <p><b>Customer:</b> ${o.customer_name||'N/A'}</p>
       <p><b>Email:</b> ${o.customer_email||'N/A'}</p>
@@ -504,10 +397,10 @@ function openOrderDetail(id) {
     </div>
     <h3 style="margin:15px 0 5px;">Items:</h3>${items || "<p>No items</p>"}
     <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin:15px 0;">
-      <p><b>Subtotal:</b> ₹${o.total_amount}</p>
+      <p><b>Subtotal:</b> ₹${o.total_amount||0}</p>
       ${o.discount_amount?`<p><b>Discount:</b> -₹${o.discount_amount}</p>`:""}
       ${o.coupon_code?`<p><b>Coupon:</b> ${o.coupon_code}</p>`:""}
-      <p style="font-size:18px;margin-top:10px;"><b>Total Paid: ₹${o.total_amount}</b></p>
+      <p style="font-size:18px;margin-top:10px;"><b>Total Paid: ₹${o.total_amount||0}</b></p>
     </div>
     <label>Update Status</label>
     <select id="orderStatusSelect">
@@ -517,7 +410,9 @@ function openOrderDetail(id) {
   `;
   document.getElementById("orderDetailOverlay").classList.add("open");
 }
+
 function closeOrderDetail() { document.getElementById("orderDetailOverlay").classList.remove("open"); }
+
 async function updateOrderStatus(id) {
   const status = document.getElementById("orderStatusSelect").value;
   const payload = {order_status: status};
@@ -534,20 +429,17 @@ async function loadCustomers() {
   container.innerHTML = data.map(c => `<div class="item-row"><b>${c.name||'N/A'}</b><br>📧 ${c.email||'N/A'}<br>📱 ${c.phone||'N/A'}<br><small style="color:#888;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small></div>`).join("");
 }
 
-async function loadCustomers() {
-  const { data, error } = await supabaseClient.from("customers").select("*").order("created_at",{ascending:false});
-  const container = document.getElementById("customersList");
-  if(error) { 
-    container.innerHTML = `<p class="error">Error: ${error.message}.<br>Supabase SQL Editor me ye chala:<br><code>ALTER TABLE customers DISABLE ROW LEVEL SECURITY;</code></p>`; 
-    return; 
+async function loadSettings() {
+  const { data } = await supabaseClient.from("site_setting").select("*").limit(1).maybeSingle();
+  if(data) {
+    document.getElementById("settingBrandName").value = data.brand_name||"";
+    document.getElementById("settingTagline").value = data.tagline||"";
+    document.getElementById("settingFreeShipAbove").value = data.free_shipping_above||0;
+    document.getElementById("settingShipFee").value = data.shipping_fee||0;
+    loadHeroUI(data.hero_product_ids||[]);
   }
-  if(!data || !data.length) { 
-    container.innerHTML = "<p>No customers yet.</p>"; 
-    return; 
-  }
-  container.innerHTML = data.map(c => `<div class="item-row"><b>${c.name||'N/A'}</b><br>📧 ${c.email||'N/A'}<br>📱 ${c.phone||'N/A'}<br><small style="color:#888;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small></div>`).join("");
 }
-}
+
 async function saveSettings() {
   const payload = {
     brand_name: document.getElementById("settingBrandName").value,
@@ -562,8 +454,10 @@ async function saveSettings() {
 }
 
 function loadHeroUI(heroIds) {
+  let hids = heroIds;
+  if(typeof hids==='string') try{hids=JSON.parse(hids);}catch(e){hids=[];}
   document.getElementById("heroProductsList").innerHTML = allProductsAdmin.map(p => {
-    const idx = heroIds.indexOf(p.id);
+    const idx = hids.indexOf(p.id);
     const val = idx !== -1 ? idx+1 : "";
     const img = p.hero_image_url || (p.images&&p.images[0]) || p.image_url;
     return `<div class="item-row" style="display:flex;gap:10px;align-items:start;">
@@ -579,6 +473,26 @@ function loadHeroUI(heroIds) {
   }).join("");
 }
 
+function triggerHeroCrop(pid) {
+  const fileInput = document.getElementById("hero-file-"+pid);
+  const file = fileInput.files[0];
+  if(!file) return alert("Pehle image select karo!");
+  currentCropType = 'hero';
+  currentHeroPid = pid;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById("cropperImage").src = ev.target.result;
+    const prod = allProductsAdmin.find(p=>p.id===pid);
+    document.getElementById("cropperTitle").textContent = "Crop Hero Image for: " + (prod?prod.name:"");
+    document.getElementById("cropperOverlay").classList.add("open");
+    setTimeout(() => {
+      if(cropperInstance) cropperInstance.destroy();
+      cropperInstance = new Cropper(document.getElementById("cropperImage"), { aspectRatio: 3/4, viewMode: 1 });
+    }, 100);
+  };
+  reader.readAsDataURL(file);
+}
+
 async function saveHeroProducts() {
   const ids = [];
   allProductsAdmin.forEach(p => {
@@ -592,6 +506,8 @@ async function saveHeroProducts() {
   else await supabaseClient.from("site_setting").insert([{hero_product_ids: heroIds}]);
   alert("Hero order saved! Website refresh kar.");
 }
+
+function escapeHtml(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
 </script>
 </body>
 </html>
