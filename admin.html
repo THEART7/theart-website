@@ -231,44 +231,87 @@ async function editCat(id, oldName) {
 
 async function moveCat(id, dir) {
   try {
-    // Pehle fresh data load karo
-    const { data: freshData } = await supabaseClient.from("categories").select("*").order("sort_order");
-    if(!freshData || freshData.length === 0) return;
+    console.log("Moving category:", id, "direction:", dir);
     
-    allCategories = freshData;
+    // Fresh data load karo
+    const { data: freshData, error: fetchError } = await supabaseClient
+      .from("categories")
+      .select("*")
+      .order("sort_order", { ascending: true });
     
-    const idx = allCategories.findIndex(c=>c.id===id);
-    const swapIdx = idx + dir;
-    
-    if(swapIdx < 0 || swapIdx >= allCategories.length) {
-      alert("Cannot move further!");
+    if(fetchError) {
+      alert("Error loading categories: " + fetchError.message);
       return;
     }
     
-    // Array me swap karo
+    if(!freshData || freshData.length === 0) {
+      alert("No categories found!");
+      return;
+    }
+    
+    allCategories = freshData;
+    console.log("Loaded categories:", allCategories);
+    
+    // Find current position
+    const idx = allCategories.findIndex(c => c && c.id === id);
+    
+    if(idx === -1) {
+      alert("Category not found!");
+      return;
+    }
+    
+    const swapIdx = idx + dir;
+    
+    // Boundary check
+    if(swapIdx < 0) {
+      alert("Already at top!");
+      return;
+    }
+    
+    if(swapIdx >= allCategories.length) {
+      alert("Already at bottom!");
+      return;
+    }
+    
+    // Validate both items exist
+    if(!allCategories[idx] || !allCategories[swapIdx]) {
+      alert("Invalid category data!");
+      return;
+    }
+    
+    // Swap in array
     const temp = allCategories[idx];
     allCategories[idx] = allCategories[swapIdx];
     allCategories[swapIdx] = temp;
     
-    // Ab har category ko uska naya sort_order do
+    console.log("Swapped array:", allCategories);
+    
+    // Update database with new order
     let success = true;
-    for(let i=0; i<allCategories.length; i++) {
+    for(let i = 0; i < allCategories.length; i++) {
+      if(!allCategories[i] || !allCategories[i].id) {
+        console.log("Invalid category at index:", i);
+        continue;
+      }
+      
       const { error } = await supabaseClient
         .from("categories")
-        .update({sort_order: i})
+        .update({ sort_order: i })
         .eq("id", allCategories[i].id);
       
       if(error) {
-        console.log("Error updating:", allCategories[i].name, error);
+        console.log("Error updating", allCategories[i].name, ":", error);
         success = false;
+      } else {
+        console.log("Updated", allCategories[i].name, "to order:", i);
       }
     }
     
     if(success) {
-      alert("Order updated! Refresh website to see changes.");
+      alert("Order updated successfully!");
       await loadCategories();
     } else {
-      alert("Some updates failed. Try again.");
+      alert("Some updates failed. Check console for details.");
     }
     
   } catch(e) {
@@ -276,7 +319,6 @@ async function moveCat(id, dir) {
     alert("Error: " + e.message);
   }
 }
-
 async function delCat(id) { if(confirm("Delete?")) { await supabaseClient.from("categories").delete().eq("id",id); loadCategories(); } }
 
 // CROPPER
