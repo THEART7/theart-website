@@ -169,13 +169,34 @@ async function login() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
   const msg = document.getElementById("loginMessage");
-  if (email !== "zeokesz@gmail.com") { msg.textContent = "Admin only."; return; }
-  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) { msg.textContent = error.message; return; }
-  document.getElementById("loginBox").classList.add("hidden");
-  document.getElementById("adminPanel").classList.remove("hidden");
-  document.getElementById("welcome").textContent = "Logged in as " + data.user.email;
-  showSection("overview");
+  
+  msg.textContent = "Logging in...";
+  msg.style.color = "#888";
+
+  if (email !== "zeokesz@gmail.com") { 
+    msg.textContent = "Access denied. Admin email only."; 
+    msg.style.color = "#e57373";
+    return; 
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    
+    if (error) { 
+      msg.textContent = "Supabase Error: " + error.message; 
+      msg.style.color = "#e57373";
+      console.log("Full error:", error);
+      return; 
+    }
+    
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("adminPanel").classList.remove("hidden");
+    document.getElementById("welcome").textContent = "Logged in as " + data.user.email;
+    showSection("overview");
+  } catch (err) {
+    msg.textContent = "Network Error: " + err.message;
+    msg.style.color = "#e57373";
+  }
 }
 async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
 
