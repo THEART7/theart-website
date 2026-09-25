@@ -233,11 +233,20 @@ async function moveCat(id, dir) {
   const idx = allCategories.findIndex(c=>c.id===id);
   const swapIdx = idx + dir;
   if(swapIdx < 0 || swapIdx >= allCategories.length) return;
-  const a = allCategories[idx], b = allCategories[swapIdx];
+  
+  const a = allCategories[idx];
+  const b = allCategories[swapIdx];
+  
+  // Swap sort_order
   const tempOrder = a.sort_order;
-  await supabaseClient.from("categories").update({sort_order: b.sort_order}).eq("id",a.id);
-  await supabaseClient.from("categories").update({sort_order: tempOrder}).eq("id",b.id);
-  loadCategories();
+  
+  // Pehle dono ko update kar
+  await supabaseClient.from("categories").update({sort_order: -1}).eq("id", a.id);
+  await supabaseClient.from("categories").update({sort_order: tempOrder}).eq("id", b.id);
+  await supabaseClient.from("categories").update({sort_order: b.sort_order}).eq("id", a.id);
+  
+  // Reload kar
+  await loadCategories();
 }
 
 async function delCat(id) { if(confirm("Delete?")) { await supabaseClient.from("categories").delete().eq("id",id); loadCategories(); } }
