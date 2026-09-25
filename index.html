@@ -235,9 +235,13 @@ async function loadSettings() {
     if(data.free_shipping_above) settings.free_ship = Number(data.free_shipping_above);
     if(data.shipping_fee) settings.ship_fee = Number(data.shipping_fee);
     if(data.hero_product_ids && data.hero_product_ids.length) {
-      console.log("Hero IDs:", data.hero_product_ids);
-      loadHero(data.hero_product_ids);
-    }
+  console.log("Hero IDs:", data.hero_product_ids);
+  alert("Hero IDs: " + JSON.stringify(data.hero_product_ids));
+  loadHero(data.hero_product_ids);
+} else {
+  alert("No hero_product_ids found! Setting default...");
+  loadHero([11, 10, 12]); // Hardcoded IDs
+}
   } catch(e) { console.log("Settings error:", e); }
 }
 
