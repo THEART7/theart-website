@@ -467,7 +467,7 @@ function openOrderDetail(id) {
   const o = allOrdersAdmin.find(x=>String(x.id)===String(id)); 
   if(!o) { alert("Order not found!"); return; }
   
-  let items = (o.items||[]).map(i=>`<div style="padding:8px;background:#1f1f1f;margin:5px 0;border-radius:4px;">${i.name} x${i.qty} - ₹${i.price}</div>`).join("");
+  let items = (o.items||[]).map(i=>`<div style="padding:8px;background:#1f1f1f;margin:5px 0;border-radius:4px;"><b>${i.name}</b> — Size: ${i.size||'M'} — Qty: ${i.qty} — ₹${i.price}</div>`).join("");
   
   document.getElementById("orderDetailContent").innerHTML = `
     <h2 style="margin-bottom:15px;color:#c9a96e;">Order #${String(o.id).substring(0,8)}</h2>
