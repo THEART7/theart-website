@@ -426,9 +426,20 @@ async function svProf(){
 
 async function shOrd(){
   if(!prof||!prof.email){t("Login first");oProf();return;}
-  const{data}=await db.from("Orders table").select("*").eq("customer_email",prof.email).order("id",{ascending:false});
-  if(!data||!data.length){t("No orders");return;}
-  alert("Your Orders:\n\n"+data.slice(0,5).map(o=>`#${o.id.substring(0,8)} - ₹${o.total_amount} - ${o.order_status}`).join("\n"));
+  try{
+    const{data,error}=await db.from("Orders table").select("*").eq("customer_email",prof.email).order("created_at",{ascending:false});
+    if(error){t("Error: "+error.message);return;}
+    if(!data||!data.length){t("No orders yet");return;}
+    
+    let msg="Your Orders:\n\n";
+    data.forEach((o,i)=>{
+      msg+=`${i+1}. Order #${String(o.id).substring(0,8)}\n`;
+      msg+=`   Amount: ₹${o.total_amount||0}\n`;
+      msg+=`   Status: ${o.order_status||'Pending'}\n`;
+      msg+=`   Date: ${o.created_at?new Date(o.created_at).toLocaleDateString():'N/A'}\n\n`;
+    });
+    alert(msg);
+  }catch(e){t("Error loading orders");}
 }
 
 // INIT
