@@ -429,26 +429,48 @@ async function updateOrderStatus(id) {
 }
 
 async function loadCustomers() {
-  const { data, error } = await supabaseClient.from("customers").select("*").order("created_at",{ascending:false});
   const container = document.getElementById("customersList");
   
-  if(error) { 
-    console.log("Customer error:", error);
-    container.innerHTML = `<p class="error">Error: ${error.message}</p>`; 
-    return; 
+  try {
+    // Orders table se unique customers nikalo
+    const { data: orders, error } = await supabaseClient.from("Orders table").select("customer_name, customer_email, customer_phone, created_at").order("created_at", {ascending: false});
+    
+    if(error) { 
+      container.innerHTML = `<p class="error">Error: ${error.message}</p>`; 
+      return; 
+    }
+    
+    if(!orders || !orders.length) { 
+      container.innerHTML = "<p>No customers yet.</p>"; 
+      return; 
+    }
+    
+    // Unique customers nikalo email ke basis pe
+    const uniqueCustomers = [];
+    const seen = new Set();
+    orders.forEach(o => {
+      const email = o.customer_email;
+      if(email && !seen.has(email)) {
+        seen.add(email);
+        uniqueCustomers.push({
+          name: o.customer_name,
+          email: email,
+          phone: o.customer_phone,
+          created_at: o.created_at
+        });
+      }
+    });
+    
+    container.innerHTML = uniqueCustomers.map(c => `<div class="item-row">
+      <b>${c.name||'N/A'}</b><br>
+       ${c.email||'N/A'}<br>
+      📱 ${c.phone||'N/A'}<br>
+      <small style="color:#888;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small>
+    </div>`).join("");
+    
+  } catch(e) {
+    container.innerHTML = `<p class="error">Error: ${e.message}</p>`;
   }
-  
-  if(!data || !data.length) { 
-    container.innerHTML = "<p>No customers yet.</p>"; 
-    return; 
-  }
-  
-  container.innerHTML = data.map(c => `<div class="item-row">
-    <b>${c.name||'N/A'}</b><br>
-     ${c.email||'N/A'}<br>
-    📱 ${c.phone||'N/A'}<br>
-    <small style="color:#888;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small>
-  </div>`).join("");
 }
 
 async function loadSettings() {
