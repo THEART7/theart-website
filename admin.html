@@ -197,7 +197,6 @@ async function login() {
     msg.textContent = "Network Error: " + err.message;
     msg.style.color = "#e57373";
   }
-}
 async function logout() { await supabaseClient.auth.signOut(); location.reload(); }
 
 function showSection(name) {
