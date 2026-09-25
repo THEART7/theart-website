@@ -3,179 +3,127 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>T-HEART — Premium Clothing</title>
+<title>T-HEART</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{background:#F8F7F4;color:#1A1A1A;font-family:Inter,sans-serif;overflow-x:hidden;}
-
-.opening-overlay{position:fixed;inset:0;background:#F8F7F4;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.opening-overlay.hide{opacity:0;pointer-events:none;transition:opacity 0.8s;}
-.opening-brand{font-family:'Playfair Display',serif;font-size:48px;letter-spacing:12px;color:#1A1A1A;opacity:0;animation:fadeInUp 1s 0.2s forwards;}
-.opening-tagline{font-size:9px;letter-spacing:5px;color:#8A8A8A;margin-top:10px;text-transform:uppercase;opacity:0;animation:fadeInUp 1s 0.6s forwards;}
-.opening-icons{display:flex;gap:15px;margin-top:25px;}
-.opening-icons span{font-size:24px;opacity:0;animation:popIn 0.5s forwards;}
-.opening-icons span:nth-child(1){animation-delay:1s;}
-.opening-icons span:nth-child(2){animation-delay:1.2s;}
-.opening-icons span:nth-child(3){animation-delay:1.4s;}
-@keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-@keyframes popIn{from{opacity:0;transform:scale(0.5);}to{opacity:1;transform:scale(1);}}
-
-.announcement{background:#1A1A1A;color:#fff;padding:12px 40px;text-align:center;font-size:11px;letter-spacing:2px;display:flex;align-items:center;justify-content:center;gap:15px;position:relative;}
-.announcement .close-ann{position:absolute;right:15px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;}
-
-.header{display:flex;align-items:center;justify-content:space-between;padding:20px 25px;background:#fff;position:sticky;top:0;z-index:100;border-bottom:1px solid #E5E5E5;}
-.header-left,.header-right{flex:1;}
-.header-right{display:flex;justify-content:flex-end;}
-.header-center{flex:1;text-align:center;}
-.header-center h1{font-family:'Playfair Display',serif;font-size:24px;letter-spacing:5px;white-space:nowrap;}
-.header-center small{display:block;font-size:9px;letter-spacing:4px;color:#8A8A8A;margin-top:4px;white-space:nowrap;}
+*{margin:0;padding:0;box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{background:#F8F7F4;color:#1A1A1A;font-family:Inter,sans-serif;}
+.opening{position:fixed;inset:0;background:#F8F7F4;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.opening.hide{opacity:0;pointer-events:none;transition:opacity 0.8s;}
+.opening h1{font-family:'Playfair Display';font-size:48px;letter-spacing:12px;animation:up 1s 0.2s both;}
+.opening p{font-size:10px;letter-spacing:5px;color:#888;margin-top:10px;animation:up 1s 0.6s both;}
+.opening .icons{margin-top:20px;font-size:24px;animation:up 1s 1s both;}
+@keyframes up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.ann-bar{background:#1A1A1A;color:#fff;padding:10px;text-align:center;font-size:11px;letter-spacing:1px;display:none;}
+.header{display:flex;justify-content:space-between;align-items:center;padding:20px 25px;background:#fff;border-bottom:1px solid #E5E5E5;position:sticky;top:0;z-index:100;}
+.header h1{font-family:'Playfair Display';font-size:24px;letter-spacing:4px;}
+.header small{display:block;font-size:9px;color:#888;letter-spacing:3px;text-align:center;}
 .menu-btn,.cart-btn{background:none;border:none;font-size:22px;cursor:pointer;}
-.cart-btn{position:relative;}
-.cart-count{position:absolute;top:-6px;right:-8px;background:#1A1A1A;color:#fff;font-size:9px;border-radius:50%;width:16px;height:16px;display:none;align-items:center;justify-content:center;}
-
-.menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:200;opacity:0;visibility:hidden;transition:all 0.3s;}
+.cart-btn{position:relative;} .cart-count{position:absolute;top:-5px;right:-8px;background:#1A1A1A;color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;}
+.menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:200;opacity:0;visibility:hidden;transition:0.3s;}
 .menu-overlay.open{opacity:1;visibility:visible;}
-.menu-dropdown{position:fixed;top:0;left:-100%;width:75%;max-width:300px;height:100%;background:#fff;z-index:201;padding:60px 20px 20px;overflow-y:auto;transition:left 0.4s ease;box-shadow:5px 0 20px rgba(0,0,0,0.1);}
-.menu-dropdown.open{left:0;}
-.menu-close{position:absolute;top:15px;right:15px;background:none;border:none;font-size:24px;cursor:pointer;}
-.menu-section{margin-bottom:25px;padding-bottom:15px;border-bottom:1px solid #E5E5E5;}
-.menu-section-title{font-size:10px;letter-spacing:2px;color:#8A8A8A;text-transform:uppercase;margin-bottom:10px;}
-.menu-link{display:block;font-family:'Playfair Display',serif;font-size:20px;color:#1A1A1A;text-decoration:none;margin:8px 0;}
-.menu-link:hover{padding-left:8px;}
-.social-link{display:inline-block;margin-right:15px;font-size:11px;color:#8A8A8A;text-decoration:none;}
-
-.hero{padding:25px 20px;}
-.hero-card{position:relative;aspect-ratio:3/4;max-height:600px;overflow:hidden;border-radius:4px;background:#E5E5E5;cursor:pointer;}
-.hero-image{width:100%;height:100%;object-fit:cover;}
-.hero-info{position:absolute;bottom:15px;left:15px;background:rgba(255,255,255,0.95);padding:12px 18px;border-radius:2px;max-width:55%;backdrop-filter:blur(10px);}
-.hero-info .tag{font-size:9px;letter-spacing:2px;color:#8A8A8A;text-transform:uppercase;}
-.hero-info h2{font-family:'Playfair Display',serif;font-size:18px;margin:3px 0;}
-.hero-dots{position:absolute;bottom:20px;right:20px;display:flex;gap:8px;}
-.hero-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;}
-.hero-dot.active{background:#fff;width:20px;border-radius:4px;}
-
-.collection-section{padding:60px 20px;}
-.collection-section h2{font-family:'Playfair Display',serif;font-size:36px;margin-bottom:30px;}
-.category-filters{display:flex;gap:10px;margin-bottom:25px;overflow-x:auto;}
-.cat-filter{padding:10px 20px;background:#fff;border:1px solid #E5E5E5;border-radius:2px;cursor:pointer;font-size:11px;letter-spacing:1px;}
-.cat-filter.active{background:#1A1A1A;color:#fff;border-color:#1A1A1A;}
-
-.products-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;}
-.product-card{background:#fff;border-radius:4px;overflow:hidden;cursor:pointer;}
-.product-image-wrap{position:relative;aspect-ratio:3/4;overflow:hidden;background:#F0F0F0;}
-.product-image-wrap img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s;}
-.product-card:hover .product-image-wrap img{transform:scale(1.03);}
-.product-tag{position:absolute;top:12px;left:12px;background:#1A1A1A;color:#fff;padding:6px 12px;border-radius:2px;font-size:9px;}
-.product-details{padding:15px;}
-.product-category{font-size:10px;color:#8A8A8A;text-transform:uppercase;}
-.product-name{font-family:'Playfair Display',serif;font-size:16px;margin:5px 0;}
-.product-price{font-size:15px;font-weight:600;}
-.add-btn{width:100%;padding:12px;background:#1A1A1A;color:#fff;border:none;border-radius:2px;margin-top:10px;cursor:pointer;}
-
-.detail-page{position:fixed;inset:0;background:#F8F7F4;z-index:180;overflow-y:auto;opacity:0;visibility:hidden;transition:opacity 0.4s;}
-.detail-page.open{opacity:1;visibility:visible;}
-.detail-content{transform:scale(0.95);transition:transform 0.4s;}
-.detail-page.open .detail-content{transform:scale(1);}
-.detail-back{padding:20px 25px;border:none;background:none;font-size:14px;cursor:pointer;}
-.detail-layout{display:grid;grid-template-columns:1fr;gap:30px;padding:0 20px 40px;}
-.detail-main-img{aspect-ratio:3/4;background:#F0F0F0;}
-.detail-main-img img{width:100%;height:100%;object-fit:cover;}
-.detail-info h1{font-family:'Playfair Display',serif;font-size:32px;margin-bottom:10px;}
-.detail-info .price{font-size:22px;font-weight:600;margin-bottom:20px;}
-.size-btn{padding:10px 18px;border:1px solid #E5E5E5;background:#fff;margin:5px;cursor:pointer;}
+.menu{position:fixed;top:0;left:-100%;width:75%;max-width:300px;height:100%;background:#fff;z-index:201;padding:60px 20px;transition:left 0.4s;}
+.menu.open{left:0;}
+.menu-close{position:absolute;top:15px;right:15px;background:none;border:none;font-size:24px;}
+.menu h4{font-size:10px;color:#888;letter-spacing:2px;margin:20px 0 10px;text-transform:uppercase;}
+.menu a{display:block;font-family:'Playfair Display';font-size:20px;color:#1A1A1A;text-decoration:none;margin:10px 0;}
+.hero{padding:20px;}
+.hero-card{position:relative;aspect-ratio:3/4;max-height:550px;background:#E5E5E5;border-radius:4px;overflow:hidden;cursor:pointer;}
+.hero-img{width:100%;height:100%;object-fit:cover;}
+.hero-info{position:absolute;bottom:15px;left:15px;background:rgba(255,255,255,0.95);padding:12px 18px;border-radius:2px;max-width:50%;backdrop-filter:blur(5px);}
+.hero-info .tag{font-size:9px;color:#888;letter-spacing:2px;text-transform:uppercase;}
+.hero-info h2{font-family:'Playfair Display';font-size:18px;margin:3px 0;}
+.hero-dots{position:absolute;bottom:20px;right:20px;display:flex;gap:6px;}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;}
+.dot.active{background:#fff;width:18px;border-radius:3px;}
+.cat-section{padding:50px 20px 20px;}
+.cat-section h2{font-family:'Playfair Display';font-size:32px;margin-bottom:5px;}
+.cat-section .count{font-size:13px;color:#888;margin-bottom:20px;}
+.collection{padding:50px 20px;}
+.collection h2{font-family:'Playfair Display';font-size:36px;margin-bottom:20px;}
+.filters{display:flex;gap:10px;overflow-x:auto;margin-bottom:25px;padding-bottom:5px;}
+.filters button{padding:8px 16px;background:#fff;border:1px solid #E5E5E5;border-radius:2px;cursor:pointer;font-size:11px;white-space:nowrap;}
+.filters button.active{background:#1A1A1A;color:#fff;border-color:#1A1A1A;}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;}
+.card{background:#fff;border-radius:4px;overflow:hidden;}
+.card-img{aspect-ratio:3/4;background:#F0F0F0;overflow:hidden;cursor:pointer;}
+.card-img img{width:100%;height:100%;object-fit:cover;}
+.card-info{padding:12px;}
+.card-info .cat{font-size:10px;color:#888;text-transform:uppercase;}
+.card-info h3{font-family:'Playfair Display';font-size:16px;margin:4px 0;}
+.card-info .price{font-size:15px;font-weight:600;}
+.add-btn{width:100%;padding:10px;background:#1A1A1A;color:#fff;border:none;margin-top:8px;cursor:pointer;font-size:11px;}
+.detail{position:fixed;inset:0;background:#F8F7F4;z-index:180;overflow-y:auto;opacity:0;visibility:hidden;transition:0.4s;}
+.detail.open{opacity:1;visibility:visible;}
+.detail-content{transform:scale(0.95);transition:0.4s;}
+.detail.open .detail-content{transform:scale(1);}
+.detail-layout{display:grid;grid-template-columns:1fr;gap:20px;padding:20px;}
+.detail-img{aspect-ratio:3/4;background:#F0F0F0;}
+.detail-img img{width:100%;height:100%;object-fit:cover;}
+.size-btn{padding:10px 15px;border:1px solid #E5E5E5;background:#fff;margin:5px;cursor:pointer;}
 .size-btn.active{background:#1A1A1A;color:#fff;}
-
 .cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:250;display:none;}
 .cart-overlay.open{display:block;}
-.cart-drawer{position:fixed;top:0;right:-100%;width:100%;max-width:400px;height:100%;background:#F8F7F4;z-index:251;transition:right 0.4s;display:flex;flex-direction:column;}
-.cart-drawer.open{right:0;}
+.cart{position:fixed;top:0;right:-100%;width:100%;max-width:400px;height:100%;background:#F8F7F4;z-index:251;transition:0.4s;display:flex;flex-direction:column;}
+.cart.open{right:0;}
 .cart-items{flex:1;overflow-y:auto;padding:20px;}
-.cart-item{display:flex;gap:12px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #E5E5E5;}
-.cart-item img{width:80px;height:100px;object-fit:cover;}
-
+.cart-item{display:flex;gap:10px;margin-bottom:15px;padding-bottom:15px;border-bottom:1px solid #E5E5E5;}
+.cart-item img{width:70px;height:90px;object-fit:cover;}
+.coupon-box{display:flex;gap:5px;margin:10px 0;}
+.coupon-box input{flex:1;padding:10px;border:1px solid #E5E5E5;}
 .checkout-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
 .checkout-overlay.open{display:flex;}
-.checkout-box{background:#F8F7F4;padding:30px;max-width:450px;width:100%;max-height:90vh;overflow-y:auto;}
+.checkout-box{background:#F8F7F4;padding:25px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto;}
 .checkout-box input{width:100%;padding:12px;margin:8px 0;border:1px solid #E5E5E5;background:#fff;}
-
-.coupon-section{display:flex;gap:8px;margin:15px 0;padding:15px;background:#fff;border:1px solid #E5E5E5;border-radius:2px;}
-.coupon-section input{flex:1;margin:0;}
-.coupon-section button{padding:12px 20px;background:#1A1A1A;color:#fff;border:none;cursor:pointer;}
-
 .profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
 .profile-overlay.open{display:flex;}
-.profile-box{background:#F8F7F4;padding:30px;max-width:400px;width:100%;}
-
-.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#1A1A1A;color:#fff;padding:12px 25px;border-radius:2px;z-index:400;opacity:0;transition:all 0.4s;}
+.profile-box{background:#F8F7F4;padding:25px;max-width:350px;width:100%;}
+.profile-box input{width:100%;padding:12px;margin:8px 0;border:1px solid #E5E5E5;}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#1A1A1A;color:#fff;padding:12px 24px;border-radius:2px;z-index:400;opacity:0;transition:0.4s;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-footer{background:#fff;padding:50px 25px 25px;margin-top:40px;border-top:1px solid #E5E5E5;}
-footer h4{font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:20px 0 10px;}
-footer a{display:block;color:#1A1A1A;text-decoration:none;margin:5px 0;}
-
-@media(min-width:700px){
-  .products-grid{grid-template-columns:repeat(3,1fr);}
-  .detail-layout{grid-template-columns:1fr 1fr;padding:0 40px 60px;}
-}
+footer{background:#fff;padding:40px 25px;border-top:1px solid #E5E5E5;margin-top:40px;text-align:center;}
+footer h4{font-size:11px;letter-spacing:2px;margin:20px 0 10px;text-transform:uppercase;}
+footer a{display:block;color:#1A1A1A;text-decoration:none;margin:5px 0;font-size:14px;}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr);}.detail-layout{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
-
-<div class="opening-overlay" id="openingOverlay">
-  <div class="opening-brand">T-HEART</div>
-  <div class="opening-tagline">Premium Clothing</div>
-  <div class="opening-icons"><span>👕</span><span>👖</span><span>👔</span></div>
+<div class="opening" id="opening">
+  <h1>T-HEART</h1>
+  <p>PREMIUM CLOTHING</p>
+  <div class="icons">👕 👖 👔</div>
 </div>
-
-<div class="announcement" id="announcementBar" style="display:none;">
-  <span id="announcementText"></span>
-  <button class="close-ann" onclick="this.parentElement.style.display='none'">×</button>
-</div>
-
+<div class="ann-bar" id="annBar"><span id="annText"></span></div>
 <header class="header">
-  <div class="header-left"><button class="menu-btn" onclick="toggleMenu()">☰</button></div>
-  <div class="header-center">
-    <h1 id="siteBrandName">T-HEART</h1>
+  <button class="menu-btn" onclick="toggleMenu()">☰</button>
+  <div>
+    <h1 id="siteBrand">T-HEART</h1>
     <small id="siteTagline">Premium Clothing</small>
   </div>
-  <div class="header-right">
-    <button class="cart-btn" onclick="openCart()"><span class="cart-count" id="cartCount">0</span></button>
-  </div>
+  <button class="cart-btn" onclick="openCart()">🛍<span class="cart-count" id="cartCount">0</span></button>
 </header>
-
 <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
-<div class="menu-dropdown" id="menuDropdown">
+<div class="menu" id="menuDropdown">
   <button class="menu-close" onclick="toggleMenu()">×</button>
-  <div class="menu-section">
-    <div class="menu-section-title">Navigate</div>
-    <a href="#" class="menu-link" onclick="toggleMenu();window.scrollTo(0,0);return false;">Home</a>
-    <a href="#collection" class="menu-link" onclick="toggleMenu()">Shop All</a>
+  <h4>Navigate</h4>
+  <a href="#" onclick="toggleMenu();window.scrollTo(0,0);return false;">Home</a>
+  <a href="#collection" onclick="toggleMenu()">Shop All</a>
+  <div id="menuAccount" style="display:none;">
+    <h4>My Account</h4>
+    <a href="#" onclick="toggleMenu();showOrders();return false;">My Orders</a>
+    <a href="#" onclick="toggleMenu();showWishlist();return false;">Wishlist</a>
   </div>
-  <div class="menu-section" id="menuAccountSection" style="display:none;">
-    <div class="menu-section-title">My Account</div>
-    <a href="#" class="menu-link" onclick="toggleMenu();showMyOrders();return false;">My Orders</a>
-    <a href="#" class="menu-link" onclick="toggleMenu();showWishlist();return false;">Wishlist</a>
-    <a href="#" class="menu-link" onclick="toggleMenu();openCart();return false;">My Cart</a>
-  </div>
-  <div class="menu-section">
-    <div class="menu-section-title">Account</div>
-    <a href="#" class="menu-link" onclick="toggleMenu();openProfileModal();return false;" id="menuLoginLink">Login</a>
-  </div>
-  <div class="menu-footer">
-    <div class="menu-section-title">Connect</div>
-    <a href="https://instagram.com/t.heart_7" target="_blank" class="social-link">Instagram</a>
-    <a href="https://wa.me/919315640226" target="_blank" class="social-link">WhatsApp</a>
-    <a href="mailto:t.heart7support@gmail.com" class="social-link">Email</a>
-  </div>
+  <h4>Account</h4>
+  <a href="#" onclick="toggleMenu();openProfile();return false;" id="loginLink">Login</a>
+  <h4>Connect</h4>
+  <a href="https://instagram.com/t.heart_7" target="_blank" style="font-size:14px;">Instagram</a>
+  <a href="https://wa.me/919315640226" target="_blank" style="font-size:14px;">WhatsApp</a>
 </div>
-
 <div id="mainContent">
-  <section class="hero" id="heroSection">
+  <section class="hero">
     <div class="hero-card" id="heroCard">
-      <div class="hero-image" id="heroImage" style="background:#E5E5E5;"></div>
+      <div class="hero-img" id="heroImg" style="background:#E5E5E5;"></div>
       <div class="hero-info">
         <div class="tag">Featured</div>
         <h2 id="heroName">Loading...</h2>
@@ -183,581 +131,350 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:5px 0;}
       <div class="hero-dots" id="heroDots"></div>
     </div>
   </section>
-
-  <section class="collection-section" id="collection">
+  <div id="categorySections"></div>
+  <section class="collection" id="collection">
     <h2>The Collection</h2>
-    <div class="category-filters" id="categoryFilters">
-      <button class="cat-filter active" onclick="filterProducts('ALL')">ALL</button>
-    </div>
-    <div class="products-grid" id="productsGrid">
-      <p style="text-align:center;grid-column:1/-1;color:#888;">Loading products...</p>
-    </div>
+    <p style="color:#888;margin-bottom:20px;">All our premium pieces in one place.</p>
+    <div class="filters" id="filters"><button class="active" onclick="filterCat('ALL')">ALL</button></div>
+    <div class="grid" id="grid"></div>
   </section>
-
   <footer>
-    <h1 style="font-family:'Playfair Display',serif;font-size:24px;letter-spacing:4px;" id="footerBrand">T-HEART</h1>
-    <p style="color:#888;font-size:13px;margin:10px 0 20px;" id="footerTagline">Premium Clothing</p>
-    <h4>Shop</h4>
-    <div id="footerCategories"></div>
+    <h1 style="font-family:'Playfair Display';font-size:24px;letter-spacing:4px;" id="footBrand">T-HEART</h1>
+    <p style="color:#888;font-size:12px;margin:10px 0;" id="footTag">Premium Clothing</p>
     <h4>Contact</h4>
-    <a href="https://instagram.com/t.heart_7" target="_blank">Instagram</a>
-    <a href="https://wa.me/919315640226" target="_blank">WhatsApp: +91 93156 40226</a>
-    <a href="mailto:t.heart7support@gmail.com">t.heart7support@gmail.com</a>
-    <p style="margin-top:30px;font-size:11px;color:#888;">© 2026 T-HEART. Made in India</p>
+    <a href="https://instagram.com/t.heart_7">Instagram</a>
+    <a href="https://wa.me/919315640226">WhatsApp</a>
+    <a href="mailto:t.heart7support@gmail.com">Email</a>
   </footer>
 </div>
-
-<div class="detail-page" id="detailPage">
+<div class="detail" id="detailPage">
   <div class="detail-content">
-    <button class="detail-back" onclick="closeDetail()">← Back</button>
+    <button onclick="closeDetail()" style="padding:20px;background:none;border:none;font-size:16px;cursor:pointer;">← Back</button>
     <div class="detail-layout">
-      <div class="detail-main-img" id="detailMainImg"></div>
-      <div class="detail-info">
-        <h1 id="detailName"></h1>
-        <div class="price" id="detailPrice"></div>
-        <p id="detailDesc" style="color:#666;line-height:1.6;margin:20px 0;"></p>
-        <div style="margin:20px 0;">
-          <div style="font-size:11px;color:#8A8A8A;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Select Size</div>
-          <div id="detailSizes"></div>
-        </div>
-        <button class="add-btn" id="detailAddBtn" style="padding:16px;">Add to Bag</button>
-        <button class="add-btn" style="padding:16px;background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:10px;" onclick="shareProduct()">Share</button>
+      <div class="detail-img" id="detailImg"></div>
+      <div>
+        <div id="detailCat" style="font-size:10px;color:#888;text-transform:uppercase;"></div>
+        <h1 id="detailName" style="font-family:'Playfair Display';font-size:32px;margin:10px 0;"></h1>
+        <div id="detailPrice" style="font-size:24px;font-weight:600;margin-bottom:20px;"></div>
+        <p id="detailDesc" style="color:#666;line-height:1.6;margin-bottom:20px;"></p>
+        <div style="font-size:11px;color:#888;text-transform:uppercase;margin-bottom:10px;">Size</div>
+        <div id="detailSizes"></div>
+        <button class="add-btn" id="detailAddBtn" style="padding:16px;margin-top:20px;">Add to Bag</button>
       </div>
     </div>
   </div>
 </div>
-
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
-<div class="cart-drawer" id="cartDrawer">
-  <div style="padding:20px;border-bottom:1px solid #E5E5E5;display:flex;justify-content:space-between;align-items:center;">
-    <h3 style="font-family:'Playfair Display',serif;">Your Bag</h3>
-    <button onclick="closeCart()" style="background:none;border:none;font-size:24px;cursor:pointer;">×</button>
+<div class="cart" id="cartDrawer">
+  <div style="padding:20px;border-bottom:1px solid #E5E5E5;display:flex;justify-content:space-between;">
+    <h3 style="font-family:'Playfair Display';">Your Bag</h3>
+    <button onclick="closeCart()" style="background:none;border:none;font-size:24px;">×</button>
   </div>
   <div class="cart-items" id="cartItems"></div>
   <div style="padding:20px;border-top:1px solid #E5E5E5;background:#fff;">
-    <div class="coupon-section">
+    <div class="coupon-box">
       <input id="couponInput" placeholder="Coupon Code">
-      <button onclick="applyCoupon()">Apply</button>
+      <button onclick="applyCoupon()" style="background:#1A1A1A;color:#fff;border:none;padding:10px;">Apply</button>
     </div>
-    <p id="couponMsg" style="font-size:12px;margin:5px 0;"></p>
-    <div style="display:flex;justify-content:space-between;margin:10px 0;"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
-    <div style="display:flex;justify-content:space-between;margin:10px 0;"><span>Discount</span><span id="cartDiscount">₹0</span></div>
-    <div style="display:flex;justify-content:space-between;margin:10px 0;"><span>Shipping</span><span id="cartShipping">₹0</span></div>
-    <div style="display:flex;justify-content:space-between;margin:15px 0;font-weight:600;font-size:16px;"><span>Total</span><span id="cartTotal">₹0</span></div>
-    <button class="add-btn" onclick="openCheckout()" style="padding:16px;">Checkout</button>
+    <p id="couponMsg" style="font-size:12px;color:#a33;"></p>
+    <div style="display:flex;justify-content:space-between;margin:8px 0;"><span>Subtotal</span><span id="cSub">₹0</span></div>
+    <div style="display:flex;justify-content:space-between;margin:8px 0;"><span>Discount</span><span id="cDisc">₹0</span></div>
+    <div style="display:flex;justify-content:space-between;margin:8px 0;"><span>Shipping</span><span id="cShip">0</span></div>
+    <div style="display:flex;justify-content:space-between;margin:15px 0;font-weight:600;font-size:16px;"><span>Total</span><span id="cTotal">₹0</span></div>
+    <button class="add-btn" onclick="openCheckout()" style="padding:14px;">Checkout</button>
   </div>
 </div>
-
 <div class="checkout-overlay" id="checkoutOverlay">
   <div class="checkout-box">
-    <h3 style="font-family:'Playfair Display',serif;margin-bottom:20px;">Checkout</h3>
-    <input id="custName" placeholder="Full Name">
-    <input id="custEmail" type="email" placeholder="Email">
-    <input id="custPhone" type="tel" placeholder="Phone Number">
-    <input id="custHouse" placeholder="House / Flat No.">
-    <input id="custArea" placeholder="Street / Area">
-    <input id="custCity" placeholder="City">
-    <input id="custState" placeholder="State">
-    <input id="custPincode" placeholder="Pincode">
-    <div id="checkoutTotal" style="font-weight:600;margin:15px 0;"></div>
-    <p id="checkoutMsg" style="color:#a33;font-size:12px;"></p>
-    <button class="add-btn" onclick="placeOrder()" style="padding:16px;">Place Order</button>
-    <button class="add-btn" onclick="closeCheckout()" style="padding:16px;background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:10px;">Cancel</button>
+    <h3 style="font-family:'Playfair Display';margin-bottom:15px;">Checkout</h3>
+    <input id="cName" placeholder="Name">
+    <input id="cEmail" type="email" placeholder="Email">
+    <input id="cPhone" placeholder="Phone">
+    <input id="cAddr" placeholder="Full Address">
+    <input id="cCity" placeholder="City">
+    <input id="cPin" placeholder="Pincode">
+    <div id="checkTotal" style="font-weight:600;margin:15px 0;"></div>
+    <p id="checkMsg" style="color:#a33;font-size:12px;"></p>
+    <button class="add-btn" onclick="placeOrder()" style="padding:14px;">Place Order</button>
+    <button class="add-btn" onclick="closeCheckout()" style="padding:14px;background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:10px;">Cancel</button>
   </div>
 </div>
-
 <div class="profile-overlay" id="profileOverlay">
   <div class="profile-box">
-    <h3 style="font-family:'Playfair Display',serif;margin-bottom:15px;" id="profileTitle">Save Details</h3>
-    <input id="profName" placeholder="Full Name">
-    <input id="profEmail" type="email" placeholder="Email">
-    <input id="profPhone" type="tel" placeholder="Phone Number">
-    <p id="profileMsg" style="font-size:12px;margin:10px 0;"></p>
-    <button class="add-btn" onclick="saveProfile()" style="padding:14px;">Save</button>
-    <button class="add-btn" onclick="closeProfile()" style="padding:14px;background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:10px;">Cancel</button>
+    <h3 style="font-family:'Playfair Display';margin-bottom:15px;" id="profTitle">Save Details</h3>
+    <input id="pName" placeholder="Name">
+    <input id="pEmail" type="email" placeholder="Email">
+    <input id="pPhone" placeholder="Phone">
+    <p id="profMsg" style="font-size:12px;margin:10px 0;"></p>
+    <button class="add-btn" onclick="saveProfile()" style="padding:12px;">Save</button>
+    <button class="add-btn" onclick="closeProfile()" style="padding:12px;background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:10px;">Cancel</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 <script>
-const SUPABASE_URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
-const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
+const KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
+const db = window.supabase.createClient(URL, KEY);
+let products=[], categories=[], heroSlides=[], currentHero=0, heroInt=null;
+let settings = {free_ship:5000, ship_fee:99};
+let coupon = null, profile = null;
 
-let allProducts = [];
-let allCategories = [];
-let currentProduct = null;
-let selectedSize = null;
-let siteSettings = { free_shipping_above: 5000, shipping_fee: 99 };
-let heroSlides = [];
-let currentHero = 0;
-let heroInterval = null;
-let appliedCoupon = null;
-let userProfile = null;
+setTimeout(() => {
+  const ov = document.getElementById("opening");
+  ov.classList.add("hide");
+  setTimeout(() => ov.style.display="none", 800);
+}, 2500);
 
-// Hide opening animation
-window.addEventListener("load", function() {
-  setTimeout(() => {
-    const ov = document.getElementById("openingOverlay");
-    if (ov) { ov.classList.add("hide"); setTimeout(() => ov.style.display = "none", 800); }
-  }, 2000);
-});
+function toast(m) { const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
+function toggleMenu() { document.getElementById("menuOverlay").classList.toggle("open"); document.getElementById("menuDropdown").classList.toggle("open"); }
 
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2500);
-}
-
-function toggleMenu() {
-  document.getElementById("menuOverlay").classList.toggle("open");
-  document.getElementById("menuDropdown").classList.toggle("open");
-}
-
-function loadSavedProfile() {
-  try {
-    const saved = localStorage.getItem("theart_profile");
-    if (saved) {
-      userProfile = JSON.parse(saved);
-      document.getElementById("menuAccountSection").style.display = "block";
-      document.getElementById("menuLoginLink").textContent = "My Profile";
-      if (userProfile.name) document.getElementById("custName").value = userProfile.name;
-      if (userProfile.email) document.getElementById("custEmail").value = userProfile.email;
-      if (userProfile.phone) document.getElementById("custPhone").value = userProfile.phone;
-    }
-  } catch(e) {}
-}
-
-async function loadSiteSettings() {
-  try {
-    const { data, error } = await supabaseClient.from("site_setting").select("*").limit(1).maybeSingle();
-    if (error) { console.log("Settings error:", error); return; }
-    if (!data) return;
-    if (data.brand_name) {
-      document.getElementById("siteBrandName").textContent = data.brand_name;
-      document.getElementById("footerBrand").textContent = data.brand_name;
-      document.title = data.brand_name + " — Premium Clothing";
-    }
-    if (data.tagline) {
-      document.getElementById("siteTagline").textContent = data.tagline;
-      document.getElementById("footerTagline").textContent = data.tagline;
-    }
-    if (data.free_shipping_above !== null && data.free_shipping_above !== undefined) siteSettings.free_shipping_above = Number(data.free_shipping_above);
-    if (data.shipping_fee !== null && data.shipping_fee !== undefined) siteSettings.shipping_fee = Number(data.shipping_fee);
-    if (data.hero_product_ids && data.hero_product_ids.length > 0) await loadHeroSlides(data.hero_product_ids);
-  } catch(e) { console.log(e); }
-}
-
-async function loadHeroSlides(heroIds) {
-  try {
-    const { data, error } = await supabaseClient.from("Products").select("*").in("id", heroIds);
-    if (error) { console.log("Hero error:", error); return; }
-    if (!data || data.length === 0) return;
-    heroSlides = heroIds.map(id => data.find(p => p.id === id)).filter(p => p);
-    if (heroSlides.length === 0) return;
-    renderHeroSlide(0);
-    renderHeroDots();
-    if (heroInterval) clearInterval(heroInterval);
-    if (heroSlides.length > 1) {
-      heroInterval = setInterval(() => {
-        currentHero = (currentHero + 1) % heroSlides.length;
-        renderHeroSlide(currentHero);
-        renderHeroDots();
-      }, 4000);
-    }
-  } catch(e) { console.error(e); }
-}
-
-function renderHeroSlide(index) {
-  const p = heroSlides[index];
-  if (!p) return;
-  const img = (p.images && p.images.length > 0) ? p.images[0] : p.image_url;
-  const heroImg = document.getElementById("heroImage");
-  if (img) {
-    heroImg.style.backgroundImage = `url(${img})`;
-    heroImg.style.backgroundSize = "cover";
-    heroImg.style.backgroundPosition = "center";
+function loadProfile() {
+  const s = localStorage.getItem("th_profile");
+  if(s) {
+    profile = JSON.parse(s);
+    document.getElementById("menuAccount").style.display="block";
+    document.getElementById("loginLink").textContent="My Profile";
+    document.getElementById("cName").value = profile.name||"";
+    document.getElementById("cEmail").value = profile.email||"";
+    document.getElementById("cPhone").value = profile.phone||"";
   }
-  document.getElementById("heroName").textContent = p.name;
-  heroImg.dataset.productId = p.id;
 }
 
-function renderHeroDots() {
-  const dotsDiv = document.getElementById("heroDots");
-  dotsDiv.innerHTML = "";
-  heroSlides.forEach((_, i) => {
-    const dot = document.createElement("div");
-    dot.className = "hero-dot" + (i === currentHero ? " active" : "");
-    dot.onclick = (e) => {
-      e.stopPropagation();
-      currentHero = i;
-      renderHeroSlide(i);
-      renderHeroDots();
-      if (heroInterval) {
-        clearInterval(heroInterval);
-        heroInterval = setInterval(() => {
-          currentHero = (currentHero + 1) % heroSlides.length;
-          renderHeroSlide(currentHero);
-          renderHeroDots();
-        }, 4000);
-      }
-    };
-    dotsDiv.appendChild(dot);
-  });
+async function loadSettings() {
+  const { data } = await db.from("site_setting").select("*").limit(1).maybeSingle();
+  if(!data) return;
+  if(data.brand_name) { document.getElementById("siteBrand").textContent=data.brand_name; document.getElementById("footBrand").textContent=data.brand_name; }
+  if(data.tagline) { document.getElementById("siteTagline").textContent=data.tagline; document.getElementById("footTag").textContent=data.tagline; }
+  if(data.free_shipping_above) settings.free_ship = Number(data.free_shipping_above);
+  if(data.shipping_fee) settings.ship_fee = Number(data.shipping_fee);
+  if(data.hero_product_ids && data.hero_product_ids.length) loadHero(data.hero_product_ids);
 }
 
-document.getElementById("heroCard").onclick = function() {
-  const img = document.getElementById("heroImage");
-  const pid = img.dataset.productId;
-  if (pid) openDetail(pid);
-};
-
-async function loadAnnouncements() {
-  try {
-    const { data } = await supabaseClient.from("announcements").select("*").eq("is_active", true).order("sort_order", { ascending: true });
-    if (data && data.length > 0) {
-      document.getElementById("announcementText").textContent = data[0].text;
-      document.getElementById("announcementBar").style.display = "flex";
+async function loadHero(ids) {
+  const { data } = await db.from("Products").select("*").in("id", ids);
+  if(!data) return;
+  heroSlides = ids.map(id => data.find(p=>p.id===id)).filter(p=>p);
+  if(!heroSlides.length) return;
+  renderHero(0);
+  renderDots();
+  if(heroInt) clearInterval(heroInt);
+  if(heroSlides.length>1) {
+    heroInt = setInterval(() => { currentHero=(currentHero+1)%heroSlides.length; renderHero(currentHero); renderDots(); }, 4000);
+  }
+  let sx=0;
+  const hc = document.getElementById("heroCard");
+  hc.addEventListener("touchstart", e=>sx=e.touches[0].clientX);
+  hc.addEventListener("touchend", e => {
+    const diff = sx - e.changedTouches[0].clientX;
+    if(Math.abs(diff)>50) {
+      currentHero = diff>0 ? (currentHero+1)%heroSlides.length : (currentHero-1+heroSlides.length)%heroSlides.length;
+      renderHero(currentHero); renderDots();
     }
-  } catch(e) {}
+  });
+  hc.onclick = () => { const pid = document.getElementById("heroImg").dataset.pid; if(pid) openDetail(pid); };
 }
 
-async function loadCategories() {
-  try {
-    const { data, error } = await supabaseClient.from("categories").select("*").order("sort_order", { ascending: true });
-    if (error) { console.log("Categories error:", error); return; }
-    if (!data || data.length === 0) return;
-    allCategories = data;
-    const filters = document.getElementById("categoryFilters");
-    filters.innerHTML = '<button class="cat-filter active" onclick="filterProducts(\'ALL\')">ALL</button>';
-    data.forEach(cat => {
-      const btn = document.createElement("button");
-      btn.className = "cat-filter";
-      btn.textContent = cat.name;
-      btn.onclick = () => {
-        filters.querySelectorAll(".cat-filter").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        filterProducts(cat.name);
-      };
-      filters.appendChild(btn);
-    });
-    const footerCats = document.getElementById("footerCategories");
-    footerCats.innerHTML = "";
-    data.forEach(cat => {
-      const a = document.createElement("a");
-      a.href = "#collection";
-      a.textContent = cat.name;
-      a.onclick = () => { filterProducts(cat.name); document.getElementById("collection").scrollIntoView({behavior:"smooth"}); };
-      footerCats.appendChild(a);
-    });
-  } catch(e) { console.log(e); }
+function renderHero(i) {
+  const p = heroSlides[i]; if(!p) return;
+  const img = p.hero_image_url || (p.images && p.images[0]) || p.image_url;
+  const hi = document.getElementById("heroImg");
+  if(img) {
+    hi.style.backgroundImage = `url(${img}?t=${Date.now()})`;
+    hi.style.backgroundSize="cover"; hi.style.backgroundPosition="center";
+  }
+  hi.dataset.pid = p.id;
+  document.getElementById("heroName").textContent = p.name;
+}
+
+function renderDots() {
+  document.getElementById("heroDots").innerHTML = heroSlides.map((_,i) => `<div class="dot ${i===currentHero?'active':''}" onclick="event.stopPropagation();currentHero=${i};renderHero(${i});renderDots();"></div>`).join("");
+}
+
+async function loadAnn() {
+  const { data } = await db.from("announcements").select("*").eq("is_active",true).limit(1);
+  if(data && data.length) { document.getElementById("annText").textContent=data[0].text; document.getElementById("annBar").style.display="block"; }
+}
+
+async function loadCats() {
+  const { data } = await db.from("categories").select("*").order("sort_order");
+  if(!data) return;
+  categories = data;
+  const f = document.getElementById("filters");
+  f.innerHTML = '<button class="active" onclick="filterCat(\'ALL\')">ALL</button>';
+  data.forEach(c => {
+    const b = document.createElement("button");
+    b.textContent = c.name;
+    b.onclick = () => { f.querySelectorAll("button").forEach(x=>x.classList.remove("active")); b.classList.add("active"); filterCat(c.name); };
+    f.appendChild(b);
+  });
 }
 
 async function loadProds() {
   const { data, error } = await db.from("Products").select("*").order("sort_order");
   if(error) { document.getElementById("grid").innerHTML = `<p style="grid-column:1/-1;color:red;">Error: ${error.message}</p>`; return; }
   products = (data||[]).filter(p=>p.is_active!==false);
-  
-  // Wait for categories to load first
-  if(categories.length === 0) {
-    await loadCats();
-  }
-  
+  if(categories.length === 0) await loadCats();
   renderCategorySections();
   renderGrid(products);
 }
-    if (!data || data.length === 0) {
-      document.getElementById("productsGrid").innerHTML = "<p style='text-align:center;grid-column:1/-1;color:#888;'>No products yet.</p>";
-      return;
-    }
-    allProducts = data.filter(p => p.is_active !== false);
-    renderProductGrid(allProducts);
-    checkUrlForProduct();
-  } catch(e) { console.error(e); }
-}
 
-function renderProductGrid(data) {
-  const grid = document.getElementById("productsGrid");
-  grid.innerHTML = "";
-  if (data.length === 0) { grid.innerHTML = "<p style='text-align:center;grid-column:1/-1;color:#888;'>No products.</p>"; return; }
-  data.forEach(p => {
-    const img = (p.images && p.images.length > 0) ? p.images[0] : p.image_url;
-    const card = document.createElement("div");
-    card.className = "product-card";
-    card.innerHTML = `
-      <div class="product-image-wrap" onclick="openDetail('${p.id}')">
-        <img src="${img||''}" alt="${p.name}" loading="lazy">
-      </div>
-      <div class="product-details">
-        <div class="product-category">${p.category||'T-HEART'}</div>
-        <div class="product-name">${p.name}</div>
-        <div class="product-price">₹${p.price}</div>
-        <button class="add-btn" onclick="event.stopPropagation();addToCart('${p.id}','${p.name.replace(/'/g,"\\'")}',${p.price},'${(img||'').replace(/'/g,"\\'")}')">Add to Bag</button>
-      </div>
-    `;
-    grid.appendChild(card);
+function renderCategorySections() {
+  const container = document.getElementById("categorySections");
+  container.innerHTML = "";
+  categories.forEach(cat => {
+    const catProds = products.filter(p => p.category && p.category.toUpperCase() === cat.name.toUpperCase());
+    if(catProds.length === 0) return;
+    const section = document.createElement("section");
+    section.className = "cat-section";
+    section.innerHTML = `<h2>${cat.name}</h2><div class="count">${catProds.length} piece${catProds.length>1?'s':''} in this shelf.</div><div class="grid"></div>`;
+    container.appendChild(section);
+    const grid = section.querySelector(".grid");
+    catProds.forEach(p => grid.appendChild(createCard(p)));
   });
 }
 
-function filterProducts(cat) {
-  if (cat === "ALL") renderProductGrid(allProducts);
-  else renderProductGrid(allProducts.filter(p => (p.category||"").toUpperCase() === cat.toUpperCase()));
+function createCard(p) {
+  const img = (p.images&&p.images[0]) || p.image_url;
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerHTML = `<div class="card-img" onclick="openDetail('${p.id}')"><img src="${img||''}" loading="lazy"></div><div class="card-info"><div class="cat">${p.category||""}</div><h3>${p.name}</h3><div class="price">₹${p.price}</div><button class="add-btn" onclick="addToCart('${p.id}','${p.name.replace(/'/g,"\\'")}',${p.price},'${(img||'').replace(/'/g,"\\'")}')">Add to Bag</button></div>`;
+  return div;
 }
-  function openDetail(productId) {
-  const p = allProducts.find(x => String(x.id) === String(productId));
-  if (!p) return;
-  currentProduct = p;
-  const images = (p.images && p.images.length > 0) ? p.images : [p.image_url];
-  document.getElementById("detailMainImg").innerHTML = `<img src="${images[0]||''}" alt="${p.name}">`;
+
+function renderGrid(list) {
+  const g = document.getElementById("grid");
+  g.innerHTML = "";
+  if(!list.length) { g.innerHTML="<p style='grid-column:1/-1;text-align:center;color:#888;'>No products.</p>"; return; }
+  list.forEach(p => g.appendChild(createCard(p)));
+}
+
+function filterCat(c) { renderGrid(c==="ALL"?products:products.filter(p=>p.category&&p.category.toUpperCase()===c.toUpperCase())); }
+
+function openDetail(id) {
+  const p = products.find(x=>String(x.id)===String(id)); if(!p) return;
+  const imgs = (p.images&&p.images.length) ? p.images : [p.image_url];
+  document.getElementById("detailImg").innerHTML = `<img src="${imgs[0]||''}">`;
+  document.getElementById("detailCat").textContent = p.category||"";
   document.getElementById("detailName").textContent = p.name;
-  document.getElementById("detailPrice").textContent = "" + p.price;
-  document.getElementById("detailDesc").textContent = p.description || "Premium quality t-shirt.";
-  const sizesDiv = document.getElementById("detailSizes");
-  sizesDiv.innerHTML = "";
-  const sizes = (p.sizes || "S,M,L,XL").split(",").map(s => s.trim());
-  sizes.forEach((s, i) => {
-    const btn = document.createElement("button");
-    btn.className = "size-btn" + (i===0?" active":"");
-    btn.textContent = s;
-    btn.onclick = () => { sizesDiv.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active")); btn.classList.add("active"); selectedSize = s; };
-    sizesDiv.appendChild(btn);
-  });
-  selectedSize = sizes[0];
-  document.getElementById("detailAddBtn").onclick = () => addToCart(p.id, p.name, p.price, images[0]||"");
-  const dp = document.getElementById("detailPage");
-  dp.classList.add("open");
-  window.scrollTo(0, 0);
-  setTimeout(() => { window.location.hash = "product=" + productId; }, 100);
+  document.getElementById("detailPrice").textContent = "₹"+p.price;
+  document.getElementById("detailDesc").textContent = p.description||"Premium quality.";
+  const sd = document.getElementById("detailSizes");
+  sd.innerHTML = (p.sizes||"S,M,L,XL").split(",").map((s,i) => `<button class="size-btn ${i===0?'active':''}" onclick="this.parentElement.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');">${s.trim()}</button>`).join("");
+  document.getElementById("detailAddBtn").onclick = () => addToCart(p.id, p.name, p.price, imgs[0]||"");
+  document.getElementById("detailPage").classList.add("open");
 }
-
-function closeDetail() {
-  document.getElementById("detailPage").classList.remove("open");
-  window.location.hash = "";
-  currentProduct = null;
+function closeDetail() { document.getElementById("detailPage").classList.remove("open"); }
+  function getCart() { return JSON.parse(localStorage.getItem("th_cart")||"[]"); }
+function saveCart(c) { localStorage.setItem("th_cart", JSON.stringify(c)); updateCount(); renderCart(); }
+function addToCart(id,name,price,img) {
+  const c = getCart(); const ex = c.find(i=>i.id===id);
+  if(ex) ex.qty++; else c.push({id,name,price,img,qty:1});
+  saveCart(c); toast("Added to bag ✓");
 }
-
-function shareProduct() {
-  if (!currentProduct) return;
-  navigator.clipboard.writeText(window.location.href).then(() => showToast("Link copied!"));
+function updateCount() {
+  const t = getCart().reduce((s,i)=>s+i.qty,0);
+  const b = document.getElementById("cartCount");
+  b.style.display = t>0?"flex":"none"; b.textContent=t;
 }
-
-function checkUrlForProduct() {
-  const hash = window.location.hash;
-  if (hash.startsWith("#product=")) {
-    const id = hash.replace("#product=", "");
-    setTimeout(() => { const p = allProducts.find(x => String(x.id) === String(id)); if (p) openDetail(p.id); }, 300);
-  }
+function changeQty(id,d) {
+  const c = getCart(); const i = c.find(x=>x.id===id); if(!i) return;
+  i.qty+=d; if(i.qty<=0) saveCart(c.filter(x=>x.id!==id)); else saveCart(c);
 }
-
-window.addEventListener("hashchange", () => {
-  if (!window.location.hash.startsWith("#product=")) closeDetail();
-});
-
-function addToWishlist(id, name) {
-  let wl = JSON.parse(localStorage.getItem("theart_wishlist") || "[]");
-  if (wl.includes(id)) { showToast("Already in wishlist"); return; }
-  wl.push(id);
-  localStorage.setItem("theart_wishlist", JSON.stringify(wl));
-  showToast("Added to wishlist ♡");
-}
-
-function showWishlist() {
-  const wl = JSON.parse(localStorage.getItem("theart_wishlist") || "[]");
-  if (wl.length === 0) { showToast("Wishlist is empty"); return; }
-  const wlProducts = allProducts.filter(p => wl.includes(p.id));
-  if (wlProducts.length === 0) { showToast("Wishlist is empty"); return; }
-  renderProductGrid(wlProducts);
-  document.getElementById("collection").scrollIntoView({behavior:"smooth"});
-}
-
-async function showMyOrders() {
-  const profile = JSON.parse(localStorage.getItem("theart_profile") || "null");
-  if (!profile || !profile.email) { showToast("Please save your details first"); openProfileModal(); return; }
-  try {
-    const { data, error } = await supabaseClient.from("Orders table").select("*").eq("customer_email", profile.email).order("id", { ascending: false });
-    if (error) { showToast("Error: " + error.message); return; }
-    if (!data || data.length === 0) { showToast("No orders yet"); return; }
-    let msg = "Your Orders:\n\n";
-    data.slice(0, 5).forEach(o => {
-      msg += "Order #" + o.id.substring(0,8) + "\n₹" + o.total_amount + " - " + o.order_status + "\n\n";
-    });
-    alert(msg);
-  } catch(e) { showToast("Error loading orders"); }
-}
-
-function getCart() { return JSON.parse(localStorage.getItem("theart_cart") || "[]"); }
-function saveCart(c) { localStorage.setItem("theart_cart", JSON.stringify(c)); updateCartCount(); renderCart(); }
-
-function addToCart(id, name, price, image) {
-  const cart = getCart();
-  const existing = cart.find(i => String(i.id) === String(id));
-  if (existing) existing.qty += 1;
-  else cart.push({ id, name, price, image, qty: 1 });
-  saveCart(cart);
-  showToast("Added to bag ✓");
-}
-
-function updateCartCount() {
-  const total = getCart().reduce((s, i) => s + i.qty, 0);
-  const badge = document.getElementById("cartCount");
-  if (total > 0) { badge.style.display = "flex"; badge.textContent = total; }
-  else badge.style.display = "none";
-}
-
-function changeQty(id, delta) {
-  const cart = getCart();
-  const item = cart.find(i => String(i.id) === String(id));
-  if (!item) return;
-  item.qty += delta;
-  if (item.qty <= 0) saveCart(cart.filter(i => String(i.id) !== String(id)));
-  else saveCart(cart);
-}
-
-function removeFromCart(id) { saveCart(getCart().filter(i => String(i.id) !== String(id))); }
-
-function cartSubtotal() { return getCart().reduce((s, i) => s + i.price * i.qty, 0); }
-
-function getShipping() {
-  const sub = cartSubtotal();
-  const disc = getDiscount();
-  const afterDisc = sub - disc;
-  return afterDisc >= siteSettings.free_shipping_above ? 0 : siteSettings.shipping_fee;
-}
-
-function getDiscount() {
-  if (!appliedCoupon) return 0;
-  const sub = cartSubtotal();
-  if (sub < appliedCoupon.min_order_amount) return 0;
-  return Math.round(sub * appliedCoupon.discount_percent / 100);
-}
-
-function cartTotal() { return cartSubtotal() - getDiscount() + getShipping(); }
+function subTotal() { return getCart().reduce((s,i)=>s+i.price*i.qty,0); }
+function getDisc() { if(!coupon) return 0; const s=subTotal(); return s>=coupon.min_order_amount ? Math.round(s*coupon.discount_percent/100) : 0; }
+function getShip() { return (subTotal()-getDisc()) >= settings.free_ship ? 0 : settings.ship_fee; }
+function total() { return subTotal()-getDisc()+getShip(); }
 
 async function applyCoupon() {
   const code = document.getElementById("couponInput").value.trim().toUpperCase();
   const msg = document.getElementById("couponMsg");
-  if (!code) { msg.textContent = "Enter a coupon code"; msg.style.color = "#a33"; return; }
-  try {
-    const { data, error } = await supabaseClient.from("coupons").select("*").eq("code", code).eq("is_active", true).maybeSingle();
-    if (error || !data) { msg.textContent = "Invalid coupon"; msg.style.color = "#a33"; appliedCoupon = null; renderCart(); return; }
-    if (data.usage_limit && data.used_count >= data.usage_limit) { msg.textContent = "Coupon limit reached"; msg.style.color = "#a33"; return; }
-    const sub = cartSubtotal();
-    if (sub < data.min_order_amount) { msg.textContent = "Min order ₹" + data.min_order_amount; msg.style.color = "#a33"; return; }
-    appliedCoupon = data;
-    msg.textContent = "✓ " + data.discount_percent + "% off applied!";
-    msg.style.color = "#2a7";
-    renderCart();
-  } catch(e) { msg.textContent = "Error applying coupon"; }
+  if(!code) return;
+  const { data } = await db.from("coupons").select("*").eq("code",code).eq("is_active",true).maybeSingle();
+  if(!data) { msg.textContent="Invalid code"; return; }
+  if(subTotal() < data.min_order_amount) { msg.textContent=`Min order ₹${data.min_order_amount}`; return; }
+  coupon = data; msg.textContent=`✓ ${data.discount_percent}% off`; msg.style.color="#2a7"; renderCart();
 }
 
 function renderCart() {
-  const cart = getCart();
-  const list = document.getElementById("cartItems");
-  if (cart.length === 0) { list.innerHTML = "<p style='text-align:center;color:#888;padding:40px 0;'>Your bag is empty.</p>"; }
-  else {
-    list.innerHTML = "";
-    cart.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "cart-item";
-      div.innerHTML = `<img src="${item.image||''}"><div style="flex:1;"><div style="font-weight:500;">${item.name}</div><div style="color:#8A8A8A;font-size:13px;">₹${item.price}</div><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button onclick="changeQty('${item.id}',-1)" style="width:28px;height:28px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">-</button><span>${item.qty}</span><button onclick="changeQty('${item.id}',1)" style="width:28px;height:28px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">+</button></div><button onclick="removeFromCart('${item.id}')" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;cursor:pointer;margin-top:5px;">Remove</button></div>`;
-      list.appendChild(div);
-    });
-  }
-  document.getElementById("cartSubtotal").textContent = "₹" + cartSubtotal();
-  document.getElementById("cartDiscount").textContent = "-₹" + getDiscount();
-  document.getElementById("cartShipping").textContent = getShipping() === 0 ? "FREE" : "₹" + getShipping();
-  document.getElementById("cartTotal").textContent = "₹" + cartTotal();
+  const c = getCart();
+  document.getElementById("cartItems").innerHTML = c.length ? c.map(i => `<div class="cart-item"><img src="${i.img||''}"><div style="flex:1;"><div style="font-weight:500;">${i.name}</div><div style="color:#888;font-size:13px;">₹${i.price}</div><div style="display:flex;gap:10px;margin-top:5px;"><button onclick="changeQty('${i.id}',-1)" style="width:25px;height:25px;border:1px solid #E5E5E5;background:#fff;">-</button><span>${i.qty}</span><button onclick="changeQty('${i.id}',1)" style="width:25px;height:25px;border:1px solid #E5E5E5;background:#fff;">+</button></div><button onclick="saveCart(getCart().filter(x=>x.id!=='${i.id}'))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:5px;">Remove</button></div></div>`).join("") : "<p style='text-align:center;color:#888;padding:40px 0;'>Empty bag.</p>";
+  document.getElementById("cSub").textContent="₹"+subTotal();
+  document.getElementById("cDisc").textContent="-₹"+getDisc();
+  document.getElementById("cShip").textContent=getShip()===0?"FREE":"₹"+getShip();
+  document.getElementById("cTotal").textContent="₹"+total();
 }
 
 function openCart() { document.getElementById("cartOverlay").classList.add("open"); document.getElementById("cartDrawer").classList.add("open"); renderCart(); }
 function closeCart() { document.getElementById("cartOverlay").classList.remove("open"); document.getElementById("cartDrawer").classList.remove("open"); }
 
 function openCheckout() {
-  if (getCart().length === 0) { showToast("Your bag is empty"); return; }
-  const profile = JSON.parse(localStorage.getItem("theart_profile") || "null");
-  if (profile) {
-    if (profile.name && !document.getElementById("custName").value) document.getElementById("custName").value = profile.name;
-    if (profile.email && !document.getElementById("custEmail").value) document.getElementById("custEmail").value = profile.email;
-    if (profile.phone && !document.getElementById("custPhone").value) document.getElementById("custPhone").value = profile.phone;
-  }
-  document.getElementById("checkoutTotal").textContent = "Total: ₹" + cartTotal();
+  if(!getCart().length) { toast("Empty bag"); return; }
+  document.getElementById("checkTotal").textContent = "Total: ₹"+total();
   document.getElementById("checkoutOverlay").classList.add("open");
   closeCart();
 }
-
 function closeCheckout() { document.getElementById("checkoutOverlay").classList.remove("open"); }
 
 async function placeOrder() {
-  const name = document.getElementById("custName").value.trim();
-  const email = document.getElementById("custEmail").value.trim();
-  const phone = document.getElementById("custPhone").value.trim();
-  const house = document.getElementById("custHouse").value.trim();
-  const area = document.getElementById("custArea").value.trim();
-  const city = document.getElementById("custCity").value.trim();
-  const state = document.getElementById("custState").value.trim();
-  const pincode = document.getElementById("custPincode").value.trim();
-  const msg = document.getElementById("checkoutMsg");
-  if (!name || !email || !phone || !house || !area || !city || !state || !pincode) { msg.textContent = "Please fill all fields."; return; }
-  const address = house + ", " + area + ", " + city + ", " + state + " - " + pincode;
-  const cart = getCart();
-  if (cart.length === 0) { msg.textContent = "Your bag is empty."; return; }
-  const total = cartTotal();
-  const discount = getDiscount();
-  const shipping = getShipping();
-  localStorage.setItem("theart_profile", JSON.stringify({ name, email, phone, address }));
-  loadSavedProfile();
-  const { error } = await supabaseClient.from("Orders table").insert([{ customer_name: name, customer_email: email, customer_phone: phone, address, items: cart, total_amount: total, discount_amount: discount, coupon_code: appliedCoupon ? appliedCoupon.code : null, payment_status: "Pending", order_status: "Pending" }]);
-  if (error) { msg.textContent = "Order failed: " + error.message; return; }
-  localStorage.removeItem("theart_cart");
-  appliedCoupon = null;
-  updateCartCount();
-  closeCheckout();
-  showToast("Order placed successfully!");
-  ["custName","custEmail","custPhone","custHouse","custArea","custCity","custState","custPincode"].forEach(id => document.getElementById(id).value = "");
+  const name=document.getElementById("cName").value.trim();
+  const email=document.getElementById("cEmail").value.trim();
+  const phone=document.getElementById("cPhone").value.trim();
+  const addr=document.getElementById("cAddr").value.trim();
+  const city=document.getElementById("cCity").value.trim();
+  const pin=document.getElementById("cPin").value.trim();
+  const msg=document.getElementById("checkMsg");
+  if(!name||!email||!phone||!addr||!city||!pin) { msg.textContent="Fill all fields"; return; }
+  localStorage.setItem("th_profile", JSON.stringify({name,email,phone}));
+  loadProfile();
+  const { error } = await db.from("Orders table").insert([{
+    customer_name:name, customer_email:email, customer_phone:phone,
+    address: `${addr}, ${city} - ${pin}`,
+    items: getCart(), total_amount: total(),
+    discount_amount: getDisc(), coupon_code: coupon?coupon.code:null,
+    payment_status:"Pending", order_status:"Pending"
+  }]);
+  if(error) { msg.textContent="Error: "+error.message; return; }
+  localStorage.removeItem("th_cart"); coupon=null;
+  updateCount(); closeCheckout();
+  toast("Order placed! ✓");
+  ["cName","cEmail","cPhone","cAddr","cCity","cPin"].forEach(id=>document.getElementById(id).value="");
 }
 
-function openProfileModal() {
-  const saved = localStorage.getItem("theart_profile");
-  if (saved) {
-    const p = JSON.parse(saved);
-    document.getElementById("profName").value = p.name || "";
-    document.getElementById("profEmail").value = p.email || "";
-    document.getElementById("profPhone").value = p.phone || "";
-    document.getElementById("profileTitle").textContent = "Your Profile";
-  } else {
-    document.getElementById("profName").value = "";
-    document.getElementById("profEmail").value = "";
-    document.getElementById("profPhone").value = "";
-    document.getElementById("profileTitle").textContent = "Save Details";
+function openProfile() {
+  if(profile) {
+    document.getElementById("pName").value=profile.name;
+    document.getElementById("pEmail").value=profile.email;
+    document.getElementById("pPhone").value=profile.phone;
+    document.getElementById("profTitle").textContent="Your Profile";
   }
-  document.getElementById("profileMsg").textContent = "";
   document.getElementById("profileOverlay").classList.add("open");
 }
-
 function closeProfile() { document.getElementById("profileOverlay").classList.remove("open"); }
-
 async function saveProfile() {
-  const name = document.getElementById("profName").value.trim();
-  const email = document.getElementById("profEmail").value.trim();
-  const phone = document.getElementById("profPhone").value.trim();
-  const msg = document.getElementById("profileMsg");
-  if (!name || !email || !phone) { msg.textContent = "Please fill name, email, phone."; msg.style.color = "#a33"; return; }
-  localStorage.setItem("theart_profile", JSON.stringify({ name, email, phone }));
-  try { await supabaseClient.from("customers").insert([{ name, email, phone }]); } catch(e) {}
-  msg.textContent = "Saved successfully!";
-  msg.style.color = "#2a7";
-  loadSavedProfile();
-  setTimeout(() => closeProfile(), 1200);
+  const n=document.getElementById("pName").value.trim();
+  const e=document.getElementById("pEmail").value.trim();
+  const p=document.getElementById("pPhone").value.trim();
+  if(!n||!e||!p) { document.getElementById("profMsg").textContent="Fill all"; return; }
+  localStorage.setItem("th_profile", JSON.stringify({name:n,email:e,phone:p}));
+  try { await db.from("customers").insert([{name:n,email:e,phone:p}]); } catch(err){}
+  document.getElementById("profMsg").textContent="Saved!";
+  loadProfile(); setTimeout(closeProfile,1000);
 }
 
-// INIT - Order matters!
-loadSavedProfile();
-loadCategories();
-loadProducts();
-loadSiteSettings();
-loadAnnouncements();
-updateCartCount();
+async function showOrders() {
+  if(!profile || !profile.email) { toast("Login first"); openProfile(); return; }
+  const { data } = await db.from("Orders table").select("*").eq("customer_email",profile.email).order("id",{ascending:false});
+  if(!data||!data.length) { toast("No orders"); return; }
+  alert("Your Orders:\n\n"+data.slice(0,5).map(o=>`#${o.id.substring(0,8)} - ₹${o.total_amount} - ${o.order_status}`).join("\n"));
+}
+function showWishlist() { toast("Wishlist coming soon"); }
+
+loadProfile();
+loadSettings();
+loadAnn();
+loadCats();
+loadProds();
+updateCount();
 </script>
 </body>
 </html>
