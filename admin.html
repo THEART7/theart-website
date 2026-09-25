@@ -230,22 +230,51 @@ async function editCat(id, oldName) {
 }
 
 async function moveCat(id, dir) {
-  const idx = allCategories.findIndex(c=>c.id===id);
-  const swapIdx = idx + dir;
-  if(swapIdx < 0 || swapIdx >= allCategories.length) return;
-  
-  // Array me position swap karo
-  const temp = allCategories[idx];
-  allCategories[idx] = allCategories[swapIdx];
-  allCategories[swapIdx] = temp;
-  
-  // Puri list ko re-number karo (0, 1, 2, 3...)
-  for(let i=0; i<allCategories.length; i++) {
-    await supabaseClient.from("categories").update({sort_order: i}).eq("id", allCategories[i].id);
+  try {
+    // Pehle fresh data load karo
+    const { data: freshData } = await supabaseClient.from("categories").select("*").order("sort_order");
+    if(!freshData || freshData.length === 0) return;
+    
+    allCategories = freshData;
+    
+    const idx = allCategories.findIndex(c=>c.id===id);
+    const swapIdx = idx + dir;
+    
+    if(swapIdx < 0 || swapIdx >= allCategories.length) {
+      alert("Cannot move further!");
+      return;
+    }
+    
+    // Array me swap karo
+    const temp = allCategories[idx];
+    allCategories[idx] = allCategories[swapIdx];
+    allCategories[swapIdx] = temp;
+    
+    // Ab har category ko uska naya sort_order do
+    let success = true;
+    for(let i=0; i<allCategories.length; i++) {
+      const { error } = await supabaseClient
+        .from("categories")
+        .update({sort_order: i})
+        .eq("id", allCategories[i].id);
+      
+      if(error) {
+        console.log("Error updating:", allCategories[i].name, error);
+        success = false;
+      }
+    }
+    
+    if(success) {
+      alert("Order updated! Refresh website to see changes.");
+      await loadCategories();
+    } else {
+      alert("Some updates failed. Try again.");
+    }
+    
+  } catch(e) {
+    console.log("Move error:", e);
+    alert("Error: " + e.message);
   }
-  
-  // Reload kar
-  await loadCategories();
 }
 
 async function delCat(id) { if(confirm("Delete?")) { await supabaseClient.from("categories").delete().eq("id",id); loadCategories(); } }
