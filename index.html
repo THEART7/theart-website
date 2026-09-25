@@ -228,21 +228,28 @@ function loadProfile() {
 async function loadSettings() {
   try {
     const { data } = await db.from("site_setting").select("*").limit(1).maybeSingle();
-    if(!data) return;
+    if(!data) { console.log("No site settings"); return; }
+    console.log("Site settings:", data);
     if(data.brand_name) { document.getElementById("siteBrand").textContent=data.brand_name; document.getElementById("footBrand").textContent=data.brand_name; }
     if(data.tagline) { document.getElementById("siteTagline").textContent=data.tagline; document.getElementById("footTag").textContent=data.tagline; }
     if(data.free_shipping_above) settings.free_ship = Number(data.free_shipping_above);
     if(data.shipping_fee) settings.ship_fee = Number(data.shipping_fee);
-    if(data.hero_product_ids && data.hero_product_ids.length) loadHero(data.hero_product_ids);
+    if(data.hero_product_ids && data.hero_product_ids.length) {
+      console.log("Hero IDs:", data.hero_product_ids);
+      loadHero(data.hero_product_ids);
+    }
   } catch(e) { console.log("Settings error:", e); }
 }
 
 async function loadHero(ids) {
   try {
-    const { data } = await db.from("Products").select("*").in("id", ids);
-    if(!data || !data.length) return;
+    const { data, error } = await db.from("Products").select("*").in("id", ids);
+    if(error) { console.log("Hero error:", error); return; }
+    if(!data || !data.length) { console.log("No hero products found"); return; }
+    console.log("Hero data:", data);
+    // FIX: String comparison for UUID vs integer
     heroSlides = ids.map(id => data.find(p=>String(p.id)===String(id))).filter(p=>p);
-    if(!heroSlides.length) return;
+    if(!heroSlides.length) { console.log("No hero slides matched"); return; }
     renderHero(0);
     renderDots();
     if(heroInt) clearInterval(heroInt);
@@ -291,6 +298,7 @@ async function loadCats() {
     const { data, error } = await db.from("categories").select("*").order("sort_order");
     if(error) { console.log("Cat error:", error); return; }
     if(!data) return;
+    console.log("Categories:", data);
     categories = data;
     const f = document.getElementById("filters");
     f.innerHTML = '<button class="active" onclick="filterCat(\'ALL\')">ALL</button>';
@@ -306,8 +314,9 @@ async function loadCats() {
 async function loadProds() {
   try {
     const { data, error } = await db.from("Products").select("*").order("sort_order");
-    if(error) { document.getElementById("grid").innerHTML = `<p style="grid-column:1/-1;color:red;">Error: ${error.message}</p>`; return; }
+    if(error) { console.log("Prod error:", error); document.getElementById("grid").innerHTML = `<p style="grid-column:1/-1;color:red;">Error: ${error.message}</p>`; return; }
     products = (data||[]).filter(p=>p.is_active!==false);
+    console.log("Products loaded:", products.length);
     if(categories.length === 0) await loadCats();
     renderCategorySections();
     renderGrid(products);
@@ -363,7 +372,7 @@ function closeDetail() { document.getElementById("detailPage").classList.remove(
   function getCart() { return JSON.parse(localStorage.getItem("th_cart")||"[]"); }
 function saveCart(c) { localStorage.setItem("th_cart", JSON.stringify(c)); updateCount(); renderCart(); }
 function addToCart(id,name,price,img) {
-  const c = getCart(); const ex = c.find(i=>i.id===id);
+  const c = getCart(); const ex = c.find(i=>String(i.id)===String(id));
   if(ex) ex.qty++; else c.push({id,name,price,img,qty:1});
   saveCart(c); toast("Added to bag ✓");
 }
@@ -373,8 +382,8 @@ function updateCount() {
   b.style.display = t>0?"flex":"none"; b.textContent=t;
 }
 function changeQty(id,d) {
-  const c = getCart(); const i = c.find(x=>x.id===id); if(!i) return;
-  i.qty+=d; if(i.qty<=0) saveCart(c.filter(x=>x.id!==id)); else saveCart(c);
+  const c = getCart(); const i = c.find(x=>String(x.id)===String(id)); if(!i) return;
+  i.qty+=d; if(i.qty<=0) saveCart(c.filter(x=>String(x.id)!==String(id))); else saveCart(c);
 }
 function subTotal() { return getCart().reduce((s,i)=>s+i.price*i.qty,0); }
 function getDisc() { if(!coupon) return 0; const s=subTotal(); return s>=coupon.min_order_amount ? Math.round(s*coupon.discount_percent/100) : 0; }
@@ -393,7 +402,7 @@ async function applyCoupon() {
 
 function renderCart() {
   const c = getCart();
-  document.getElementById("cartItems").innerHTML = c.length ? c.map(i => `<div class="cart-item"><img src="${i.img||''}"><div style="flex:1;"><div style="font-weight:500;">${i.name}</div><div style="color:#888;font-size:13px;">₹${i.price}</div><div style="display:flex;gap:10px;margin-top:5px;"><button onclick="changeQty('${i.id}',-1)" style="width:25px;height:25px;border:1px solid #E5E5E5;background:#fff;">-</button><span>${i.qty}</span><button onclick="changeQty('${i.id}',1)" style="width:25px;height:25px;border:1px solid #E5E5E5;background:#fff;">+</button></div><button onclick="saveCart(getCart().filter(x=>x.id!=='${i.id}'))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:5px;">Remove</button></div></div>`).join("") : "<p style='text-align:center;color:#888;padding:40px 0;'>Empty bag.</p>";
+  document.getElementById("cartItems").innerHTML = c.length ? c.map(i => `<div class="cart-item"><img src="${i.img||''}"><div style="flex:1;"><div style="font-weight:500;">${i.name}</div><div style="color:#888;font-size:13px;">₹${i.price}</div><div style="display:flex;gap:10px;margin-top:5px;"><button onclick="changeQty('${i.id}',-1)" style="width:25px;height:25px;border:1px solid #E5E5E5;background:#fff;">-</button><span>${i.qty}</span><button onclick="changeQty('${i.id}',1)" style="width:25px;height:25px;border:1px solid #E5E5E5;background:#fff;">+</button></div><button onclick="saveCart(getCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:5px;">Remove</button></div></div>`).join("") : "<p style='text-align:center;color:#888;padding:40px 0;'>Empty bag.</p>";
   document.getElementById("cSub").textContent="₹"+subTotal();
   document.getElementById("cDisc").textContent="-₹"+getDisc();
   document.getElementById("cShip").textContent=getShip()===0?"FREE":"₹"+getShip();
@@ -464,7 +473,7 @@ async function showOrders() {
   alert("Your Orders:\n\n"+data.slice(0,5).map(o=>`#${o.id.substring(0,8)} - ₹${o.total_amount} - ${o.order_status}`).join("\n"));
 }
 
-// INIT - SAB KUCH LOAD KARO
+// INIT
 loadProfile();
 loadSettings();
 loadAnn();
