@@ -3,842 +3,755 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>T-HEART Admin</title>
+<title>T-HEART — Premium Clothing</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Inter,-apple-system,sans-serif;max-width:1100px;margin:auto;padding:16px;background:#0a0a0a;color:#e8e8e8;}
-h1{margin-bottom:20px;color:#fff;font-family:'Playfair Display',serif;letter-spacing:2px;}
-h2{margin-bottom:12px;color:#fff;}
-.card{background:#141414;padding:18px;margin-bottom:18px;border-radius:12px;border:1px solid #1f1f1f;}
-input,textarea,button,select{width:100%;padding:11px;margin:6px 0;box-sizing:border-box;font-size:14px;background:#0a0a0a;color:#fff;border:1px solid #2a2a2a;border-radius:6px;font-family:inherit;}
-input:focus,textarea:focus,select:focus{outline:none;border-color:#c9a96e;}
-button{cursor:pointer;font-weight:bold;background:#fff;color:#000;border:0;border-radius:6px;padding:12px;transition:background 0.3s;}
-button:hover{background:#c9a96e;}
-button.secondary{background:#1f1f1f;color:#fff;}
-button.secondary:hover{background:#2a2a2a;}
-button.danger{background:#a33;color:#fff;}
-button.danger:hover{background:#c44;}
-button.small{width:auto;padding:6px 12px;font-size:12px;margin:3px 3px 3px 0;}
-.hidden{display:none;}
-.item-row{border:1px solid #1f1f1f;padding:12px;margin:8px 0;border-radius:8px;background:#0f0f0f;}
-.error{color:#e57373;font-size:13px;}
-.success{color:#81c784;font-size:13px;}
-label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
-.navbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
-.navbar button{background:#1f1f1f;color:#fff;flex:1 1 auto;min-width:80px;}
-.navbar button.active{background:#fff;color:#000;}
-.size-options{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0;}
-.size-options label{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:normal;margin:0;width:auto;}
-.size-options input{width:auto;margin:0;}
-.stat-box{display:inline-block;background:#1f1f1f;padding:14px 18px;border-radius:8px;margin:4px 8px 4px 0;}
-.stat-box .num{font-size:22px;font-weight:bold;color:#c9a96e;}
-.stat-box .label{font-size:11px;color:#888;}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:99;padding:16px;}
-.overlay.open{display:flex;}
-.modal-box{background:#141414;padding:20px;border-radius:12px;max-width:500px;width:100%;max-height:88vh;overflow-y:auto;border:1px solid #1f1f1f;}
-.thumb{width:60px;height:80px;object-fit:cover;border-radius:6px;margin-right:6px;}
-.cropper-container-box{max-height:400px;background:#000;border-radius:8px;overflow:hidden;margin:15px 0;}
-.cropper-container-box img{max-width:100%;display:block;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:#F8F7F4;color:#1A1A1A;font-family:Inter,sans-serif;overflow-x:hidden;}
+
+.opening-overlay{position:fixed;inset:0;background:#F8F7F4;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.opening-overlay.hide{opacity:0;pointer-events:none;transition:opacity 0.8s;}
+.opening-brand{font-family:'Playfair Display',serif;font-size:48px;letter-spacing:12px;color:#1A1A1A;opacity:0;animation:fadeInUp 1s 0.2s forwards;}
+.opening-tagline{font-size:9px;letter-spacing:5px;color:#8A8A8A;margin-top:10px;text-transform:uppercase;opacity:0;animation:fadeInUp 1s 0.6s forwards;}
+.opening-icons{display:flex;gap:15px;margin-top:25px;}
+.opening-icons span{font-size:24px;opacity:0;animation:popIn 0.5s forwards;}
+.opening-icons span:nth-child(1){animation-delay:1s;}
+.opening-icons span:nth-child(2){animation-delay:1.2s;}
+.opening-icons span:nth-child(3){animation-delay:1.4s;}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes popIn{from{opacity:0;transform:scale(0.5);}to{opacity:1;transform:scale(1);}}
+
+.announcement{background:#1A1A1A;color:#fff;padding:12px 40px;text-align:center;font-size:11px;letter-spacing:2px;display:flex;align-items:center;justify-content:center;gap:15px;position:relative;}
+.announcement .close-ann{position:absolute;right:15px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;}
+
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px 25px;background:#fff;position:sticky;top:0;z-index:100;border-bottom:1px solid #E5E5E5;}
+.header-left,.header-right{flex:1;}
+.header-right{display:flex;justify-content:flex-end;}
+.header-center{flex:1;text-align:center;}
+.header-center h1{font-family:'Playfair Display',serif;font-size:24px;letter-spacing:5px;white-space:nowrap;}
+.header-center small{display:block;font-size:9px;letter-spacing:4px;color:#8A8A8A;margin-top:4px;white-space:nowrap;}
+.menu-btn,.cart-btn{background:none;border:none;font-size:22px;cursor:pointer;}
+.cart-btn{position:relative;}
+.cart-count{position:absolute;top:-6px;right:-8px;background:#1A1A1A;color:#fff;font-size:9px;border-radius:50%;width:16px;height:16px;display:none;align-items:center;justify-content:center;}
+
+.menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:200;opacity:0;visibility:hidden;transition:all 0.3s;}
+.menu-overlay.open{opacity:1;visibility:visible;}
+.menu-dropdown{position:fixed;top:0;left:-100%;width:75%;max-width:300px;height:100%;background:#fff;z-index:201;padding:60px 20px 20px;overflow-y:auto;transition:left 0.4s ease;box-shadow:5px 0 20px rgba(0,0,0,0.1);}
+.menu-dropdown.open{left:0;}
+.menu-close{position:absolute;top:15px;right:15px;background:none;border:none;font-size:24px;cursor:pointer;}
+.menu-section{margin-bottom:25px;padding-bottom:15px;border-bottom:1px solid #E5E5E5;}
+.menu-section-title{font-size:10px;letter-spacing:2px;color:#8A8A8A;text-transform:uppercase;margin-bottom:10px;}
+.menu-link{display:block;font-family:'Playfair Display',serif;font-size:20px;color:#1A1A1A;text-decoration:none;margin:8px 0;}
+.menu-link:hover{padding-left:8px;}
+.social-link{display:inline-block;margin-right:15px;font-size:11px;color:#8A8A8A;text-decoration:none;}
+
+.hero{padding:25px 20px;}
+.hero-card{position:relative;aspect-ratio:3/4;max-height:600px;overflow:hidden;border-radius:4px;background:#E5E5E5;cursor:pointer;}
+.hero-image{width:100%;height:100%;object-fit:cover;}
+.hero-info{position:absolute;bottom:15px;left:15px;background:rgba(255,255,255,0.95);padding:12px 18px;border-radius:2px;max-width:55%;backdrop-filter:blur(10px);}
+.hero-info .tag{font-size:9px;letter-spacing:2px;color:#8A8A8A;text-transform:uppercase;}
+.hero-info h2{font-family:'Playfair Display',serif;font-size:18px;margin:3px 0;}
+.hero-dots{position:absolute;bottom:20px;right:20px;display:flex;gap:8px;}
+.hero-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;}
+.hero-dot.active{background:#fff;width:20px;border-radius:4px;}
+
+.collection-section{padding:60px 20px;}
+.collection-section h2{font-family:'Playfair Display',serif;font-size:36px;margin-bottom:30px;}
+.category-filters{display:flex;gap:10px;margin-bottom:25px;overflow-x:auto;}
+.cat-filter{padding:10px 20px;background:#fff;border:1px solid #E5E5E5;border-radius:2px;cursor:pointer;font-size:11px;letter-spacing:1px;}
+.cat-filter.active{background:#1A1A1A;color:#fff;border-color:#1A1A1A;}
+
+.products-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;}
+.product-card{background:#fff;border-radius:4px;overflow:hidden;cursor:pointer;}
+.product-image-wrap{position:relative;aspect-ratio:3/4;overflow:hidden;background:#F0F0F0;}
+.product-image-wrap img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s;}
+.product-card:hover .product-image-wrap img{transform:scale(1.03);}
+.product-tag{position:absolute;top:12px;left:12px;background:#1A1A1A;color:#fff;padding:6px 12px;border-radius:2px;font-size:9px;}
+.product-details{padding:15px;}
+.product-category{font-size:10px;color:#8A8A8A;text-transform:uppercase;}
+.product-name{font-family:'Playfair Display',serif;font-size:16px;margin:5px 0;}
+.product-price{font-size:15px;font-weight:600;}
+.add-btn{width:100%;padding:12px;background:#1A1A1A;color:#fff;border:none;border-radius:2px;margin-top:10px;cursor:pointer;}
+
+.detail-page{position:fixed;inset:0;background:#F8F7F4;z-index:180;overflow-y:auto;opacity:0;visibility:hidden;transition:opacity 0.4s;}
+.detail-page.open{opacity:1;visibility:visible;}
+.detail-content{transform:scale(0.95);transition:transform 0.4s;}
+.detail-page.open .detail-content{transform:scale(1);}
+.detail-back{padding:20px 25px;border:none;background:none;font-size:14px;cursor:pointer;}
+.detail-layout{display:grid;grid-template-columns:1fr;gap:30px;padding:0 20px 40px;}
+.detail-main-img{aspect-ratio:3/4;background:#F0F0F0;}
+.detail-main-img img{width:100%;height:100%;object-fit:cover;}
+.detail-info h1{font-family:'Playfair Display',serif;font-size:32px;margin-bottom:10px;}
+.detail-info .price{font-size:22px;font-weight:600;margin-bottom:20px;}
+.size-btn{padding:10px 18px;border:1px solid #E5E5E5;background:#fff;margin:5px;cursor:pointer;}
+.size-btn.active{background:#1A1A1A;color:#fff;}
+
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:250;display:none;}
+.cart-overlay.open{display:block;}
+.cart-drawer{position:fixed;top:0;right:-100%;width:100%;max-width:400px;height:100%;background:#F8F7F4;z-index:251;transition:right 0.4s;display:flex;flex-direction:column;}
+.cart-drawer.open{right:0;}
+.cart-items{flex:1;overflow-y:auto;padding:20px;}
+.cart-item{display:flex;gap:12px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #E5E5E5;}
+.cart-item img{width:80px;height:100px;object-fit:cover;}
+
+.checkout-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.checkout-overlay.open{display:flex;}
+.checkout-box{background:#F8F7F4;padding:30px;max-width:450px;width:100%;max-height:90vh;overflow-y:auto;}
+.checkout-box input{width:100%;padding:12px;margin:8px 0;border:1px solid #E5E5E5;background:#fff;}
+
+.coupon-section{display:flex;gap:8px;margin:15px 0;padding:15px;background:#fff;border:1px solid #E5E5E5;border-radius:2px;}
+.coupon-section input{flex:1;margin:0;}
+.coupon-section button{padding:12px 20px;background:#1A1A1A;color:#fff;border:none;cursor:pointer;}
+
+.profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.profile-overlay.open{display:flex;}
+.profile-box{background:#F8F7F4;padding:30px;max-width:400px;width:100%;}
+
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#1A1A1A;color:#fff;padding:12px 25px;border-radius:2px;z-index:400;opacity:0;transition:all 0.4s;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+footer{background:#fff;padding:50px 25px 25px;margin-top:40px;border-top:1px solid #E5E5E5;}
+footer h4{font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:20px 0 10px;}
+footer a{display:block;color:#1A1A1A;text-decoration:none;margin:5px 0;}
+
+@media(min-width:700px){
+  .products-grid{grid-template-columns:repeat(3,1fr);}
+  .detail-layout{grid-template-columns:1fr 1fr;padding:0 40px 60px;}
+}
 </style>
 </head>
 <body>
 
-<h1>T-HEART Admin Panel</h1>
-
-<div id="loginBox" class="card">
-  <h2>Admin Login</h2>
-  <input id="email" type="email" placeholder="Admin Email">
-  <input id="password" type="password" placeholder="Password">
-  <button type="button" onclick="login()">Login</button>
-  <p id="loginMessage" class="error"></p>
+<div class="opening-overlay" id="openingOverlay">
+  <div class="opening-brand">T-HEART</div>
+  <div class="opening-tagline">Premium Clothing</div>
+  <div class="opening-icons"><span>👕</span><span>👖</span><span>👔</span></div>
 </div>
 
-<div id="adminPanel" class="hidden">
-  <p id="welcome" style="font-size:13px;color:#888;margin-bottom:15px;"></p>
-  <div class="navbar">
-    <button type="button" onclick="showSection('overview')" id="nav-overview">Overview</button>
-    <button type="button" onclick="showSection('products')" id="nav-products">Products</button>
-    <button type="button" onclick="showSection('categories')" id="nav-categories">Categories</button>
-    <button type="button" onclick="showSection('coupons')" id="nav-coupons">Coupons</button>
-    <button type="button" onclick="showSection('announcements')" id="nav-announcements">Announcements</button>
-    <button type="button" onclick="showSection('orders')" id="nav-orders">Orders</button>
-    <button type="button" onclick="showSection('bills')" id="nav-bills">Bills</button>
-    <button type="button" onclick="showSection('customers')" id="nav-customers">Customers</button>
-    <button type="button" onclick="showSection('settings')" id="nav-settings">Settings</button>
-    <button type="button" class="secondary" onclick="logout()">Logout</button>
+<div class="announcement" id="announcementBar" style="display:none;">
+  <span id="announcementText"></span>
+  <button class="close-ann" onclick="this.parentElement.style.display='none'">×</button>
+</div>
+
+<header class="header">
+  <div class="header-left"><button class="menu-btn" onclick="toggleMenu()">☰</button></div>
+  <div class="header-center">
+    <h1 id="siteBrandName">T-HEART</h1>
+    <small id="siteTagline">Premium Clothing</small>
+  </div>
+  <div class="header-right">
+    <button class="cart-btn" onclick="openCart()"><span class="cart-count" id="cartCount">0</span></button>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+<div class="menu-dropdown" id="menuDropdown">
+  <button class="menu-close" onclick="toggleMenu()">×</button>
+  <div class="menu-section">
+    <div class="menu-section-title">Navigate</div>
+    <a href="#" class="menu-link" onclick="toggleMenu();window.scrollTo(0,0);return false;">Home</a>
+    <a href="#collection" class="menu-link" onclick="toggleMenu()">Shop All</a>
+  </div>
+  <div class="menu-section" id="menuAccountSection" style="display:none;">
+    <div class="menu-section-title">My Account</div>
+    <a href="#" class="menu-link" onclick="toggleMenu();showMyOrders();return false;">My Orders</a>
+    <a href="#" class="menu-link" onclick="toggleMenu();showWishlist();return false;">Wishlist</a>
+    <a href="#" class="menu-link" onclick="toggleMenu();openCart();return false;">My Cart</a>
+  </div>
+  <div class="menu-section">
+    <div class="menu-section-title">Account</div>
+    <a href="#" class="menu-link" onclick="toggleMenu();openProfileModal();return false;" id="menuLoginLink">Login</a>
+  </div>
+  <div class="menu-footer">
+    <div class="menu-section-title">Connect</div>
+    <a href="https://instagram.com/t.heart_7" target="_blank" class="social-link">Instagram</a>
+    <a href="https://wa.me/919315640226" target="_blank" class="social-link">WhatsApp</a>
+    <a href="mailto:t.heart7support@gmail.com" class="social-link">Email</a>
+  </div>
+</div>
+
+<div id="mainContent">
+  <section class="hero" id="heroSection">
+    <div class="hero-card" id="heroCard">
+      <div class="hero-image" id="heroImage" style="background:#E5E5E5;"></div>
+      <div class="hero-info">
+        <div class="tag">Featured</div>
+        <h2 id="heroName">Loading...</h2>
       </div>
-      <!-- OVERVIEW -->
-  <div id="section-overview" class="section">
-    <div class="card">
-      <h2>Overview</h2>
-      <div id="overviewStats"></div>
-      <h2 style="margin-top:18px;">Recent Orders</h2>
-      <div id="overviewOrders">Loading...</div>
+      <div class="hero-dots" id="heroDots"></div>
     </div>
-  </div>
+  </section>
 
-  <!-- CATEGORIES -->
-  <div id="section-categories" class="section hidden">
-    <div class="card">
-      <h2>Categories</h2>
-      <input id="newCategoryName" placeholder="New category name (e.g. NEW LAUNCH)">
-      <button type="button" onclick="addCategory()">Add Category</button>
-      <p id="categoryMessage" class="error"></p>
-      <div id="categoriesList" style="margin-top:15px;">Loading...</div>
+  <section class="collection-section" id="collection">
+    <h2>The Collection</h2>
+    <div class="category-filters" id="categoryFilters">
+      <button class="cat-filter active" onclick="filterProducts('ALL')">ALL</button>
     </div>
-  </div>
+    <div class="products-grid" id="productsGrid">
+      <p style="text-align:center;grid-column:1/-1;color:#888;">Loading products...</p>
+    </div>
+  </section>
 
-  <!-- PRODUCTS -->
-  <div id="section-products" class="section hidden">
-    <div class="card">
-      <h2 id="productFormTitle">Add Product</h2>
-      <input type="hidden" id="editingProductId" value="">
-      <input id="productName" placeholder="Product Name">
-      <textarea id="productDescription" placeholder="Description" rows="3"></textarea>
-      <input id="productPrice" type="number" placeholder="Price">
-      <label>Category</label>
-      <select id="productCategory"></select>
-      <label>Sizes Available</label>
-      <div class="size-options">
-        <label><input type="checkbox" class="sizeBox" value="S"> S</label>
-        <label><input type="checkbox" class="sizeBox" value="M"> M</label>
-        <label><input type="checkbox" class="sizeBox" value="L"> L</label>
-        <label><input type="checkbox" class="sizeBox" value="XL"> XL</label>
-        <label><input type="checkbox" class="sizeBox" value="XXL"> XXL</label>
-        <label><input type="checkbox" id="allSizesBox" onclick="toggleAllSizes()"> All</label>
+  <footer>
+    <h1 style="font-family:'Playfair Display',serif;font-size:24px;letter-spacing:4px;" id="footerBrand">T-HEART</h1>
+    <p style="color:#888;font-size:13px;margin:10px 0 20px;" id="footerTagline">Premium Clothing</p>
+    <h4>Shop</h4>
+    <div id="footerCategories"></div>
+    <h4>Contact</h4>
+    <a href="https://instagram.com/t.heart_7" target="_blank">Instagram</a>
+    <a href="https://wa.me/919315640226" target="_blank">WhatsApp: +91 93156 40226</a>
+    <a href="mailto:t.heart7support@gmail.com">t.heart7support@gmail.com</a>
+    <p style="margin-top:30px;font-size:11px;color:#888;">© 2026 T-HEART. Made in India</p>
+  </footer>
+</div>
+
+<div class="detail-page" id="detailPage">
+  <div class="detail-content">
+    <button class="detail-back" onclick="closeDetail()">← Back</button>
+    <div class="detail-layout">
+      <div class="detail-main-img" id="detailMainImg"></div>
+      <div class="detail-info">
+        <h1 id="detailName"></h1>
+        <div class="price" id="detailPrice"></div>
+        <p id="detailDesc" style="color:#666;line-height:1.6;margin:20px 0;"></p>
+        <div style="margin:20px 0;">
+          <div style="font-size:11px;color:#8A8A8A;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Select Size</div>
+          <div id="detailSizes"></div>
+        </div>
+        <button class="add-btn" id="detailAddBtn" style="padding:16px;">Add to Bag</button>
+        <button class="add-btn" style="padding:16px;background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:10px;" onclick="shareProduct()">Share</button>
       </div>
-      <label>Product Photos (3:4 ratio me crop honge)</label>
-      <input id="productImages" type="file" accept="image/*" multiple>
-      <p id="uploadStatus" class="error"></p>
-      <label>Stock</label>
-      <input id="productStock" type="number" placeholder="Stock">
-      <label>Display Order (chhota number = upar)</label>
-      <input id="productSortOrder" type="number" placeholder="0" value="0">
-      <label><input type="checkbox" id="productIsNew" style="width:auto;margin-right:8px;"> Mark as NEW</label>
-      <button type="button" onclick="saveProduct()" style="margin-top:15px;">Save Product</button>
-      <button type="button" class="secondary" onclick="cancelEditProduct()">Cancel Edit</button>
-      <p id="productMessage" class="error"></p>
-    </div>
-    <div class="card">
-      <h2>All Products</h2>
-      <div id="productsList">Loading...</div>
-    </div>
-  </div>
-
-  <!-- COUPONS -->
-  <div id="section-coupons" class="section hidden">
-    <div class="card">
-      <h2>Add Coupon</h2>
-      <input id="couponCode" placeholder="Coupon Code (e.g. WELCOME10)">
-      <label>Minimum Order Amount ()</label>
-      <input id="couponMinOrder" type="number" placeholder="499">
-      <label>Discount Percent (%)</label>
-      <input id="couponDiscount" type="number" placeholder="10">
-      <label>Usage Limit (blank = unlimited)</label>
-      <input id="couponLimit" type="number" placeholder="200">
-      <button type="button" onclick="addCoupon()">Add Coupon</button>
-      <p id="couponMessage" class="error"></p>
-    </div>
-    <div class="card">
-      <h2>All Coupons</h2>
-      <div id="couponsList">Loading...</div>
-    </div>
-  </div>
-
-  <!-- ANNOUNCEMENTS -->
-  <div id="section-announcements" class="section hidden">
-    <div class="card">
-      <h2>Add Announcement</h2>
-      <input id="announcementText" placeholder="e.g. GET FLAT 10% OFF USE COUPON WELCOME10">
-      <button type="button" onclick="addAnnouncement()">Add Announcement</button>
-      <p id="announcementMessage" class="error"></p>
-    </div>
-    <div class="card">
-      <h2>All Announcements</h2>
-      <div id="announcementsList">Loading...</div>
-    </div>
-  </div>
-
-  <!-- ORDERS -->
-  <div id="section-orders" class="section hidden">
-    <div class="card">
-      <h2>Active Orders</h2>
-      <div id="ordersList">Loading...</div>
-    </div>
-  </div>
-
-  <!-- BILLS -->
-  <div id="section-bills" class="section hidden">
-    <div class="card">
-      <h2>Completed Orders (Bills)</h2>
-      <div id="billsList">Loading...</div>
-    </div>
-  </div>
-
-  <!-- CUSTOMERS -->
-  <div id="section-customers" class="section hidden">
-    <div class="card">
-      <h2>Registered Customers</h2>
-      <p style="font-size:12px;color:#888;">Jo bhi customer ne profile banaya wo yahan dikhega.</p>
-      <div id="customersList" style="margin-top:15px;">Loading...</div>
-    </div>
-  </div>
-
-  <!-- SETTINGS -->
-  <div id="section-settings" class="section hidden">
-    <div class="card">
-      <h2>Brand & Shipping</h2>
-      <label>Brand Name</label>
-      <input id="settingBrandName" placeholder="T-HEART">
-      <label>Tagline</label>
-      <input id="settingTagline" placeholder="Premium Clothing">
-      <label>Free Shipping Above (₹)</label>
-      <input id="settingFreeShipAbove" type="number" placeholder="5000">
-      <label>Shipping Fee (₹)</label>
-      <input id="settingShipFee" type="number" placeholder="99">
-      <button type="button" onclick="saveSettings()">Save Settings</button>
-      <p id="settingsMessage" class="error"></p>
-    </div>
-    <div class="card">
-      <h2>Hero Products</h2>
-      <p style="font-size:12px;color:#888;margin-bottom:10px;">Jin products ko hero slider me dikhana hai unko number do (1, 2, 3...). Khali chhod do toh hero me nahi aayega.</p>
-      <div id="heroProductsList">Load Products tab pehle.</div>
-      <button type="button" onclick="saveHeroProducts()">Save Hero Order</button>
-      <p id="heroMessage" class="error"></p>
-    </div>
-    <div class="card">
-      <h2>Change Admin Password</h2>
-      <input id="newPassword" type="password" placeholder="New Password (min 6 chars)">
-      <button type="button" onclick="changePassword()">Update Password</button>
-      <p id="passwordMessage" class="error"></p>
     </div>
   </div>
 </div>
 
-<!-- ORDER DETAIL MODAL -->
-<div class="overlay" id="orderDetailOverlay">
-  <div class="modal-box">
-    <button type="button" class="secondary small" onclick="closeOrderDetail()" style="float:right;">Close</button>
-    <div id="orderDetailContent" style="clear:both;"></div>
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div style="padding:20px;border-bottom:1px solid #E5E5E5;display:flex;justify-content:space-between;align-items:center;">
+    <h3 style="font-family:'Playfair Display',serif;">Your Bag</h3>
+    <button onclick="closeCart()" style="background:none;border:none;font-size:24px;cursor:pointer;">×</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div style="padding:20px;border-top:1px solid #E5E5E5;background:#fff;">
+    <div class="coupon-section">
+      <input id="couponInput" placeholder="Coupon Code">
+      <button onclick="applyCoupon()">Apply</button>
+    </div>
+    <p id="couponMsg" style="font-size:12px;margin:5px 0;"></p>
+    <div style="display:flex;justify-content:space-between;margin:10px 0;"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
+    <div style="display:flex;justify-content:space-between;margin:10px 0;"><span>Discount</span><span id="cartDiscount">₹0</span></div>
+    <div style="display:flex;justify-content:space-between;margin:10px 0;"><span>Shipping</span><span id="cartShipping">₹0</span></div>
+    <div style="display:flex;justify-content:space-between;margin:15px 0;font-weight:600;font-size:16px;"><span>Total</span><span id="cartTotal">₹0</span></div>
+    <button class="add-btn" onclick="openCheckout()" style="padding:16px;">Checkout</button>
   </div>
 </div>
 
-<!-- IMAGE CROPPER MODAL -->
-<div class="overlay" id="cropperOverlay">
-  <div class="modal-box" style="max-width:500px;">
-    <h3 style="margin-bottom:5px;">Crop Image (3:4 Ratio)</h3>
-    <p style="font-size:12px;color:#888;margin-bottom:15px;">Box drag karke area select karo jo rakhna hai.</p>
-    <div class="cropper-container-box">
-      <img id="cropperImage" src="" alt="">
-    </div>
-    <p style="font-size:11px;color:#888;margin-bottom:10px;">Image <span id="cropCounter">1</span> of <span id="cropTotal">1</span></p>
-    <div style="display:flex;gap:10px;">
-      <button type="button" onclick="confirmCrop()" style="flex:1;">✓ Use This Crop</button>
-      <button type="button" class="secondary" onclick="cancelCrop()" style="flex:1;">Cancel All</button>
-    </div>
+<div class="checkout-overlay" id="checkoutOverlay">
+  <div class="checkout-box">
+    <h3 style="font-family:'Playfair Display',serif;margin-bottom:20px;">Checkout</h3>
+    <input id="custName" placeholder="Full Name">
+    <input id="custEmail" type="email" placeholder="Email">
+    <input id="custPhone" type="tel" placeholder="Phone Number">
+    <input id="custHouse" placeholder="House / Flat No.">
+    <input id="custArea" placeholder="Street / Area">
+    <input id="custCity" placeholder="City">
+    <input id="custState" placeholder="State">
+    <input id="custPincode" placeholder="Pincode">
+    <div id="checkoutTotal" style="font-weight:600;margin:15px 0;"></div>
+    <p id="checkoutMsg" style="color:#a33;font-size:12px;"></p>
+    <button class="add-btn" onclick="placeOrder()" style="padding:16px;">Place Order</button>
+    <button class="add-btn" onclick="closeCheckout()" style="padding:16px;background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:10px;">Cancel</button>
   </div>
+</div>
+
+<div class="profile-overlay" id="profileOverlay">
+  <div class="profile-box">
+    <h3 style="font-family:'Playfair Display',serif;margin-bottom:15px;" id="profileTitle">Save Details</h3>
+    <input id="profName" placeholder="Full Name">
+    <input id="profEmail" type="email" placeholder="Email">
+    <input id="profPhone" type="tel" placeholder="Phone Number">
+    <p id="profileMsg" style="font-size:12px;margin:10px 0;"></p>
+    <button class="add-btn" onclick="saveProfile()" style="padding:14px;">Save</button>
+    <button class="add-btn" onclick="closeProfile()" style="padding:14px;background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:10px;">Cancel</button>
   </div>
-  <script>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
 const SUPABASE_URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
-const ADMIN_EMAIL = "zeokesz@gmail.com";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+let allProducts = [];
 let allCategories = [];
-let allProductsAdmin = [];
-let allOrdersAdmin = [];
-let cropperInstance = null;
-let pendingCropFiles = [];
-let currentCropIndex = 0;
-let croppedFiles = [];
+let currentProduct = null;
+let selectedSize = null;
+let siteSettings = { free_shipping_above: 5000, shipping_fee: 99 };
+let heroSlides = [];
+let currentHero = 0;
+let heroInterval = null;
+let appliedCoupon = null;
+let userProfile = null;
 
-// LOGIN
-async function login() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const message = document.getElementById("loginMessage");
-  message.textContent = "";
-  if (!email || !password) { message.textContent = "Please enter email and password."; return; }
-  if (email !== ADMIN_EMAIL) { message.textContent = "Access denied. Admin only."; return; }
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) { message.textContent = "Login failed: " + error.message; return; }
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("adminPanel").classList.remove("hidden");
-    document.getElementById("welcome").textContent = "Logged in as " + data.user.email;
-    showSection("overview");
-  } catch (err) { message.textContent = "Error: " + err.message; }
-}
-
-async function logout() {
-  await supabaseClient.auth.signOut();
-  document.getElementById("adminPanel").classList.add("hidden");
-  document.getElementById("loginBox").classList.remove("hidden");
-  document.getElementById("loginMessage").textContent = "";
-}
-
-// NAVIGATION
-function showSection(name) {
-  const sections = ["overview","products","categories","coupons","announcements","orders","bills","customers","settings"];
-  sections.forEach(s => {
-    const sec = document.getElementById("section-" + s);
-    const nav = document.getElementById("nav-" + s);
-    if (sec) sec.classList.add("hidden");
-    if (nav) nav.classList.remove("active");
-  });
-  const targetSec = document.getElementById("section-" + name);
-  const targetNav = document.getElementById("nav-" + name);
-  if (targetSec) targetSec.classList.remove("hidden");
-  if (targetNav) targetNav.classList.add("active");
-  if (name === "overview") loadOverview();
-  if (name === "products") loadProducts();
-  if (name === "categories") loadCategories();
-  if (name === "coupons") loadCoupons();
-  if (name === "announcements") loadAnnouncements();
-  if (name === "orders") loadOrders();
-  if (name === "bills") loadBills();
-  if (name === "customers") loadCustomers();
-  if (name === "settings") loadSettings();
-}
-
-// OVERVIEW
-async function loadOverview() {
-  const { data, error } = await supabaseClient.from("Orders table").select("*").order("id", { ascending: false });
-  const statsDiv = document.getElementById("overviewStats");
-  const ordersDiv = document.getElementById("overviewOrders");
-  if (error) { statsDiv.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
-  const totalOrders = data.length;
-  const totalValue = data.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-  statsDiv.innerHTML = "<div class='stat-box'><div class='num'>" + totalOrders + "</div><div class='label'>TOTAL ORDERS</div></div><div class='stat-box'><div class='num'>₹" + totalValue + "</div><div class='label'>TOTAL VALUE</div></div>";
-  if (data.length === 0) { ordersDiv.innerHTML = "<p>No orders yet.</p>"; return; }
-  let html = "";
-  data.slice(0, 10).forEach(order => {
-    html += "<div class='item-row'><strong>Order #" + order.id + "</strong> - " + escapeHtml(order.customer_name||"") + " - ₹" + (order.total_amount||0) + " - " + escapeHtml(order.order_status||"") + "</div>";
-  });
-  ordersDiv.innerHTML = html;
-}
-
-// CATEGORIES
-async function loadCategories() {
-  const { data, error } = await supabaseClient.from("categories").select("*").order("sort_order", { ascending: true });
-  const container = document.getElementById("categoriesList");
-  const select = document.getElementById("productCategory");
-  if (error) { if (container) container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
-  allCategories = data || [];
-  if (container) {
-    if (allCategories.length === 0) container.innerHTML = "<p>No categories yet.</p>";
-    else {
-      let html = "";
-      allCategories.forEach(cat => {
-        html += "<div class='item-row'>" + escapeHtml(cat.name) + " (order: " + cat.sort_order + ")" +
-          "<br><button type='button' class='small' onclick='moveCategory(\"" + cat.id + "\", -1)'>Up</button>" +
-          "<button type='button' class='small' onclick='moveCategory(\"" + cat.id + "\", 1)'>Down</button>" +
-          "<button type='button' class='small danger' onclick='deleteCategory(\"" + cat.id + "\")'>Delete</button></div>";
-      });
-      container.innerHTML = html;
-    }
-  }
-  if (select) {
-    select.innerHTML = "";
-    allCategories.forEach(cat => {
-      const opt = document.createElement("option");
-      opt.value = cat.name; opt.textContent = cat.name;
-      select.appendChild(opt);
-    });
-  }
-}
-
-async function addCategory() {
-  const name = document.getElementById("newCategoryName").value.trim().toUpperCase();
-  const message = document.getElementById("categoryMessage");
-  if (!name) { message.textContent = "Enter a category name."; return; }
-  const { error } = await supabaseClient.from("categories").insert([{ name, sort_order: allCategories.length }]);
-  if (error) { message.textContent = error.message; return; }
-  message.textContent = "";
-  document.getElementById("newCategoryName").value = "";
-  loadCategories();
-}
-
-async function deleteCategory(id) {
-  if (!confirm("Delete this category?")) return;
-  await supabaseClient.from("categories").delete().eq("id", id);
-  loadCategories();
-}
-
-async function moveCategory(id, direction) {
-  const index = allCategories.findIndex(c => c.id === id);
-  const swapIndex = index + direction;
-  if (swapIndex < 0 || swapIndex >= allCategories.length) return;
-  const a = allCategories[index], b = allCategories[swapIndex];
-  await supabaseClient.from("categories").update({ sort_order: b.sort_order }).eq("id", a.id);
-  await supabaseClient.from("categories").update({ sort_order: a.sort_order }).eq("id", b.id);
-  loadCategories();
-}
-
-// IMAGE CROPPER
-document.addEventListener("change", function(e) {
-  if (e.target && e.target.id === "productImages" && e.target.files.length > 0) {
-    pendingCropFiles = Array.from(e.target.files);
-    currentCropIndex = 0;
-    croppedFiles = [];
-    document.getElementById("cropTotal").textContent = pendingCropFiles.length;
-    showCropperForNext();
-  }
+// Hide opening animation
+window.addEventListener("load", function() {
+  setTimeout(() => {
+    const ov = document.getElementById("openingOverlay");
+    if (ov) { ov.classList.add("hide"); setTimeout(() => ov.style.display = "none", 800); }
+  }, 2000);
 });
 
-function showCropperForNext() {
-  if (currentCropIndex >= pendingCropFiles.length) {
-    document.getElementById("productImages").value = "";
-    document.getElementById("uploadStatus").textContent = croppedFiles.length + " image(s) ready to upload.";
-    document.getElementById("uploadStatus").className = "success";
-    return;
-  }
-  const file = pendingCropFiles[currentCropIndex];
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    document.getElementById("cropperImage").src = ev.target.result;
-    document.getElementById("cropperOverlay").classList.add("open");
-    document.getElementById("cropCounter").textContent = currentCropIndex + 1;
-    setTimeout(() => {
-      if (cropperInstance) cropperInstance.destroy();
-      const img = document.getElementById("cropperImage");
-      cropperInstance = new Cropper(img, {
-        aspectRatio: 3/4,
-        viewMode: 1,
-        dragMode: "move",
-        autoCropArea: 0.9,
-        responsive: true,
-        guides: true,
-        center: true,
-      });
-    }, 100);
-  };
-  reader.readAsDataURL(file);
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
 }
 
-function confirmCrop() {
-  if (!cropperInstance) return;
-  const canvas = cropperInstance.getCroppedCanvas({ width: 750, height: 1000, imageSmoothingEnabled: true, imageSmoothingQuality: "high" });
-  canvas.toBlob(function(blob) {
-    const fileName = "cropped-" + Date.now() + "-" + currentCropIndex + ".png";
-    const croppedFile = new File([blob], fileName, { type: "image/png" });
-    croppedFiles.push(croppedFile);
-    currentCropIndex++;
-    cropperInstance.destroy();
-    cropperInstance = null;
-    document.getElementById("cropperOverlay").classList.remove("open");
-    showCropperForNext();
-  }, "image/png", 0.95);
+function toggleMenu() {
+  document.getElementById("menuOverlay").classList.toggle("open");
+  document.getElementById("menuDropdown").classList.toggle("open");
 }
 
-function cancelCrop() {
-  if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
-  document.getElementById("cropperOverlay").classList.remove("open");
-  pendingCropFiles = [];
-  croppedFiles = [];
-  document.getElementById("productImages").value = "";
-  document.getElementById("uploadStatus").textContent = "";
-}
-
-// PRODUCTS
-function toggleAllSizes() {
-  const all = document.getElementById("allSizesBox").checked;
-  document.querySelectorAll(".sizeBox").forEach(box => { box.checked = all; });
-}
-
-async function saveProduct() {
-  const editingId = document.getElementById("editingProductId").value;
-  const name = document.getElementById("productName").value.trim();
-  const description = document.getElementById("productDescription").value.trim();
-  const price = document.getElementById("productPrice").value;
-  const category = document.getElementById("productCategory").value;
-  const stock = document.getElementById("productStock").value;
-  const sortOrder = document.getElementById("productSortOrder").value || 0;
-  const isNew = document.getElementById("productIsNew").checked;
-  const selectedSizes = [];
-  document.querySelectorAll(".sizeBox:checked").forEach(box => selectedSizes.push(box.value));
-  const sizes = selectedSizes.join(",");
-  const message = document.getElementById("productMessage");
-  const uploadStatus = document.getElementById("uploadStatus");
-  let imagesArray = [];
-
-  if (!name || !price) { message.textContent = "Name and Price required."; return; }
-
-  let filesToUpload = [];
-  if (croppedFiles.length > 0) {
-    filesToUpload = croppedFiles;
-    croppedFiles = [];
-  } else if (document.getElementById("productImages").files.length > 0) {
-    filesToUpload = Array.from(document.getElementById("productImages").files);
-  }
-
-  if (filesToUpload.length > 0) {
-    uploadStatus.textContent = "Uploading " + filesToUpload.length + " image(s)...";
-    uploadStatus.className = "error";
-    for (let i = 0; i < filesToUpload.length; i++) {
-      const file = filesToUpload[i];
-      const fileName = Date.now() + "-" + i + "-" + file.name;
-      const { error: uploadError } = await supabaseClient.storage.from("product-images").upload(fileName, file);
-      if (uploadError) { uploadStatus.textContent = "Upload failed: " + uploadError.message; return; }
-      const { data: publicUrlData } = supabaseClient.storage.from("product-images").getPublicUrl(fileName);
-      imagesArray.push(publicUrlData.publicUrl);
+function loadSavedProfile() {
+  try {
+    const saved = localStorage.getItem("theart_profile");
+    if (saved) {
+      userProfile = JSON.parse(saved);
+      document.getElementById("menuAccountSection").style.display = "block";
+      document.getElementById("menuLoginLink").textContent = "My Profile";
+      if (userProfile.name) document.getElementById("custName").value = userProfile.name;
+      if (userProfile.email) document.getElementById("custEmail").value = userProfile.email;
+      if (userProfile.phone) document.getElementById("custPhone").value = userProfile.phone;
     }
-    uploadStatus.textContent = "";
+  } catch(e) {}
+}
+
+async function loadSiteSettings() {
+  try {
+    const { data, error } = await supabaseClient.from("site_setting").select("*").limit(1).maybeSingle();
+    if (error) { console.log("Settings error:", error); return; }
+    if (!data) return;
+    if (data.brand_name) {
+      document.getElementById("siteBrandName").textContent = data.brand_name;
+      document.getElementById("footerBrand").textContent = data.brand_name;
+      document.title = data.brand_name + " — Premium Clothing";
+    }
+    if (data.tagline) {
+      document.getElementById("siteTagline").textContent = data.tagline;
+      document.getElementById("footerTagline").textContent = data.tagline;
+    }
+    if (data.free_shipping_above !== null && data.free_shipping_above !== undefined) siteSettings.free_shipping_above = Number(data.free_shipping_above);
+    if (data.shipping_fee !== null && data.shipping_fee !== undefined) siteSettings.shipping_fee = Number(data.shipping_fee);
+    if (data.hero_product_ids && data.hero_product_ids.length > 0) await loadHeroSlides(data.hero_product_ids);
+  } catch(e) { console.log(e); }
+}
+
+async function loadHeroSlides(heroIds) {
+  try {
+    const { data, error } = await supabaseClient.from("Products").select("*").in("id", heroIds);
+    if (error) { console.log("Hero error:", error); return; }
+    if (!data || data.length === 0) return;
+    heroSlides = heroIds.map(id => data.find(p => p.id === id)).filter(p => p);
+    if (heroSlides.length === 0) return;
+    renderHeroSlide(0);
+    renderHeroDots();
+    if (heroInterval) clearInterval(heroInterval);
+    if (heroSlides.length > 1) {
+      heroInterval = setInterval(() => {
+        currentHero = (currentHero + 1) % heroSlides.length;
+        renderHeroSlide(currentHero);
+        renderHeroDots();
+      }, 4000);
+    }
+  } catch(e) { console.error(e); }
+}
+
+function renderHeroSlide(index) {
+  const p = heroSlides[index];
+  if (!p) return;
+  const img = (p.images && p.images.length > 0) ? p.images[0] : p.image_url;
+  const heroImg = document.getElementById("heroImage");
+  if (img) {
+    heroImg.style.backgroundImage = `url(${img})`;
+    heroImg.style.backgroundSize = "cover";
+    heroImg.style.backgroundPosition = "center";
   }
-
-  const payload = { name, description, price: Number(price), category, sizes, stock: Number(stock||0), sort_order: Number(sortOrder), is_new: isNew, is_active: true };
-  if (imagesArray.length > 0) { payload.images = imagesArray; payload.image_url = imagesArray[0]; }
-
-  let error;
-  if (editingId) { const result = await supabaseClient.from("Products").update(payload).eq("id", editingId); error = result.error; }
-  else { const result = await supabaseClient.from("Products").insert([payload]); error = result.error; }
-
-  if (error) { message.textContent = error.message; return; }
-  message.textContent = "";
-  cancelEditProduct();
-  loadProducts();
+  document.getElementById("heroName").textContent = p.name;
+  heroImg.dataset.productId = p.id;
 }
 
-function cancelEditProduct() {
-  document.getElementById("editingProductId").value = "";
-  document.getElementById("productFormTitle").textContent = "Add Product";
-  document.getElementById("productName").value = "";
-  document.getElementById("productDescription").value = "";
-  document.getElementById("productPrice").value = "";
-  document.getElementById("productStock").value = "";
-  document.getElementById("productSortOrder").value = "0";
-  document.getElementById("productImages").value = "";
-  document.getElementById("productIsNew").checked = false;
-  document.getElementById("uploadStatus").textContent = "";
-  document.getElementById("uploadStatus").className = "error";
-  document.querySelectorAll(".sizeBox").forEach(box => box.checked = false);
-  document.getElementById("allSizesBox").checked = false;
-  document.getElementById("productMessage").textContent = "";
-  croppedFiles = [];
+function renderHeroDots() {
+  const dotsDiv = document.getElementById("heroDots");
+  dotsDiv.innerHTML = "";
+  heroSlides.forEach((_, i) => {
+    const dot = document.createElement("div");
+    dot.className = "hero-dot" + (i === currentHero ? " active" : "");
+    dot.onclick = (e) => {
+      e.stopPropagation();
+      currentHero = i;
+      renderHeroSlide(i);
+      renderHeroDots();
+      if (heroInterval) {
+        clearInterval(heroInterval);
+        heroInterval = setInterval(() => {
+          currentHero = (currentHero + 1) % heroSlides.length;
+          renderHeroSlide(currentHero);
+          renderHeroDots();
+        }, 4000);
+      }
+    };
+    dotsDiv.appendChild(dot);
+  });
 }
 
-function editProduct(id) {
-  const product = allProductsAdmin.find(p => p.id === id);
-  if (!product) return;
-  document.getElementById("editingProductId").value = product.id;
-  document.getElementById("productFormTitle").textContent = "Edit: " + product.name;
-  document.getElementById("productName").value = product.name || "";
-  document.getElementById("productDescription").value = product.description || "";
-  document.getElementById("productPrice").value = product.price || "";
-  document.getElementById("productStock").value = product.stock || "";
-  document.getElementById("productSortOrder").value = product.sort_order || 0;
-  document.getElementById("productIsNew").checked = product.is_new || false;
-  document.getElementById("productCategory").value = product.category || "";
-  const sizes = (product.sizes || "").split(",").map(s => s.trim());
-  document.querySelectorAll(".sizeBox").forEach(box => { box.checked = sizes.indexOf(box.value) !== -1; });
-  window.scrollTo(0, 0);
+document.getElementById("heroCard").onclick = function() {
+  const img = document.getElementById("heroImage");
+  const pid = img.dataset.productId;
+  if (pid) openDetail(pid);
+};
+
+async function loadAnnouncements() {
+  try {
+    const { data } = await supabaseClient.from("announcements").select("*").eq("is_active", true).order("sort_order", { ascending: true });
+    if (data && data.length > 0) {
+      document.getElementById("announcementText").textContent = data[0].text;
+      document.getElementById("announcementBar").style.display = "flex";
+    }
+  } catch(e) {}
 }
 
-async function toggleProductActive(id, current) {
-  await supabaseClient.from("Products").update({ is_active: !current }).eq("id", id);
-  loadProducts();
-}
-
-async function deleteProduct(id) {
-  if (!confirm("Delete this product permanently?")) return;
-  await supabaseClient.from("Products").delete().eq("id", id);
-  loadProducts();
+async function loadCategories() {
+  try {
+    const { data, error } = await supabaseClient.from("categories").select("*").order("sort_order", { ascending: true });
+    if (error) { console.log("Categories error:", error); return; }
+    if (!data || data.length === 0) return;
+    allCategories = data;
+    const filters = document.getElementById("categoryFilters");
+    filters.innerHTML = '<button class="cat-filter active" onclick="filterProducts(\'ALL\')">ALL</button>';
+    data.forEach(cat => {
+      const btn = document.createElement("button");
+      btn.className = "cat-filter";
+      btn.textContent = cat.name;
+      btn.onclick = () => {
+        filters.querySelectorAll(".cat-filter").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        filterProducts(cat.name);
+      };
+      filters.appendChild(btn);
+    });
+    const footerCats = document.getElementById("footerCategories");
+    footerCats.innerHTML = "";
+    data.forEach(cat => {
+      const a = document.createElement("a");
+      a.href = "#collection";
+      a.textContent = cat.name;
+      a.onclick = () => { filterProducts(cat.name); document.getElementById("collection").scrollIntoView({behavior:"smooth"}); };
+      footerCats.appendChild(a);
+    });
+  } catch(e) { console.log(e); }
 }
 
 async function loadProducts() {
-  const { data, error } = await supabaseClient.from("Products").select("*").order("sort_order", { ascending: true });
-  const container = document.getElementById("productsList");
-  if (error) { container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
-  allProductsAdmin = data || [];
-  if (allProductsAdmin.length === 0) { container.innerHTML = "<p>No products yet.</p>"; return; }
-  let html = "";
-  allProductsAdmin.forEach(product => {
-    const img = (product.images && product.images.length > 0) ? product.images[0] : product.image_url;
-    html += "<div class='item-row'>" +
-      (img ? "<img class='thumb' src='" + img + "'>" : "") +
-      "<strong>" + escapeHtml(product.name) + "</strong>" + (product.is_new ? " <span style='color:#c9a96e;font-size:10px;'>★ NEW</span>" : "") +
-      " (order: " + (product.sort_order||0) + ")" +
-      "<p>" + product.price + " | Category: " + escapeHtml(product.category||"-") + " | Stock: " + (product.stock??0) + "</p>" +
-      "<p>Sizes: " + escapeHtml(product.sizes||"-") + "</p>" +
-      "<p>Status: " + (product.is_active ? "Live" : "Hidden") + "</p>" +
-      "<button type='button' class='small' onclick='editProduct(\"" + product.id + "\")'>Edit</button>" +
-      "<button type='button' class='small secondary' onclick='toggleProductActive(\"" + product.id + "\", " + product.is_active + ")'>" + (product.is_active ? "Hide" : "Show") + "</button>" +
-      "<button type='button' class='small danger' onclick='deleteProduct(\"" + product.id + "\")'>Delete</button></div>";
-  });
-  container.innerHTML = html;
-}
-    // COUPONS
-async function addCoupon() {
-  const code = document.getElementById("couponCode").value.trim().toUpperCase();
-  const minOrder = document.getElementById("couponMinOrder").value || 0;
-  const discount = document.getElementById("couponDiscount").value || 0;
-  const limitRaw = document.getElementById("couponLimit").value;
-  const limit = limitRaw ? Number(limitRaw) : null;
-  const message = document.getElementById("couponMessage");
-  if (!code) { message.textContent = "Enter a coupon code."; return; }
-  const { error } = await supabaseClient.from("coupons").insert([{ code, min_order_amount: Number(minOrder), discount_percent: Number(discount), usage_limit: limit, used_count: 0, is_active: true }]);
-  if (error) { message.textContent = error.message; return; }
-  message.textContent = "";
-  document.getElementById("couponCode").value = "";
-  document.getElementById("couponMinOrder").value = "";
-  document.getElementById("couponDiscount").value = "";
-  document.getElementById("couponLimit").value = "";
-  loadCoupons();
-}
-
-async function toggleCouponActive(id, current) {
-  await supabaseClient.from("coupons").update({ is_active: !current }).eq("id", id);
-  loadCoupons();
-}
-
-async function deleteCoupon(id) {
-  if (!confirm("Delete this coupon?")) return;
-  await supabaseClient.from("coupons").delete().eq("id", id);
-  loadCoupons();
-}
-
-async function loadCoupons() {
-  const { data, error } = await supabaseClient.from("coupons").select("*").order("id", { ascending: false });
-  const container = document.getElementById("couponsList");
-  if (error) { container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
-  if (!data || data.length === 0) { container.innerHTML = "<p>No coupons yet.</p>"; return; }
-  let html = "";
-  data.forEach(c => {
-    html += "<div class='item-row'><strong>" + escapeHtml(c.code) + "</strong> - " + c.discount_percent + "% off above ₹" + c.min_order_amount +
-      "<p>Used: " + (c.used_count||0) + (c.usage_limit ? " / " + c.usage_limit : " / Unlimited") + "</p>" +
-      "<p>Status: " + (c.is_active ? "Active" : "Inactive") + "</p>" +
-      "<button type='button' class='small secondary' onclick='toggleCouponActive(\"" + c.id + "\", " + c.is_active + ")'>" + (c.is_active ? "Deactivate" : "Activate") + "</button>" +
-      "<button type='button' class='small danger' onclick='deleteCoupon(\"" + c.id + "\")'>Delete</button></div>";
-  });
-  container.innerHTML = html;
-}
-
-// ANNOUNCEMENTS
-async function addAnnouncement() {
-  const text = document.getElementById("announcementText").value.trim();
-  const message = document.getElementById("announcementMessage");
-  if (!text) { message.textContent = "Enter announcement text."; return; }
-  const { error } = await supabaseClient.from("announcements").insert([{ text, is_active: true, sort_order: 0 }]);
-  if (error) { message.textContent = error.message; return; }
-  message.textContent = "";
-  document.getElementById("announcementText").value = "";
-  loadAnnouncements();
-}
-
-async function toggleAnnouncementActive(id, current) {
-  await supabaseClient.from("announcements").update({ is_active: !current }).eq("id", id);
-  loadAnnouncements();
-}
-
-async function deleteAnnouncement(id) {
-  if (!confirm("Delete this announcement?")) return;
-  await supabaseClient.from("announcements").delete().eq("id", id);
-  loadAnnouncements();
-}
-
-async function loadAnnouncements() {
-  const { data, error } = await supabaseClient.from("announcements").select("*").order("id", { ascending: false });
-  const container = document.getElementById("announcementsList");
-  if (error) { container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
-  if (!data || data.length === 0) { container.innerHTML = "<p>No announcements yet.</p>"; return; }
-  let html = "";
-  data.forEach(a => {
-    html += "<div class='item-row'>" + escapeHtml(a.text) +
-      "<p>Status: " + (a.is_active ? "Live" : "Hidden") + "</p>" +
-      "<button type='button' class='small secondary' onclick='toggleAnnouncementActive(\"" + a.id + "\", " + a.is_active + ")'>" + (a.is_active ? "Hide" : "Show") + "</button>" +
-      "<button type='button' class='small danger' onclick='deleteAnnouncement(\"" + a.id + "\")'>Delete</button></div>";
-  });
-  container.innerHTML = html;
-}
-
-// ORDERS
-async function loadOrders() {
-  const { data, error } = await supabaseClient.from("Orders table").select("*").order("id", { ascending: false });
-  const container = document.getElementById("ordersList");
-  if (error) { container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
-  allOrdersAdmin = data || [];
-  const active = allOrdersAdmin.filter(o => o.order_status !== "Delivered");
-  if (active.length === 0) { container.innerHTML = "<p>No active orders.</p>"; return; }
-  let html = "";
-  active.forEach(order => {
-    html += "<div class='item-row'><strong>Order #" + order.id + "</strong> - " + escapeHtml(order.customer_name||"") +
-      " - ₹" + (order.total_amount||0) + " - " + escapeHtml(order.order_status||"") +
-      "<br><button type='button' class='small' onclick='openOrderDetail(\"" + order.id + "\")'>View Details</button></div>";
-  });
-  container.innerHTML = html;
-}
-
-async function loadBills() {
-  const container = document.getElementById("billsList");
-  const delivered = allOrdersAdmin.filter(o => o.order_status === "Delivered");
-  if (delivered.length === 0) { container.innerHTML = "<p>No completed bills yet.</p>"; return; }
-  let html = "";
-  delivered.forEach(order => {
-    html += "<div class='item-row'><strong>Order #" + order.id + "</strong> - " + escapeHtml(order.customer_name||"") +
-      " - ₹" + (order.total_amount||0) + " - Delivered" +
-      (order.delivered_at ? " on " + new Date(order.delivered_at).toLocaleDateString() : "") + "</div>";
-  });
-  container.innerHTML = html;
-}
-
-function openOrderDetail(id) {
-  const order = allOrdersAdmin.find(o => o.id === id);
-  if (!order) return;
-  let itemsHtml = "";
-  (order.items || []).forEach(item => { itemsHtml += "<div>" + escapeHtml(item.name) + " x " + item.qty + " - ₹" + item.price + "</div>"; });
-  const statuses = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
-  let statusOptions = "";
-  statuses.forEach(s => { statusOptions += "<option value='" + s + "'" + (order.order_status === s ? " selected" : "") + ">" + s + "</option>"; });
-  const content = "<h2>Order #" + order.id + "</h2>" +
-    "<p><strong>Name:</strong> " + escapeHtml(order.customer_name||"") + "</p>" +
-    "<p><strong>Email:</strong> " + escapeHtml(order.customer_email||"") + "</p>" +
-    "<p><strong>Phone:</strong> " + escapeHtml(order.customer_phone||"") + "</p>" +
-    "<p><strong>Address:</strong> " + escapeHtml(order.address||"") + "</p>" +
-    "<p><strong>Items:</strong></p>" + itemsHtml +
-    "<p><strong>Total:</strong> ₹" + (order.total_amount||0) + "</p>" +
-    (order.shipping_fee !== undefined ? "<p><strong>Shipping:</strong> ₹" + order.shipping_fee + "</p>" : "") +
-    "<p><strong>Payment Status:</strong> " + escapeHtml(order.payment_status||"") + "</p>" +
-    "<label>Order Status</label>" +
-    "<select id='orderStatusSelect'>" + statusOptions + "</select>" +
-    "<button type='button' onclick='updateOrderStatus(\"" + order.id + "\")'>Update Status</button>" +
-    "<p id='orderUpdateMessage' class='success'></p>";
-  document.getElementById("orderDetailContent").innerHTML = content;
-  document.getElementById("orderDetailOverlay").classList.add("open");
-}
-
-function closeOrderDetail() { document.getElementById("orderDetailOverlay").classList.remove("open"); }
-
-async function updateOrderStatus(id) {
-  const newStatus = document.getElementById("orderStatusSelect").value;
-  const payload = { order_status: newStatus };
-  if (newStatus === "Delivered") payload.delivered_at = new Date().toISOString();
-  const { error } = await supabaseClient.from("Orders table").update(payload).eq("id", id);
-  const msg = document.getElementById("orderUpdateMessage");
-  if (error) { msg.className = "error"; msg.textContent = error.message; return; }
-  msg.className = "success"; msg.textContent = "Status updated.";
-  loadOrders();
-}
-
-// SETTINGS
-async function loadSettings() {
-  const { data, error } = await supabaseClient.from("site_setting").select("*").limit(1).maybeSingle();
-  const message = document.getElementById("settingsMessage");
-  if (error) { message.textContent = error.message; return; }
-  if (data) {
-    document.getElementById("settingBrandName").value = data.brand_name || "";
-    document.getElementById("settingTagline").value = data.tagline || "";
-    document.getElementById("settingFreeShipAbove").value = data.free_shipping_above ?? "";
-    document.getElementById("settingShipFee").value = data.shipping_fee ?? "";
-  }
-  loadHeroProductsUI(data ? (data.hero_product_ids || []) : []);
-}
-
-async function saveSettings() {
-  const brandName = document.getElementById("settingBrandName").value.trim();
-  const tagline = document.getElementById("settingTagline").value.trim();
-  const freeShipAbove = document.getElementById("settingFreeShipAbove").value || 0;
-  const shipFee = document.getElementById("settingShipFee").value || 0;
-  const message = document.getElementById("settingsMessage");
-  const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
-  let error;
-  if (existing) { const result = await supabaseClient.from("site_setting").update({ brand_name: brandName, tagline: tagline, free_shipping_above: Number(freeShipAbove), shipping_fee: Number(shipFee) }).eq("id", existing.id); error = result.error; }
-  else { const result = await supabaseClient.from("site_setting").insert([{ brand_name: brandName, tagline: tagline, free_shipping_above: Number(freeShipAbove), shipping_fee: Number(shipFee) }]); error = result.error; }
-  if (error) { message.className = "error"; message.textContent = error.message; return; }
-  message.className = "success"; message.textContent = "Settings saved.";
-}
-
-function loadHeroProductsUI(heroIds) {
-  const container = document.getElementById("heroProductsList");
-  if (allProductsAdmin.length === 0) { container.innerHTML = "<p>Load Products tab pehle.</p>"; return; }
-  let html = "";
-  allProductsAdmin.forEach(p => {
-    const idx = heroIds.indexOf(p.id);
-    const orderValue = idx !== -1 ? (idx + 1) : "";
-    const heroImg = p.hero_image_url || (p.images && p.images.length > 0) ? p.images[0] : p.image_url;
-    html += "<div class='item-row'>" +
-      (heroImg ? "<img class='thumb' src='" + heroImg + "'>" : "") +
-      "<strong>" + escapeHtml(p.name) + "</strong>" +
-      " <input type='number' style='width:70px;display:inline-block;' id='hero-order-" + p.id + "' value='" + orderValue + "' placeholder='-' title='Hero order (1,2,3...)'>" +
-      "<br><label style='font-size:11px;margin-top:8px;'>Hero Image (1:1 ratio recommended):</label>" +
-      "<input type='file' accept='image/*' id='hero-img-" + p.id + "' style='margin-top:5px;'>" +
-      "<button type='button' class='small' onclick='uploadHeroImage(\"" + p.id + "\")' style='margin-top:5px;'>Upload Hero Image</button>" +
-      "</div>";
-  });
-  container.innerHTML = html;
-}
-
-async function uploadHeroImage(productId) {
-  const fileInput = document.getElementById("hero-img-" + productId);
-  if (!fileInput.files || fileInput.files.length === 0) {
-    alert("Pehle image select karo!");
-    return;
-  }
-  const file = fileInput.files[0];
-  const fileName = "hero-" + Date.now() + "-" + file.name;
-  const { error: uploadError } = await supabaseClient.storage.from("product-images").upload(fileName, file);
-  if (uploadError) {
-    alert("Upload failed: " + uploadError.message);
-    return;
-  }
-  const { data: publicUrlData } = supabaseClient.storage.from("product-images").getPublicUrl(fileName);
-  const { error } = await supabaseClient.from("Products").update({ hero_image_url: publicUrlData.publicUrl }).eq("id", productId);
-  if (error) {
-    alert("Error: " + error.message);
-    return;
-  }
-  alert("Hero image uploaded successfully!");
-  loadProducts();
-}
-
-async function saveHeroProducts() {
-  const entries = [];
-  allProductsAdmin.forEach(p => {
-    const input = document.getElementById("hero-order-" + p.id);
-    if (input && input.value) entries.push({ id: p.id, order: Number(input.value) });
-  });
-  entries.sort((a, b) => a.order - b.order);
-  const heroIds = entries.map(e => e.id);
-  const message = document.getElementById("heroMessage");
-  const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
-  let error;
-  if (existing) { const result = await supabaseClient.from("site_setting").update({ hero_product_ids: heroIds }).eq("id", existing.id); error = result.error; }
-  else { const result = await supabaseClient.from("site_setting").insert([{ hero_product_ids: heroIds }]); error = result.error; }
-  if (error) { message.className = "error"; message.textContent = error.message; return; }
-  message.className = "success"; message.textContent = "Hero order saved.";
-}
-
-async function changePassword() {
-  const newPass = document.getElementById("newPassword").value;
-  const message = document.getElementById("passwordMessage");
-  if (!newPass || newPass.length < 6) { message.textContent = "Password must be at least 6 characters."; return; }
-  const { error } = await supabaseClient.auth.updateUser({ password: newPass });
-  if (error) { message.className = "error"; message.textContent = error.message; return; }
-  message.className = "success"; message.textContent = "Password updated successfully.";
-  document.getElementById("newPassword").value = "";
-}
-
-// CUSTOMERS
-async function loadCustomers() {
-  const container = document.getElementById("customersList");
   try {
-    const { data, error } = await supabaseClient.from("customers").select("*").order("id", { ascending: false });
-    if (error) { container.innerHTML = "<p class='error'>" + error.message + "</p>"; return; }
-    if (!data || data.length === 0) { container.innerHTML = "<p>No customers yet.</p>"; return; }
-    let html = "";
-    data.forEach(c => {
-      html += "<div class='item-row'><strong>" + escapeHtml(c.name||"") + "</strong><br>📧 " + escapeHtml(c.email||"") + "<br>📱 " + escapeHtml(c.phone||"") + "<br><span style='font-size:10px;color:#888;'>" + (c.created_at ? new Date(c.created_at).toLocaleString() : "") + "</span></div>";
-    });
-    container.innerHTML = html;
-  } catch(e) { container.innerHTML = "<p class='error'>" + e.message + "</p>"; }
+    const { data, error } = await supabaseClient.from("Products").select("*").order("sort_order", { ascending: true });
+    if (error) {
+      document.getElementById("productsGrid").innerHTML = "<p style='text-align:center;grid-column:1/-1;color:#a33;'>Error: " + error.message + "</p>";
+      return;
+    }
+    if (!data || data.length === 0) {
+      document.getElementById("productsGrid").innerHTML = "<p style='text-align:center;grid-column:1/-1;color:#888;'>No products yet.</p>";
+      return;
+    }
+    allProducts = data.filter(p => p.is_active !== false);
+    renderProductGrid(allProducts);
+    checkUrlForProduct();
+  } catch(e) { console.error(e); }
 }
 
-// UTILS
-function escapeHtml(value) {
-  return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+function renderProductGrid(data) {
+  const grid = document.getElementById("productsGrid");
+  grid.innerHTML = "";
+  if (data.length === 0) { grid.innerHTML = "<p style='text-align:center;grid-column:1/-1;color:#888;'>No products.</p>"; return; }
+  data.forEach(p => {
+    const img = (p.images && p.images.length > 0) ? p.images[0] : p.image_url;
+    const card = document.createElement("div");
+    card.className = "product-card";
+    card.innerHTML = `
+      <div class="product-image-wrap" onclick="openDetail('${p.id}')">
+        <img src="${img||''}" alt="${p.name}" loading="lazy">
+      </div>
+      <div class="product-details">
+        <div class="product-category">${p.category||'T-HEART'}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">₹${p.price}</div>
+        <button class="add-btn" onclick="event.stopPropagation();addToCart('${p.id}','${p.name.replace(/'/g,"\\'")}',${p.price},'${(img||'').replace(/'/g,"\\'")}')">Add to Bag</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
 }
+
+function filterProducts(cat) {
+  if (cat === "ALL") renderProductGrid(allProducts);
+  else renderProductGrid(allProducts.filter(p => (p.category||"").toUpperCase() === cat.toUpperCase()));
+}
+  function openDetail(productId) {
+  const p = allProducts.find(x => String(x.id) === String(productId));
+  if (!p) return;
+  currentProduct = p;
+  const images = (p.images && p.images.length > 0) ? p.images : [p.image_url];
+  document.getElementById("detailMainImg").innerHTML = `<img src="${images[0]||''}" alt="${p.name}">`;
+  document.getElementById("detailName").textContent = p.name;
+  document.getElementById("detailPrice").textContent = "" + p.price;
+  document.getElementById("detailDesc").textContent = p.description || "Premium quality t-shirt.";
+  const sizesDiv = document.getElementById("detailSizes");
+  sizesDiv.innerHTML = "";
+  const sizes = (p.sizes || "S,M,L,XL").split(",").map(s => s.trim());
+  sizes.forEach((s, i) => {
+    const btn = document.createElement("button");
+    btn.className = "size-btn" + (i===0?" active":"");
+    btn.textContent = s;
+    btn.onclick = () => { sizesDiv.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active")); btn.classList.add("active"); selectedSize = s; };
+    sizesDiv.appendChild(btn);
+  });
+  selectedSize = sizes[0];
+  document.getElementById("detailAddBtn").onclick = () => addToCart(p.id, p.name, p.price, images[0]||"");
+  const dp = document.getElementById("detailPage");
+  dp.classList.add("open");
+  window.scrollTo(0, 0);
+  setTimeout(() => { window.location.hash = "product=" + productId; }, 100);
+}
+
+function closeDetail() {
+  document.getElementById("detailPage").classList.remove("open");
+  window.location.hash = "";
+  currentProduct = null;
+}
+
+function shareProduct() {
+  if (!currentProduct) return;
+  navigator.clipboard.writeText(window.location.href).then(() => showToast("Link copied!"));
+}
+
+function checkUrlForProduct() {
+  const hash = window.location.hash;
+  if (hash.startsWith("#product=")) {
+    const id = hash.replace("#product=", "");
+    setTimeout(() => { const p = allProducts.find(x => String(x.id) === String(id)); if (p) openDetail(p.id); }, 300);
+  }
+}
+
+window.addEventListener("hashchange", () => {
+  if (!window.location.hash.startsWith("#product=")) closeDetail();
+});
+
+function addToWishlist(id, name) {
+  let wl = JSON.parse(localStorage.getItem("theart_wishlist") || "[]");
+  if (wl.includes(id)) { showToast("Already in wishlist"); return; }
+  wl.push(id);
+  localStorage.setItem("theart_wishlist", JSON.stringify(wl));
+  showToast("Added to wishlist ♡");
+}
+
+function showWishlist() {
+  const wl = JSON.parse(localStorage.getItem("theart_wishlist") || "[]");
+  if (wl.length === 0) { showToast("Wishlist is empty"); return; }
+  const wlProducts = allProducts.filter(p => wl.includes(p.id));
+  if (wlProducts.length === 0) { showToast("Wishlist is empty"); return; }
+  renderProductGrid(wlProducts);
+  document.getElementById("collection").scrollIntoView({behavior:"smooth"});
+}
+
+async function showMyOrders() {
+  const profile = JSON.parse(localStorage.getItem("theart_profile") || "null");
+  if (!profile || !profile.email) { showToast("Please save your details first"); openProfileModal(); return; }
+  try {
+    const { data, error } = await supabaseClient.from("Orders table").select("*").eq("customer_email", profile.email).order("id", { ascending: false });
+    if (error) { showToast("Error: " + error.message); return; }
+    if (!data || data.length === 0) { showToast("No orders yet"); return; }
+    let msg = "Your Orders:\n\n";
+    data.slice(0, 5).forEach(o => {
+      msg += "Order #" + o.id.substring(0,8) + "\n₹" + o.total_amount + " - " + o.order_status + "\n\n";
+    });
+    alert(msg);
+  } catch(e) { showToast("Error loading orders"); }
+}
+
+function getCart() { return JSON.parse(localStorage.getItem("theart_cart") || "[]"); }
+function saveCart(c) { localStorage.setItem("theart_cart", JSON.stringify(c)); updateCartCount(); renderCart(); }
+
+function addToCart(id, name, price, image) {
+  const cart = getCart();
+  const existing = cart.find(i => String(i.id) === String(id));
+  if (existing) existing.qty += 1;
+  else cart.push({ id, name, price, image, qty: 1 });
+  saveCart(cart);
+  showToast("Added to bag ✓");
+}
+
+function updateCartCount() {
+  const total = getCart().reduce((s, i) => s + i.qty, 0);
+  const badge = document.getElementById("cartCount");
+  if (total > 0) { badge.style.display = "flex"; badge.textContent = total; }
+  else badge.style.display = "none";
+}
+
+function changeQty(id, delta) {
+  const cart = getCart();
+  const item = cart.find(i => String(i.id) === String(id));
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) saveCart(cart.filter(i => String(i.id) !== String(id)));
+  else saveCart(cart);
+}
+
+function removeFromCart(id) { saveCart(getCart().filter(i => String(i.id) !== String(id))); }
+
+function cartSubtotal() { return getCart().reduce((s, i) => s + i.price * i.qty, 0); }
+
+function getShipping() {
+  const sub = cartSubtotal();
+  const disc = getDiscount();
+  const afterDisc = sub - disc;
+  return afterDisc >= siteSettings.free_shipping_above ? 0 : siteSettings.shipping_fee;
+}
+
+function getDiscount() {
+  if (!appliedCoupon) return 0;
+  const sub = cartSubtotal();
+  if (sub < appliedCoupon.min_order_amount) return 0;
+  return Math.round(sub * appliedCoupon.discount_percent / 100);
+}
+
+function cartTotal() { return cartSubtotal() - getDiscount() + getShipping(); }
+
+async function applyCoupon() {
+  const code = document.getElementById("couponInput").value.trim().toUpperCase();
+  const msg = document.getElementById("couponMsg");
+  if (!code) { msg.textContent = "Enter a coupon code"; msg.style.color = "#a33"; return; }
+  try {
+    const { data, error } = await supabaseClient.from("coupons").select("*").eq("code", code).eq("is_active", true).maybeSingle();
+    if (error || !data) { msg.textContent = "Invalid coupon"; msg.style.color = "#a33"; appliedCoupon = null; renderCart(); return; }
+    if (data.usage_limit && data.used_count >= data.usage_limit) { msg.textContent = "Coupon limit reached"; msg.style.color = "#a33"; return; }
+    const sub = cartSubtotal();
+    if (sub < data.min_order_amount) { msg.textContent = "Min order ₹" + data.min_order_amount; msg.style.color = "#a33"; return; }
+    appliedCoupon = data;
+    msg.textContent = "✓ " + data.discount_percent + "% off applied!";
+    msg.style.color = "#2a7";
+    renderCart();
+  } catch(e) { msg.textContent = "Error applying coupon"; }
+}
+
+function renderCart() {
+  const cart = getCart();
+  const list = document.getElementById("cartItems");
+  if (cart.length === 0) { list.innerHTML = "<p style='text-align:center;color:#888;padding:40px 0;'>Your bag is empty.</p>"; }
+  else {
+    list.innerHTML = "";
+    cart.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "cart-item";
+      div.innerHTML = `<img src="${item.image||''}"><div style="flex:1;"><div style="font-weight:500;">${item.name}</div><div style="color:#8A8A8A;font-size:13px;">₹${item.price}</div><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button onclick="changeQty('${item.id}',-1)" style="width:28px;height:28px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">-</button><span>${item.qty}</span><button onclick="changeQty('${item.id}',1)" style="width:28px;height:28px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">+</button></div><button onclick="removeFromCart('${item.id}')" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;cursor:pointer;margin-top:5px;">Remove</button></div>`;
+      list.appendChild(div);
+    });
+  }
+  document.getElementById("cartSubtotal").textContent = "₹" + cartSubtotal();
+  document.getElementById("cartDiscount").textContent = "-₹" + getDiscount();
+  document.getElementById("cartShipping").textContent = getShipping() === 0 ? "FREE" : "₹" + getShipping();
+  document.getElementById("cartTotal").textContent = "₹" + cartTotal();
+}
+
+function openCart() { document.getElementById("cartOverlay").classList.add("open"); document.getElementById("cartDrawer").classList.add("open"); renderCart(); }
+function closeCart() { document.getElementById("cartOverlay").classList.remove("open"); document.getElementById("cartDrawer").classList.remove("open"); }
+
+function openCheckout() {
+  if (getCart().length === 0) { showToast("Your bag is empty"); return; }
+  const profile = JSON.parse(localStorage.getItem("theart_profile") || "null");
+  if (profile) {
+    if (profile.name && !document.getElementById("custName").value) document.getElementById("custName").value = profile.name;
+    if (profile.email && !document.getElementById("custEmail").value) document.getElementById("custEmail").value = profile.email;
+    if (profile.phone && !document.getElementById("custPhone").value) document.getElementById("custPhone").value = profile.phone;
+  }
+  document.getElementById("checkoutTotal").textContent = "Total: ₹" + cartTotal();
+  document.getElementById("checkoutOverlay").classList.add("open");
+  closeCart();
+}
+
+function closeCheckout() { document.getElementById("checkoutOverlay").classList.remove("open"); }
+
+async function placeOrder() {
+  const name = document.getElementById("custName").value.trim();
+  const email = document.getElementById("custEmail").value.trim();
+  const phone = document.getElementById("custPhone").value.trim();
+  const house = document.getElementById("custHouse").value.trim();
+  const area = document.getElementById("custArea").value.trim();
+  const city = document.getElementById("custCity").value.trim();
+  const state = document.getElementById("custState").value.trim();
+  const pincode = document.getElementById("custPincode").value.trim();
+  const msg = document.getElementById("checkoutMsg");
+  if (!name || !email || !phone || !house || !area || !city || !state || !pincode) { msg.textContent = "Please fill all fields."; return; }
+  const address = house + ", " + area + ", " + city + ", " + state + " - " + pincode;
+  const cart = getCart();
+  if (cart.length === 0) { msg.textContent = "Your bag is empty."; return; }
+  const total = cartTotal();
+  const discount = getDiscount();
+  const shipping = getShipping();
+  localStorage.setItem("theart_profile", JSON.stringify({ name, email, phone, address }));
+  loadSavedProfile();
+  const { error } = await supabaseClient.from("Orders table").insert([{ customer_name: name, customer_email: email, customer_phone: phone, address, items: cart, total_amount: total, discount_amount: discount, coupon_code: appliedCoupon ? appliedCoupon.code : null, payment_status: "Pending", order_status: "Pending" }]);
+  if (error) { msg.textContent = "Order failed: " + error.message; return; }
+  localStorage.removeItem("theart_cart");
+  appliedCoupon = null;
+  updateCartCount();
+  closeCheckout();
+  showToast("Order placed successfully!");
+  ["custName","custEmail","custPhone","custHouse","custArea","custCity","custState","custPincode"].forEach(id => document.getElementById(id).value = "");
+}
+
+function openProfileModal() {
+  const saved = localStorage.getItem("theart_profile");
+  if (saved) {
+    const p = JSON.parse(saved);
+    document.getElementById("profName").value = p.name || "";
+    document.getElementById("profEmail").value = p.email || "";
+    document.getElementById("profPhone").value = p.phone || "";
+    document.getElementById("profileTitle").textContent = "Your Profile";
+  } else {
+    document.getElementById("profName").value = "";
+    document.getElementById("profEmail").value = "";
+    document.getElementById("profPhone").value = "";
+    document.getElementById("profileTitle").textContent = "Save Details";
+  }
+  document.getElementById("profileMsg").textContent = "";
+  document.getElementById("profileOverlay").classList.add("open");
+}
+
+function closeProfile() { document.getElementById("profileOverlay").classList.remove("open"); }
+
+async function saveProfile() {
+  const name = document.getElementById("profName").value.trim();
+  const email = document.getElementById("profEmail").value.trim();
+  const phone = document.getElementById("profPhone").value.trim();
+  const msg = document.getElementById("profileMsg");
+  if (!name || !email || !phone) { msg.textContent = "Please fill name, email, phone."; msg.style.color = "#a33"; return; }
+  localStorage.setItem("theart_profile", JSON.stringify({ name, email, phone }));
+  try { await supabaseClient.from("customers").insert([{ name, email, phone }]); } catch(e) {}
+  msg.textContent = "Saved successfully!";
+  msg.style.color = "#2a7";
+  loadSavedProfile();
+  setTimeout(() => closeProfile(), 1200);
+}
+
+// INIT - Order matters!
+loadSavedProfile();
+loadCategories();
+loadProducts();
+loadSiteSettings();
+loadAnnouncements();
+updateCartCount();
 </script>
 </body>
 </html>
