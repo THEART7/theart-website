@@ -360,7 +360,7 @@ function rCatSecs(){
 function mkCard(p){
   const img=(p.images&&p.images[0])||p.image_url;
   const d=document.createElement("div");d.className="cd";
-  d.innerHTML=`<div class="cdi" onclick="oDet('${p.id}')"><img src="${img||''}" loading="lazy" alt="${p.name}"></div><div class="cdn"><div class="cat">${p.category||""}</div><h3>${p.name}</h3><div class="pr">₹${p.price}</div><button class="abtn" onclick="event.stopPropagation();aCart('${p.id}','${(p.name||'').replace(/'/g,"\\'")}',${p.price},'${(img||'').replace(/'/g,"\\'")}')">Add to Bag</button></div>`;
+  d.innerHTML=`<div class="cdi" onclick="oDet('${p.id}')"><img src="${img||''}" loading="lazy" alt="${p.name}"></div><div class="cdn"><div class="cat">${p.category||""}</div><h3>${p.name}</h3><div class="pr">₹${p.price}</div><button class="abtn" onclick="event.stopPropagation();oDet('${p.id}')">View & Add</button></div>`;
   return d;
 }
 
@@ -395,7 +395,7 @@ function oDet(id){
   document.getElementById("detAdd").onclick=()=>{
     const activeSz=document.querySelector("#detSz .sbtn.active");
     const sz=activeSz?activeSz.textContent:"M";
-    aCart(p.id,p.name,p.price,imgs[0]||"");
+    aCart(p.id,p.name,p.price,imgs[0]||"",sz);
   };
   
   // You May Also Like
@@ -422,9 +422,10 @@ function cDet(){
 }
   function gCart(){try{return JSON.parse(localStorage.getItem("th_c")||"[]");}catch(e){return[];}}
 function sCart(c){localStorage.setItem("th_c",JSON.stringify(c));uCnt();rCart();}
-function aCart(id,name,price,img){
-  const c=gCart();const ex=c.find(i=>String(i.id)===String(id));
-  if(ex)ex.qty++;else c.push({id,name,price,img,qty:1});
+function aCart(id,name,price,img,size){
+  const c=gCart();
+  const ex=c.find(i=>String(i.id)===String(id)&&i.size===size);
+  if(ex)ex.qty++;else c.push({id,name,price,img,qty:1,size:size||"M"});
   sCart(c);t("Added to bag ✓");
 }
 function uCnt(){const t=gCart().reduce((s,i)=>s+i.qty,0);const b=document.getElementById("cCnt");b.style.display=t>0?"flex":"none";b.textContent=t;}
@@ -448,7 +449,7 @@ async function aCpn(){
 
 function rCart(){
   const c=gCart();
-  document.getElementById("cIt").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-weight:500;font-size:13px;">${i.name}</div><div style="color:#888;font-size:12px;">₹${i.price}</div><div style="display:flex;align-items:center;gap:8px;margin-top:5px;"><button onclick="chQty('${i.id}',-1)" style="width:24px;height:24px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">-</button><span style="font-size:13px;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:24px;height:24px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">+</button></div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:4px;cursor:pointer;">Remove</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
+  document.getElementById("cIt").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-weight:500;font-size:13px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: <b>${i.size||'M'}</b> • ₹${i.price}</div><div style="color:#888;font-size:12px;">₹${i.price}</div><div style="display:flex;align-items:center;gap:8px;margin-top:5px;"><button onclick="chQty('${i.id}',-1)" style="width:24px;height:24px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">-</button><span style="font-size:13px;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:24px;height:24px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;">+</button></div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:4px;cursor:pointer;">Remove</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
   document.getElementById("cSub").textContent="₹"+sTot();
   document.getElementById("cDsc").textContent="-₹"+gDsc();
   document.getElementById("cShp").textContent=gShp()===0?"FREE":"₹"+gShp();
