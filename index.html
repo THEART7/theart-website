@@ -454,13 +454,19 @@ async function loadCategories() {
   } catch(e) { console.log(e); }
 }
 
-async function loadProducts() {
-  try {
-    const { data, error } = await supabaseClient.from("Products").select("*").order("sort_order", { ascending: true });
-    if (error) {
-      document.getElementById("productsGrid").innerHTML = "<p style='text-align:center;grid-column:1/-1;color:#a33;'>Error: " + error.message + "</p>";
-      return;
-    }
+async function loadProds() {
+  const { data, error } = await db.from("Products").select("*").order("sort_order");
+  if(error) { document.getElementById("grid").innerHTML = `<p style="grid-column:1/-1;color:red;">Error: ${error.message}</p>`; return; }
+  products = (data||[]).filter(p=>p.is_active!==false);
+  
+  // Wait for categories to load first
+  if(categories.length === 0) {
+    await loadCats();
+  }
+  
+  renderCategorySections();
+  renderGrid(products);
+}
     if (!data || data.length === 0) {
       document.getElementById("productsGrid").innerHTML = "<p style='text-align:center;grid-column:1/-1;color:#888;'>No products yet.</p>";
       return;
