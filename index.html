@@ -331,7 +331,6 @@ async function ldSet(){
     document.getElementById("hDots").innerHTML="";
   }
 }
-
 async function ldHero(ids){
   console.log("ldHero called with:", ids);
   
@@ -424,7 +423,7 @@ async function ldHero(ids){
   }catch(e){
     document.getElementById("hName").textContent = "Hero Render Error: " + e.message;
   }
-  }
+}
 function showDefaultHero(){
   document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
   document.getElementById("hName").textContent="T-HEART Collection";
