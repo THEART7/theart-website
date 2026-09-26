@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Supabase Test</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<h1>Supabase Connection Test</h1>
+<div id="status">Testing...</div>
+<div id="settings"></div>
+<div id="products"></div>
+
+<script>
+const U = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
+const K = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
+const db = window.supabase.createClient(U, K);
+
+async function test() {
+  const status = document.getElementById("status");
+  const settingsDiv = document.getElementById("settings");
+  const productsDiv = document.getElementById("products");
+  
+  try {
+    // Test 1: site_setting
+    status.textContent = "Fetching site_setting...";
+    const { data: settings, error: settingsError } = await db.from("site_setting").select("*").limit(1).maybeSingle();
+    
+    if (settingsError) {
+      status.textContent = "❌ site_setting error: " + settingsError.message;
+      return;
+    }
+    
+    if (!settings) {
+      status.textContent = "❌ No site_setting found";
+      return;
+    }
+    
+    status.textContent = "✅ site_setting loaded";
+    settingsDiv.innerHTML = `
+      <h3>Site Settings:</h3>
+      <p>Brand: ${settings.brand_name}</p>
+      <p>Tagline: ${settings.tagline}</p>
+      <p>Hero IDs: ${JSON.stringify(settings.hero_product_ids)}</p>
+    `;
+    
+    // Test 2: Products
+    status.textContent += " | Fetching products...";
+    const heroIds = settings.hero_product_ids || [];
+    const { data: products, error: productsError } = await db.from("Products").select("*").in("id", heroIds);
+    
+    if (productsError) {
+      status.textContent += " | ❌ Products error: " + productsError.message;
+      return;
+    }
+    
+    if (!products || products.length === 0) {
+      status.textContent += " | ❌ No products found";
+      return;
+    }
+    
+    status.textContent += " | ✅ Products loaded: " + products.length;
+    productsDiv.innerHTML = `
+      <h3>Hero Products:</h3>
+      ${products.map(p => `<p>${p.name} - ₹${p.price}</p>`).join("")}
+    `;
+    
+    console.log("Settings:", settings);
+    console.log("Products:", products);
+    
+  } catch (e) {
+    status.textContent = " Error: " + e.message;
+    console.error(e);
+  }
+}
+
+test();
+</script>
+</body>
+</html>
