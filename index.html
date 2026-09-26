@@ -299,23 +299,102 @@ async function ldSet(){
 }
 
 async function ldHero(ids){
-  console.log("ldHero called:", ids);
+  console.log("=== ldHero START ===");
+  console.log("IDs received:", ids, typeof ids);
+  
   try{
-    if(!ids||!ids.length){document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";document.getElementById("hName").textContent="T-HEART Collection";return;}
-    const{data,error}=await db.from("Products").select("*").in("id",ids);
-    if(error||!data||!data.length){console.log("Hero fetch error/empty");document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";document.getElementById("hName").textContent="T-HEART Collection";return;}
-    hSlides=ids.map(id=>data.find(p=>String(p.id)===String(id))).filter(p=>p);
-    if(!hSlides.length)return;
-    hSlides.forEach(p=>{const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;if(img){new Image().src=img;}});
-    cHero=0;rHero(0);rDots();
+    if(!ids||!Array.isArray(ids)||ids.length===0){
+      console.log("No IDs, showing default");
+      showDefaultHero();
+      return;
+    }
+    
+    // IDs ko string me convert karo (Supabase matching ke liye)
+    const stringIds = ids.map(id => String(id));
+    console.log("String IDs:", stringIds);
+    
+    // Sab products fetch karo
+    const{data:allProducts,error}=await db.from("Products").select("*");
+    
+    if(error){
+      console.log("Fetch error:", error);
+      showDefaultHero();
+      return;
+    }
+    
+    console.log("All products fetched:", allProducts?.length || 0);
+    
+    if(!allProducts||allProducts.length===0){
+      console.log("No products in DB");
+      showDefaultHero();
+      return;
+    }
+    
+    // Filter karo — jo IDs match karein
+    const matchedProducts = allProducts.filter(p => stringIds.includes(String(p.id)));
+    console.log("Matched products:", matchedProducts.length);
+    
+    if(matchedProducts.length===0){
+      console.log("No products matched IDs");
+      showDefaultHero();
+      return;
+    }
+    
+    // Order maintain karo — jo order ids me hai wahi rakho
+    hSlides = stringIds.map(id => matchedProducts.find(p => String(p.id) === id)).filter(p => p);
+    console.log("Final slides:", hSlides.length);
+    
+    if(hSlides.length===0){
+      showDefaultHero();
+      return;
+    }
+    
+    // Images preload karo
+    hSlides.forEach(p=>{
+      const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;
+      if(img){new Image().src=img;}
+    });
+    
+    cHero=0;
+    rHero(0);
+    rDots();
+    
     if(hInt)clearInterval(hInt);
-    if(hSlides.length>1)hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);
+    if(hSlides.length>1){
+      hInt=setInterval(()=>{
+        cHero=(cHero+1)%hSlides.length;
+        rHero(cHero);
+        rDots();
+      },10000);
+    }
+    
     const hc=document.getElementById("hCard");
     let sx=0,sy=0;
     hc.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
-    hc.addEventListener("touchend",e=>{const dx=sx-e.changedTouches[0].clientX;const dy=sy-e.changedTouches[0].clientY;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){cHero=dx>0?(cHero+1)%hSlides.length:(cHero-1+hSlides.length)%hSlides.length;rHero(cHero);rDots();if(hInt){clearInterval(hInt);hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);}}},{passive:true});
+    hc.addEventListener("touchend",e=>{
+      const dx=sx-e.changedTouches[0].clientX;
+      const dy=sy-e.changedTouches[0].clientY;
+      if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+        cHero=dx>0?(cHero+1)%hSlides.length:(cHero-1+hSlides.length)%hSlides.length;
+        rHero(cHero);
+        rDots();
+        if(hInt){clearInterval(hInt);hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);}
+      }
+    },{passive:true});
     hc.onclick=()=>{const pid=document.getElementById("hImg").dataset.pid;if(pid)oDet(pid);};
-  }catch(e){console.log("ldHero error:",e);}
+    
+    console.log("=== ldHero SUCCESS ===");
+    
+  }catch(e){
+    console.log("ldHero error:", e);
+    showDefaultHero();
+  }
+}
+
+function showDefaultHero(){
+  document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
+  document.getElementById("hName").textContent="T-HEART Collection";
+  document.getElementById("hDots").innerHTML="";
 }
 
 function rHero(i){
