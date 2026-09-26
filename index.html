@@ -216,7 +216,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
       <input id="chP" placeholder="9876543210" maxlength="10">
       <label>Address</label>
       <textarea id="chA" placeholder="House, street, area, landmark"></textarea>
-      <button class="locbtn" onclick="useMyLocation()">📍 Use My Current Location</button>
+      <button class="locbtn" onclick="useMyLocation()"> Use My Current Location</button>
       <label>City</label>
       <input id="chC" placeholder="Delhi">
       <label>Pincode</label>
@@ -284,167 +284,52 @@ function ldProf(){
 async function ldSet(){
   try{
     const{data}=await db.from("site_setting").select("*").limit(1).maybeSingle();
-    if(!data){
-      document.getElementById("hName").textContent="Error: Settings not found";
-      return;
-    }
-    
+    if(!data){document.getElementById("hName").textContent="Error: No settings";return;}
     if(data.brand_name){document.getElementById("sBrand").textContent=data.brand_name;document.getElementById("fBrand").textContent=data.brand_name;}
     if(data.tagline){document.getElementById("sTag").textContent=data.tagline;document.getElementById("fTag").textContent=data.tagline;}
-    
     if(data.free_shipping_above!==undefined&&data.free_shipping_above!==null){const fs=Number(data.free_shipping_above);if(!isNaN(fs))sSet.fs=fs;}
     if(data.shipping_fee!==undefined&&data.shipping_fee!==null){const sf=Number(data.shipping_fee);if(!isNaN(sf))sSet.sf=sf;}
     document.getElementById("shipNote").textContent=`Free shipping above ₹${sSet.fs||500}. Returns within 7 days if unworn.`;
     
-    // --- BULLETPROOF HERO IDs PARSING ---
-    let hids = data.hero_product_ids;
-    console.log("Raw hero IDs from DB:", hids, typeof hids);
-    
-    if(typeof hids === 'string') {
-      try {
-        hids = JSON.parse(hids); // Try normal JSON parse
-      } catch(e) {
-        // Agar PostgreSQL array string hai jaise "{15,10,12}"
-        if(hids.startsWith('{') && hids.endsWith('}')) {
-          hids = hids.slice(1, -1).split(',').map(id => parseInt(id.trim()));
-        } else {
-          hids = null;
-        }
-      }
-    }
-    
-    if(hids && Array.isArray(hids) && hids.length > 0) {
-      console.log("Calling ldHero with:", hids);
-      await ldHero(hids);
-    } else {
-      // Agar IDs nahi mili, toh screen pe likh ke dikha do
-      document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
-      document.getElementById("hName").textContent = "No Hero IDs (DB has: " + JSON.stringify(data.hero_product_ids) + ")";
-      document.getElementById("hDots").innerHTML="";
-    }
-    
-  }catch(e){
-    console.log("ldSet error:", e);
-    // Error screen pe dikha do
-    document.getElementById("hImg").style.background="#a33";
-    document.getElementById("hName").textContent = "LOAD ERROR: " + e.message;
-    document.getElementById("hDots").innerHTML="";
-  }
+    let hids=data.hero_product_ids;
+    if(typeof hids==='string'){try{hids=JSON.parse(hids);}catch(e){hids=null;}}
+    if(hids&&Array.isArray(hids)&&hids.length>0){await ldHero(hids);}
+    else{document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";document.getElementById("hName").textContent="T-HEART Collection";document.getElementById("hDots").innerHTML="";}
+  }catch(e){document.getElementById("hName").textContent="Error loading";console.log("ldSet error:",e);}
 }
+
 async function ldHero(ids){
-  console.log("ldHero called with:", ids);
-  
   try{
-    if(!ids||!Array.isArray(ids)||ids.length===0){
-      console.log("No hero IDs");
-      document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
-      document.getElementById("hName").textContent="T-HEART Collection";
-      document.getElementById("hDots").innerHTML="";
-      return;
-    }
-    
-    // Simple fetch - test.html jaisa
+    if(!ids||!Array.isArray(ids)||ids.length===0){document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";document.getElementById("hName").textContent="T-HEART Collection";return;}
     const{data:products,error}=await db.from("Products").select("*").in("id",ids);
-    
-    if(error||!products||products.length===0){
-      console.log("No products found:", error);
-      document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
-      document.getElementById("hName").textContent="T-HEART Collection";
-      return;
-    }
-    
-    console.log("Products loaded:", products.length);
-    
-    // Order maintain kar
+    if(error||!products||products.length===0){document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";document.getElementById("hName").textContent="T-HEART Collection";return;}
     hSlides=ids.map(id=>products.find(p=>String(p.id)===String(id))).filter(p=>p);
-    
-    if(hSlides.length===0){
-      console.log("No slides after mapping");
-      return;
-async function ldHero(ids){
-  console.log("ldHero started with IDs:", ids);
-  try{
-    if(!ids||!Array.isArray(ids)||ids.length===0){
-      document.getElementById("hName").textContent = "Empty IDs Array";
-      return;
-    }
-    
-    const{data:products,error}=await db.from("Products").select("*").in("id",ids);
-    
-    if(error){
-      document.getElementById("hName").textContent = "DB Error: " + error.message;
-      return;
-    }
-    
-    if(!products||products.length===0){
-      document.getElementById("hName").textContent = "No Products Found for IDs: " + ids.join(",");
-      return;
-    }
-    
-    console.log("Products matched:", products.length);
-    
-    // Order maintain karo
-    hSlides=ids.map(id=>products.find(p=>String(p.id)===String(id))).filter(p=>p);
-    
-    if(hSlides.length===0){
-      document.getElementById("hName").textContent = "Mapping Failed";
-      return;
-    }
-    
-    // Images preload
-    hSlides.forEach(p=>{
-      const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;
-      if(img){new Image().src=img;}
-    });
-    
-    cHero=0;
-    rHero(0);
-    rDots();
-    
+    if(!hSlides.length)return;
+    hSlides.forEach(p=>{const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;if(img){new Image().src=img;}});
+    cHero=0;rHero(0);rDots();
     if(hInt)clearInterval(hInt);
-    if(hSlides.length>1){
-      hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);
-    }
-    
+    if(hSlides.length>1)hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);
     const hc=document.getElementById("hCard");
     let sx=0,sy=0;
     hc.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
-    hc.addEventListener("touchend",e=>{
-      const dx=sx-e.changedTouches[0].clientX;
-      const dy=sy-e.changedTouches[0].clientY;
-      if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
-        cHero=dx>0?(cHero+1)%hSlides.length:(cHero-1+hSlides.length)%hSlides.length;
-        rHero(cHero);rDots();
-        if(hInt){clearInterval(hInt);hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);}
-      }
-    },{passive:true});
+    hc.addEventListener("touchend",e=>{const dx=sx-e.changedTouches[0].clientX;if(Math.abs(dx)>50){cHero=dx>0?(cHero+1)%hSlides.length:(cHero-1+hSlides.length)%hSlides.length;rHero(cHero);rDots();if(hInt){clearInterval(hInt);hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);}}},{passive:true});
     hc.onclick=()=>{const pid=document.getElementById("hImg").dataset.pid;if(pid)oDet(pid);};
-    
-  }catch(e){
-    document.getElementById("hName").textContent = "Hero Render Error: " + e.message;
-  }
-}
-function showDefaultHero(){
-  document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
-  document.getElementById("hName").textContent="T-HEART Collection";
-  document.getElementById("hDots").innerHTML="";
+  }catch(e){console.log("ldHero error:",e);}
 }
 
 function rHero(i){
   const p=hSlides[i];if(!p)return;
   const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;
-  const hi=document.getElementById("hImg");
-  hi.style.opacity="0.3";
-  if(img){const tmp=new Image();tmp.onload=()=>{hi.style.backgroundImage=`url(${img})`;hi.style.opacity="1";};tmp.onerror=()=>{hi.style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";hi.style.opacity="1";};tmp.src=img;}
-  else{hi.style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";hi.style.opacity="1";}
-  hi.dataset.pid=p.id;
-  document.getElementById("hName").textContent=p.name;
+  const hi=document.getElementById("hImg");hi.style.opacity="0.3";
+  if(img){const tmp=new Image();tmp.onload=()=>{hi.style.backgroundImage=`url(${img})`;hi.style.opacity="1";};tmp.onerror=()=>{hi.style.background="#E5E5E5";hi.style.opacity="1";};tmp.src=img;}
+  else{hi.style.background="#E5E5E5";hi.style.opacity="1";}
+  hi.dataset.pid=p.id;document.getElementById("hName").textContent=p.name;
 }
 function rDots(){document.getElementById("hDots").innerHTML=hSlides.map((_,i)=>`<div class="dot ${i===cHero?'active':''}" onclick="event.stopPropagation();cHero=${i};rHero(${i});rDots();if(hInt){clearInterval(hInt);hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);}"></div>`).join("");}
 
 async function ldAnn(){try{const{data}=await db.from("announcements").select("*").eq("is_active",true).limit(1);if(data&&data.length){document.getElementById("annText").textContent=data[0].text;document.getElementById("annBar").style.display="block";}}catch(e){}}
 async function ldCats(){try{const{data,error}=await db.from("categories").select("*").order("sort_order");if(error)return;if(!data)return;cats=data;const f=document.getElementById("flts");f.innerHTML='<button class="active" onclick="fCat(\'ALL\')">ALL</button>';data.forEach(c=>{const b=document.createElement("button");b.textContent=c.name;b.onclick=()=>{f.querySelectorAll("button").forEach(x=>x.classList.remove("active"));b.classList.add("active");fCat(c.name);};f.appendChild(b);});}catch(e){}}
-async function ldProds(){try{const{data,error}=await db.from("Products").select("*").order("sort_order");if(error){document.getElementById("grd").innerHTML=`<p style="grid-column:1/-1;color:red;">Error loading products</p>`;return;}prods=(data||[]).filter(p=>p.is_active!==false);if(cats.length===0)await ldCats();rCatSecs();rGrd(prods);}catch(e){console.log("Prod err:",e);}}
+async function ldProds(){try{const{data,error}=await db.from("Products").select("*").order("sort_order");if(error){document.getElementById("grd").innerHTML=`<p style="grid-column:1/-1;color:red;">Error</p>`;return;}prods=(data||[]).filter(p=>p.is_active!==false);if(cats.length===0)await ldCats();rCatSecs();rGrd(prods);}catch(e){console.log("Prod err:",e);}}
 function rCatSecs(){const c=document.getElementById("catSecs");c.innerHTML="";cats.forEach(cat=>{const cp=prods.filter(p=>p.category&&p.category.toUpperCase()===cat.name.toUpperCase());if(cp.length===0)return;const s=document.createElement("section");s.className="csec";s.innerHTML=`<h2>${cat.name}</h2><div class="cnt">${cp.length} piece${cp.length>1?'s':''} in this shelf.</div><div class="grd"></div>`;c.appendChild(s);const g=s.querySelector(".grd");cp.forEach(p=>g.appendChild(mkCard(p)));});}
 function mkCard(p){const img=(p.images&&p.images[0])||p.image_url;const d=document.createElement("div");d.className="cd";d.innerHTML=`<div class="cdi" onclick="oDet('${p.id}')"><img src="${img||''}" loading="lazy" alt="${p.name}"></div><div class="cdn"><div class="cat">${p.category||""}</div><h3>${p.name}</h3><div class="pr">₹${p.price}</div><button class="abtn" onclick="event.stopPropagation();oDet('${p.id}')">View & Add</button></div>`;return d;}
 function rGrd(l){const g=document.getElementById("grd");g.innerHTML="";if(!l.length){g.innerHTML="<p style='grid-column:1/-1;text-align:center;color:#888;padding:20px;'>No products.</p>";return;}l.forEach(p=>g.appendChild(mkCard(p)));}
@@ -500,7 +385,7 @@ function rBag(){
   const c=gCart();
   document.getElementById("bagCnt").textContent=c.length?`${c.reduce((s,i)=>s+i.qty,0)} piece${c.reduce((s,i)=>s+i.qty,0)>1?'s':''} • ready to pack.`:"Your bag is empty.";
   document.getElementById("bagItems").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-family:Georgia,serif;font-size:16px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: ${i.size||'M'} • ₹${i.price}</div><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button onclick="chQty('${i.id}',-1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">-</button><span style="font-size:14px;min-width:20px;text-align:center;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">+</button></div></div><div style="text-align:right;"><div style="font-weight:600;">₹${i.price*i.qty}</div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:8px;cursor:pointer;">REMOVE</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
-  document.getElementById("bagSub").textContent="₹"+sTot();
+  document.getElementById("bagSub").textContent=""+sTot();
   document.getElementById("bagDsc").textContent="-₹"+gDsc();
   const shippingCost=gShp();
   document.getElementById("bagShp").textContent=shippingCost===0?"FREE":"₹"+shippingCost;
