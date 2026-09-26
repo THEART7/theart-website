@@ -299,66 +299,49 @@ async function ldSet(){
 }
 
 async function ldHero(ids){
-  console.log("=== ldHero START ===");
-  console.log("IDs received:", ids, typeof ids);
+  console.log("ldHero called with:", ids);
   
   try{
     if(!ids||!Array.isArray(ids)||ids.length===0){
-      console.log("No IDs, showing default");
-      showDefaultHero();
+      console.log("No hero IDs");
+      document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
+      document.getElementById("hName").textContent="T-HEART Collection";
+      document.getElementById("hDots").innerHTML="";
       return;
     }
     
-    // IDs ko string me convert karo (Supabase matching ke liye)
-    const stringIds = ids.map(id => String(id));
-    console.log("String IDs:", stringIds);
+    // Simple fetch - test.html jaisa
+    const{data:products,error}=await db.from("Products").select("*").in("id",ids);
     
-    // Sab products fetch karo
-    const{data:allProducts,error}=await db.from("Products").select("*");
-    
-    if(error){
-      console.log("Fetch error:", error);
-      showDefaultHero();
+    if(error||!products||products.length===0){
+      console.log("No products found:", error);
+      document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
+      document.getElementById("hName").textContent="T-HEART Collection";
       return;
     }
     
-    console.log("All products fetched:", allProducts?.length || 0);
+    console.log("Products loaded:", products.length);
     
-    if(!allProducts||allProducts.length===0){
-      console.log("No products in DB");
-      showDefaultHero();
-      return;
-    }
-    
-    // Filter karo — jo IDs match karein
-    const matchedProducts = allProducts.filter(p => stringIds.includes(String(p.id)));
-    console.log("Matched products:", matchedProducts.length);
-    
-    if(matchedProducts.length===0){
-      console.log("No products matched IDs");
-      showDefaultHero();
-      return;
-    }
-    
-    // Order maintain karo — jo order ids me hai wahi rakho
-    hSlides = stringIds.map(id => matchedProducts.find(p => String(p.id) === id)).filter(p => p);
-    console.log("Final slides:", hSlides.length);
+    // Order maintain kar
+    hSlides=ids.map(id=>products.find(p=>String(p.id)===String(id))).filter(p=>p);
     
     if(hSlides.length===0){
-      showDefaultHero();
+      console.log("No slides after mapping");
       return;
     }
     
-    // Images preload karo
+    // Images preload
     hSlides.forEach(p=>{
       const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;
       if(img){new Image().src=img;}
     });
     
+    // Render
     cHero=0;
     rHero(0);
     rDots();
     
+    // Auto-rotate
     if(hInt)clearInterval(hInt);
     if(hSlides.length>1){
       hInt=setInterval(()=>{
@@ -368,6 +351,7 @@ async function ldHero(ids){
       },10000);
     }
     
+    // Swipe
     const hc=document.getElementById("hCard");
     let sx=0,sy=0;
     hc.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
@@ -376,21 +360,18 @@ async function ldHero(ids){
       const dy=sy-e.changedTouches[0].clientY;
       if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
         cHero=dx>0?(cHero+1)%hSlides.length:(cHero-1+hSlides.length)%hSlides.length;
-        rHero(cHero);
-        rDots();
+        rHero(cHero);rDots();
         if(hInt){clearInterval(hInt);hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);}
       }
     },{passive:true});
     hc.onclick=()=>{const pid=document.getElementById("hImg").dataset.pid;if(pid)oDet(pid);};
     
-    console.log("=== ldHero SUCCESS ===");
+    console.log("Hero slider ready:", hSlides.length, "slides");
     
   }catch(e){
     console.log("ldHero error:", e);
-    showDefaultHero();
   }
-}
-
+  }
 function showDefaultHero(){
   document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
   document.getElementById("hName").textContent="T-HEART Collection";
