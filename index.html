@@ -239,8 +239,9 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
   </div>
   <div class="cit" id="cIt"></div>
   <div style="padding:15px;border-top:1px solid #E5E5E5;background:#fff;">
-    <div class="summary-row total"><span>Total</span><span id="cTot">₹0</span></div>
-    <button class="abtn" onclick="showBag();cCart();" style="margin-top:10px;padding:14px;font-size:13px;">View Bag & Checkout</button>
+    <div id="emptyCartMsg" style="display:none;text-align:center;color:#888;padding:20px;">Your bag is empty.</div>
+    <div class="summary-row total"><span>Total</span><span id="cTot">0</span></div>
+    <button class="abtn" id="cartCheckoutBtn" onclick="showBag();cCart();" style="margin-top:10px;padding:14px;font-size:13px;">View Bag & Checkout</button>
   </div>
 </div>
 <div class="pov" id="pOv">
