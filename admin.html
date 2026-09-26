@@ -368,6 +368,9 @@ function openOrderDetail(id) {
   const payMethod = o.payment_method || "N/A";
   const rzpId = o.razorpay_payment_id || "N/A";
   const payColor = payStatus === "Paid" ? "#81c784" : "#e57373";
+  const lat = o.customer_lat;
+  const lng = o.customer_lng;
+  const mapsBtn = (lat && lng) ? `<button onclick="window.open('https://www.google.com/maps?q=${lat},${lng}','_blank')" style="margin-top:8px;background:#4285F4;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;font-size:12px;">🗺️ Open in Google Maps</button>` : `<p style="font-size:11px;color:#888;margin-top:5px;">📍 Location not shared by customer</p>`;
   document.getElementById("orderDetailContent").innerHTML = `
     <h2 style="margin-bottom:15px;color:#c9a96e;">Order #${String(o.id).substring(0,8)}</h2>
     <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin-bottom:15px;">
@@ -383,10 +386,14 @@ function openOrderDetail(id) {
       <p><b>Razorpay Payment ID:</b> <code style="background:#1f1f1f;padding:2px 6px;border-radius:4px;">${rzpId}</code></p>
       <p style="font-size:12px;color:#888;margin-top:5px;">⚠️ Ship karne se pehle Razorpay Dashboard me ye ID zaroor verify karein.</p>
     </div>
+    <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin-bottom:15px;">
+      <p style="font-size:12px;color:#888;margin-bottom:5px;">📍 Customer Location</p>
+      ${mapsBtn}
+    </div>
     <h3 style="margin:15px 0 5px;">Items:</h3>${items || "<p>No items</p>"}
     <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin:15px 0;">
       <p><b>Total Amount:</b> ₹${o.total_amount||0}</p>
-      ${o.discount_amount?`<p><b>Discount:</b> -${o.discount_amount}</p>`:""}
+      ${o.discount_amount?`<p><b>Discount:</b> -₹${o.discount_amount}</p>`:""}
       ${o.coupon_code?`<p><b>Coupon:</b> ${o.coupon_code}</p>`:""}
     </div>
     <label>Update Order Status</label>
