@@ -279,49 +279,102 @@ function ldProf(){
 async function ldSet(){
   try{
     const{data}=await db.from("site_setting").select("*").limit(1).maybeSingle();
-    if(!data)return;
+    if(!data){
+      console.log("No site settings found");
+      return;
+    }
     if(data.brand_name){document.getElementById("sBrand").textContent=data.brand_name;document.getElementById("fBrand").textContent=data.brand_name;}
     if(data.tagline){document.getElementById("sTag").textContent=data.tagline;document.getElementById("fTag").textContent=data.tagline;}
-    if(data.free_shipping_above!==undefined&&data.free_shipping_above!==null)sSet.fs=Number(data.free_shipping_above);
+    if(data.free_shipping_above!==undefined&&data.free_shipping_above!==null){
+      const fs=Number(data.free_shipping_above);
+      if(!isNaN(fs))sSet.fs=fs;
+    }
     if(data.shipping_fee!==undefined&&data.shipping_fee!==null){
       const sf=Number(data.shipping_fee);
       if(!isNaN(sf))sSet.sf=sf;
     }
-    document.getElementById("shipNote").textContent=`Free shipping above ₹${sSet.fs||500}.`;
+    document.getElementById("shipNote").textContent=`Free shipping above ₹${sSet.fs||500}. Returns within 7 days if unworn.`;
+    
+    // Hero products load karo
     let hids=data.hero_product_ids;
-    if(typeof hids==='string')try{hids=JSON.parse(hids);}catch(e){hids=null;}
-    if(hids&&Array.isArray(hids)&&hids.length)ldHero(hids);
-  }catch(e){console.log("Set err:",e);}
+    console.log("Raw hero_product_ids from DB:", hids, typeof hids);
+    
+    if(typeof hids==='string'){
+      try{hids=JSON.parse(hids);console.log("Parsed hero IDs:", hids);}
+      catch(e){console.log("Parse error:", e);hids=null;}
+    }
+    
+    if(hids&&Array.isArray(hids)&&hids.length>0){
+      console.log("Calling ldHero with:", hids);
+      await ldHero(hids);
+    }else{
+      console.log("No hero products set, showing default");
+      document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
+      document.getElementById("hName").textContent="T-HEART Collection";
+      document.getElementById("hDots").innerHTML="";
+    }
+  }catch(e){
+    console.log("ldSet error:", e);
+    document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
+    document.getElementById("hName").textContent="T-HEART Collection";
+  }
 }
 
 async function ldHero(ids){
+async function ldHero(ids){
+  console.log("ldHero called with IDs:", ids);
   try{
     if(!ids||!ids.length){
+      console.log("No IDs provided");
       document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
       document.getElementById("hName").textContent="T-HEART Collection";
       document.getElementById("hDots").innerHTML="";
       return;
     }
+    
     const{data,error}=await db.from("Products").select("*").in("id",ids);
-    if(error||!data||!data.length){
+    
+    if(error){
+      console.log("Hero fetch error:", error);
       document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
       document.getElementById("hName").textContent="T-HEART Collection";
       return;
     }
+    
+    if(!data||!data.length){
+      console.log("No products found for IDs:", ids);
+      document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
+      document.getElementById("hName").textContent="T-HEART Collection";
+      return;
+    }
+    
+    console.log("Products fetched:", data.length);
+    
     // Order maintain kar — jo order ids me hai wahi rakho
     hSlides=ids.map(id=>data.find(p=>String(p.id)===String(id))).filter(p=>p);
-    if(!hSlides.length)return;
+    
+    if(!hSlides.length){
+      console.log("No slides after mapping");
+      return;
+    }
+    
+    console.log("Hero slides ready:", hSlides.length);
+    
     // Sab images preload karo
     hSlides.forEach(p=>{
       const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;
       if(img){const i=new Image();i.src=img;}
     });
+    
     cHero=0;
-    rHero(0);rDots();
+    rHero(0);
+    rDots();
+    
     if(hInt)clearInterval(hInt);
     if(hSlides.length>1){
       hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);
     }
+    
     const hc=document.getElementById("hCard");
     let sx=0,sy=0;
     hc.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
@@ -335,7 +388,10 @@ async function ldHero(ids){
       }
     },{passive:true});
     hc.onclick=()=>{const pid=document.getElementById("hImg").dataset.pid;if(pid)oDet(pid);};
-  }catch(e){console.log("Hero err:",e);}
+    
+  }catch(e){
+    console.log("ldHero error:", e);
+  }
 }
 function rHero(i){const p=hSlides[i];if(!p)return;const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;const hi=document.getElementById("hImg");if(img){const tmp=new Image();tmp.onload=()=>{hi.style.backgroundImage=`url(${img})`;};tmp.onerror=()=>{hi.style.background="#E5E5E5";};tmp.src=img;}else{hi.style.background="#E5E5E5";}hi.dataset.pid=p.id;document.getElementById("hName").textContent=p.name;}
 function rDots(){document.getElementById("hDots").innerHTML=hSlides.map((_,i)=>`<div class="dot ${i===cHero?'active':''}" onclick="event.stopPropagation();cHero=${i};rHero(${i});rDots();if(hInt){clearInterval(hInt);hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);}"></div>`).join("");}
