@@ -284,18 +284,52 @@ function ldProf(){
 async function ldSet(){
   try{
     const{data}=await db.from("site_setting").select("*").limit(1).maybeSingle();
-    if(!data){console.log("No site settings");return;}
+    if(!data){
+      document.getElementById("hName").textContent="Error: Settings not found";
+      return;
+    }
+    
     if(data.brand_name){document.getElementById("sBrand").textContent=data.brand_name;document.getElementById("fBrand").textContent=data.brand_name;}
     if(data.tagline){document.getElementById("sTag").textContent=data.tagline;document.getElementById("fTag").textContent=data.tagline;}
+    
     if(data.free_shipping_above!==undefined&&data.free_shipping_above!==null){const fs=Number(data.free_shipping_above);if(!isNaN(fs))sSet.fs=fs;}
     if(data.shipping_fee!==undefined&&data.shipping_fee!==null){const sf=Number(data.shipping_fee);if(!isNaN(sf))sSet.sf=sf;}
     document.getElementById("shipNote").textContent=`Free shipping above ₹${sSet.fs||500}. Returns within 7 days if unworn.`;
-    let hids=data.hero_product_ids;
-    console.log("Raw hero IDs:", hids);
-    if(typeof hids==='string'){try{hids=JSON.parse(hids);}catch(e){hids=null;}}
-    if(hids&&Array.isArray(hids)&&hids.length>0){console.log("Loading hero:", hids);await ldHero(hids);}
-    else{document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";document.getElementById("hName").textContent="T-HEART Collection";document.getElementById("hDots").innerHTML="";}
-  }catch(e){console.log("ldSet error:",e);}
+    
+    // --- BULLETPROOF HERO IDs PARSING ---
+    let hids = data.hero_product_ids;
+    console.log("Raw hero IDs from DB:", hids, typeof hids);
+    
+    if(typeof hids === 'string') {
+      try {
+        hids = JSON.parse(hids); // Try normal JSON parse
+      } catch(e) {
+        // Agar PostgreSQL array string hai jaise "{15,10,12}"
+        if(hids.startsWith('{') && hids.endsWith('}')) {
+          hids = hids.slice(1, -1).split(',').map(id => parseInt(id.trim()));
+        } else {
+          hids = null;
+        }
+      }
+    }
+    
+    if(hids && Array.isArray(hids) && hids.length > 0) {
+      console.log("Calling ldHero with:", hids);
+      await ldHero(hids);
+    } else {
+      // Agar IDs nahi mili, toh screen pe likh ke dikha do
+      document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
+      document.getElementById("hName").textContent = "No Hero IDs (DB has: " + JSON.stringify(data.hero_product_ids) + ")";
+      document.getElementById("hDots").innerHTML="";
+    }
+    
+  }catch(e){
+    console.log("ldSet error:", e);
+    // Error screen pe dikha do
+    document.getElementById("hImg").style.background="#a33";
+    document.getElementById("hName").textContent = "LOAD ERROR: " + e.message;
+    document.getElementById("hDots").innerHTML="";
+  }
 }
 
 async function ldHero(ids){
@@ -328,6 +362,34 @@ async function ldHero(ids){
     if(hSlides.length===0){
       console.log("No slides after mapping");
       return;
+async function ldHero(ids){
+  console.log("ldHero started with IDs:", ids);
+  try{
+    if(!ids||!Array.isArray(ids)||ids.length===0){
+      document.getElementById("hName").textContent = "Empty IDs Array";
+      return;
+    }
+    
+    const{data:products,error}=await db.from("Products").select("*").in("id",ids);
+    
+    if(error){
+      document.getElementById("hName").textContent = "DB Error: " + error.message;
+      return;
+    }
+    
+    if(!products||products.length===0){
+      document.getElementById("hName").textContent = "No Products Found for IDs: " + ids.join(",");
+      return;
+    }
+    
+    console.log("Products matched:", products.length);
+    
+    // Order maintain karo
+    hSlides=ids.map(id=>products.find(p=>String(p.id)===String(id))).filter(p=>p);
+    
+    if(hSlides.length===0){
+      document.getElementById("hName").textContent = "Mapping Failed";
+      return;
     }
     
     // Images preload
@@ -336,22 +398,15 @@ async function ldHero(ids){
       if(img){new Image().src=img;}
     });
     
-    // Render
     cHero=0;
     rHero(0);
     rDots();
     
-    // Auto-rotate
     if(hInt)clearInterval(hInt);
     if(hSlides.length>1){
-      hInt=setInterval(()=>{
-        cHero=(cHero+1)%hSlides.length;
-        rHero(cHero);
-        rDots();
-      },10000);
+      hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);
     }
     
-    // Swipe
     const hc=document.getElementById("hCard");
     let sx=0,sy=0;
     hc.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
@@ -366,10 +421,8 @@ async function ldHero(ids){
     },{passive:true});
     hc.onclick=()=>{const pid=document.getElementById("hImg").dataset.pid;if(pid)oDet(pid);};
     
-    console.log("Hero slider ready:", hSlides.length, "slides");
-    
   }catch(e){
-    console.log("ldHero error:", e);
+    document.getElementById("hName").textContent = "Hero Render Error: " + e.message;
   }
   }
 function showDefaultHero(){
