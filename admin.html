@@ -495,16 +495,22 @@ function loadHeroUI(heroIds) {
   let hids = heroIds;
   if(typeof hids==='string') try{hids=JSON.parse(hids);}catch(e){hids=[];}
   if(!Array.isArray(hids)) hids=[];
+  
   document.getElementById("heroProductsList").innerHTML = allProductsAdmin.map(p => {
     const idx = hids.indexOf(p.id);
-    const val = idx !== -1 ? idx+1 : "";
+    const val = idx !== -1 ? (idx+1) : "";
     const img = p.hero_image_url || (p.images&&p.images[0]) || p.image_url;
-    return `<div class="item-row" style="display:flex;gap:10px;align-items:start;">
+    const inHero = idx !== -1;
+    return `<div class="item-row" style="display:flex;gap:10px;align-items:start;${inHero?'border-left:3px solid #c9a96e;':''}">
       ${img?`<img class="thumb" src="${img}">`:""}
       <div style="flex:1;">
-        <b>${p.name}</b> <span style="font-size:11px;color:#888;">(${p.price})</span><br>
-        <input type="number" id="hero-ord-${p.id}" value="${val}" placeholder="#" min="1" style="width:60px;display:inline-block;margin-top:5px;" title="Hero Order (1,2,3...). Khali chhodo agar hero me nahi chahiye">
-        <br><label style="font-size:10px;margin-top:8px;">Hero Image (3:4 crop):</label>
+        <b>${p.name}</b> <span style="font-size:11px;color:#888;">(₹${p.price})</span>
+        ${inHero?'<span style="font-size:10px;color:#c9a96e;margin-left:5px;">✓ IN HERO</span>':''}
+        <br>
+        <label style="font-size:10px;margin-top:8px;">Hero Position (1,2,3... ya khali chhodo):</label>
+        <input type="number" id="hero-ord-${p.id}" value="${val}" placeholder="—" min="1" style="width:70px;display:inline-block;margin-top:5px;">
+        <br>
+        <label style="font-size:10px;margin-top:8px;">Hero Image (3:4 crop):</label>
         <input type="file" id="hero-file-${p.id}" accept="image/*" style="font-size:10px;margin-top:5px;">
         <button class="small" onclick="triggerHeroCrop('${p.id}')" style="margin-top:5px;">Upload & Crop Hero Img</button>
       </div>
@@ -533,14 +539,45 @@ function triggerHeroCrop(pid) {
 }
 
 async function saveHeroProducts() {
-  const ids = [];
+  const entries = [];
   allProductsAdmin.forEach(p => {
-    const val = document.getElementById("hero-ord-"+p.id).value.trim();
+    const input = document.getElementById("hero-ord-"+p.id);
+    if(!input) return;
+    const val = input.value.trim();
+    if(!val) return; // Khali = hero me nahi
     const num = Number(val);
-    if(val && !isNaN(num) && num > 0) {
-      ids.push({id:p.id, ord:num});
-    }
+    if(isNaN(num) || num < 1) return; // Invalid = hero me nahi
+    entries.push({id:p.id, ord:num});
   });
+  
+  // Duplicate positions handle kar — agar 2 products ne same number diya toh pehle wala rakho
+  const seen = new Set();
+  const unique = entries.filter(e => {
+    if(seen.has(e.ord)) return false;
+    seen.add(e.ord);
+    return true;
+  });
+  
+  // Sort by position number
+  unique.sort((a,b)=>a.ord-b.ord);
+  
+  // Final hero IDs list (sirf inki)
+  const heroIds = unique.map(x=>x.id);
+  
+  console.log("Saving hero IDs in order:", heroIds);
+  
+  const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
+  if(existing) {
+    const { error } = await supabaseClient.from("site_setting").update({hero_product_ids: heroIds}).eq("id",existing.id);
+    if(error) { alert("Error: "+error.message); return; }
+  } else {
+    const { error } = await supabaseClient.from("site_setting").insert([{hero_product_ids: heroIds}]);
+    if(error) { alert("Error: "+error.message); return; }
+  }
+  
+  alert("✓ Hero order saved! Website refresh kar.");
+  loadHeroUI(heroIds); // UI refresh karo
+}
   ids.sort((a,b)=>a.ord-b.ord);
   const heroIds = ids.map(x=>x.id);
   console.log("Saving hero IDs:", heroIds);
