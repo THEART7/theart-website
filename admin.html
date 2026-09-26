@@ -39,8 +39,8 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
   <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
   <p id="loginMessage" class="error"></p>
-  </div>
-  <div id="adminPanel" class="hidden">
+</div>
+<div id="adminPanel" class="hidden">
   <p id="welcome" style="font-size:13px;color:#888;margin-bottom:15px;"></p>
   <div class="navbar">
     <button onclick="showSection('overview')" id="nav-overview">Overview</button>
@@ -95,7 +95,7 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
       <h2>Brand & Shipping</h2>
       <label>Brand Name</label><input id="settingBrandName" placeholder="T-HEART">
       <label>Tagline</label><input id="settingTagline" placeholder="Premium Clothing">
-      <label>Free Shipping Above (₹)</label><input id="settingFreeShipAbove" type="number" placeholder="0 = Always Free">
+      <label>Free Shipping Above ()</label><input id="settingFreeShipAbove" type="number" placeholder="0 = Always Free">
       <label>Shipping Fee (₹)</label><input id="settingShipFee" type="number" placeholder="99">
       <button onclick="saveSettings()">Save Settings</button>
       <p id="settingsMessage" class="success"></p>
@@ -423,7 +423,7 @@ async function loadCustomers() {
   if(!data || !data.length) { container.innerHTML = "<p>No customers yet.</p>"; return; }
   container.innerHTML = data.map(c => `<div class="item-row">
     <b>${c.name||'N/A'}</b><br>
-     ${c.email||'N/A'}<br>
+    📧 ${c.email||'N/A'}<br>
     📱 ${c.phone||'N/A'}<br>
     <small style="color:#888;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small>
   </div>`).join("");
@@ -434,8 +434,8 @@ async function loadSettings() {
   if(data) {
     document.getElementById("settingBrandName").value = data.brand_name||"";
     document.getElementById("settingTagline").value = data.tagline||"";
-    document.getElementById("settingFreeShipAbove").value = data.free_shipping_above!==undefined&&data.free_shipping_above!==null?data.free_shipping_above:5000;
-    document.getElementById("settingShipFee").value = data.shipping_fee!==undefined&&data.shipping_fee!==null?data.shipping_fee:99;
+    document.getElementById("settingFreeShipAbove").value = data.free_shipping_above!==undefined&&data.free_shipping_above!==null?data.free_shipping_above:0;
+    document.getElementById("settingShipFee").value = data.shipping_fee!==undefined&&data.shipping_fee!==null?data.shipping_fee:0;
     loadHeroUI(data.hero_product_ids||[]);
   }
 }
@@ -495,7 +495,6 @@ function loadHeroUI(heroIds) {
   let hids = heroIds;
   if(typeof hids==='string') try{hids=JSON.parse(hids);}catch(e){hids=[];}
   if(!Array.isArray(hids)) hids=[];
-  
   document.getElementById("heroProductsList").innerHTML = allProductsAdmin.map(p => {
     const idx = hids.indexOf(p.id);
     const val = idx !== -1 ? (idx+1) : "";
@@ -544,28 +543,20 @@ async function saveHeroProducts() {
     const input = document.getElementById("hero-ord-"+p.id);
     if(!input) return;
     const val = input.value.trim();
-    if(!val) return; // Khali = hero me nahi
+    if(!val) return;
     const num = Number(val);
-    if(isNaN(num) || num < 1) return; // Invalid = hero me nahi
+    if(isNaN(num) || num < 1) return;
     entries.push({id:p.id, ord:num});
   });
-  
-  // Duplicate positions handle kar — agar 2 products ne same number diya toh pehle wala rakho
   const seen = new Set();
   const unique = entries.filter(e => {
     if(seen.has(e.ord)) return false;
     seen.add(e.ord);
     return true;
   });
-  
-  // Sort by position number
   unique.sort((a,b)=>a.ord-b.ord);
-  
-  // Final hero IDs list (sirf inki)
   const heroIds = unique.map(x=>x.id);
-  
-  console.log("Saving hero IDs in order:", heroIds);
-  
+  console.log("Saving hero IDs:", heroIds);
   const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
   if(existing) {
     const { error } = await supabaseClient.from("site_setting").update({hero_product_ids: heroIds}).eq("id",existing.id);
@@ -574,17 +565,8 @@ async function saveHeroProducts() {
     const { error } = await supabaseClient.from("site_setting").insert([{hero_product_ids: heroIds}]);
     if(error) { alert("Error: "+error.message); return; }
   }
-  
   alert("✓ Hero order saved! Website refresh kar.");
-  loadHeroUI(heroIds); // UI refresh karo
-}
-  ids.sort((a,b)=>a.ord-b.ord);
-  const heroIds = ids.map(x=>x.id);
-  console.log("Saving hero IDs:", heroIds);
-  const { data: existing } = await supabaseClient.from("site_setting").select("id").limit(1).maybeSingle();
-  if(existing) await supabaseClient.from("site_setting").update({hero_product_ids: heroIds}).eq("id",existing.id);
-  else await supabaseClient.from("site_setting").insert([{hero_product_ids: heroIds}]);
-  alert("Hero order saved! Website refresh kar.");
+  loadHeroUI(heroIds);
 }
 </script>
 </body>
