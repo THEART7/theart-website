@@ -283,19 +283,40 @@ function ldProf(){
 
 async function ldSet(){
   try{
-    const{data}=await db.from("site_setting").select("*").limit(1).maybeSingle();
-    if(!data){document.getElementById("hName").textContent="Error: No settings";return;}
-    if(data.brand_name){document.getElementById("sBrand").textContent=data.brand_name;document.getElementById("fBrand").textContent=data.brand_name;}
-    if(data.tagline){document.getElementById("sTag").textContent=data.tagline;document.getElementById("fTag").textContent=data.tagline;}
-    if(data.free_shipping_above!==undefined&&data.free_shipping_above!==null){const fs=Number(data.free_shipping_above);if(!isNaN(fs))sSet.fs=fs;}
-    if(data.shipping_fee!==undefined&&data.shipping_fee!==null){const sf=Number(data.shipping_fee);if(!isNaN(sf))sSet.sf=sf;}
+    // maybeSingle() ki jagah simple query use karo
+    const{data,error}=await db.from("site_setting").select("*").limit(1);
+    
+    if(error){
+      console.log("site_setting error:", error);
+      document.getElementById("hName").textContent="DB Error";
+      return;
+    }
+    
+    // Pehli row lo (agar multiple hain toh bhi kaam karega)
+    const setting = data && data.length > 0 ? data[0] : null;
+    
+    if(!setting){
+      console.log("No settings found");
+      document.getElementById("hName").textContent="No Settings";
+      return;
+    }
+    
+    if(setting.brand_name){document.getElementById("sBrand").textContent=setting.brand_name;document.getElementById("fBrand").textContent=setting.brand_name;}
+    if(setting.tagline){document.getElementById("sTag").textContent=setting.tagline;document.getElementById("fTag").textContent=setting.tagline;}
+    
+    if(setting.free_shipping_above!==undefined&&setting.free_shipping_above!==null){const fs=Number(setting.free_shipping_above);if(!isNaN(fs))sSet.fs=fs;}
+    if(setting.shipping_fee!==undefined&&setting.shipping_fee!==null){const sf=Number(setting.shipping_fee);if(!isNaN(sf))sSet.sf=sf;}
     document.getElementById("shipNote").textContent=`Free shipping above ₹${sSet.fs||500}. Returns within 7 days if unworn.`;
     
-    let hids=data.hero_product_ids;
+    let hids=setting.hero_product_ids;
+    console.log("Hero IDs:", hids);
     if(typeof hids==='string'){try{hids=JSON.parse(hids);}catch(e){hids=null;}}
     if(hids&&Array.isArray(hids)&&hids.length>0){await ldHero(hids);}
     else{document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";document.getElementById("hName").textContent="T-HEART Collection";document.getElementById("hDots").innerHTML="";}
-  }catch(e){document.getElementById("hName").textContent="Error loading";console.log("ldSet error:",e);}
+  }catch(e){
+    console.log("ldSet error:", e);
+    document.getElementById("hName").textContent="Error";
+  }
 }
 
 async function ldHero(ids){
