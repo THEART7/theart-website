@@ -297,7 +297,7 @@ if(e1){
     
     if(error){
       console.log("site_setting error:", error);
-      document.getElementById("hName").textContent="DB Error";
+      document.getElementById("hName").textContent="Err: " + error.message;
       return;
     }
     
