@@ -288,7 +288,10 @@ async function ldSet(){
     if(data.brand_name){document.getElementById("sBrand").textContent=data.brand_name;document.getElementById("fBrand").textContent=data.brand_name;}
     if(data.tagline){document.getElementById("sTag").textContent=data.tagline;document.getElementById("fTag").textContent=data.tagline;}
     if(data.free_shipping_above!==undefined&&data.free_shipping_above!==null&&data.free_shipping_above!=="")sSet.fs=Number(data.free_shipping_above);
-    if(data.shipping_fee!==undefined&&data.shipping_fee!==null&&data.shipping_fee!=="")sSet.sf=Number(data.shipping_fee);
+    if(data.shipping_fee!==undefined&&data.shipping_fee!==null){
+  const sf=Number(data.shipping_fee);
+  if(!isNaN(sf))sSet.sf=sf;
+    }
     document.getElementById("shipNote").textContent=`Free shipping above ₹${sSet.fs||500}. Returns within 7 days if unworn.`;
     let hids=data.hero_product_ids;
     if(typeof hids==='string')try{hids=JSON.parse(hids);}catch(e){hids=null;}
@@ -338,14 +341,32 @@ function tot(){return Math.max(0,sTot()-gDsc()+gShp());}
 
 async function aCpn(){const code=document.getElementById("cpIn").value.trim().toUpperCase();const msg=document.getElementById("cpMsg");if(!code){msg.textContent="Enter a code";return;}try{const{data}=await db.from("coupons").select("*").eq("code",code).eq("is_active",true).maybeSingle();if(!data){msg.textContent="Invalid code";msg.style.color="#a33";return;}if(sTot()<data.min_order_amount){msg.textContent=`Min order ₹${data.min_order_amount}`;msg.style.color="#a33";return;}cpn=data;msg.textContent=`✓ ${data.discount_percent}% off applied`;msg.style.color="#2a7";rCart();rBag();}catch(e){msg.textContent="Error applying coupon";}}
 
-function rCart(){const c=gCart();document.getElementById("cIt").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-weight:500;font-size:13px;">${i.name}</div><div style="color:#888;font-size:11px;">Size: ${i.size||'M'}</div><div style="display:flex;align-items:center;gap:8px;margin-top:5px;"><button onclick="chQty('${i.id}',-1)" style="width:26px;height:26px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;">-</button><span style="font-size:13px;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:26px;height:26px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;">+</button></div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:4px;cursor:pointer;">Remove</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";document.getElementById("cTot").textContent="₹"+tot();}
-
+function rCart(){
+  const c=gCart();
+  const isEmpty=!c.length;
+  document.getElementById("cIt").innerHTML=isEmpty?"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>":c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-weight:500;font-size:13px;">${i.name}</div><div style="color:#888;font-size:11px;">Size: ${i.size||'M'}</div><div style="display:flex;align-items:center;gap:8px;margin-top:5px;"><button onclick="chQty('${i.id}',-1)" style="width:26px;height:26px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;">-</button><span style="font-size:13px;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:26px;height:26px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;">+</button></div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:4px;cursor:pointer;">Remove</button></div></div>`).join("");
+  document.getElementById("cTot").textContent="₹"+tot();
+  const checkoutBtn=document.getElementById("cartCheckoutBtn");
+  if(checkoutBtn)checkoutBtn.style.display=isEmpty?"none":"block";
+}
 function rBag(){const c=gCart();document.getElementById("bagCnt").textContent=c.length?`${c.reduce((s,i)=>s+i.qty,0)} piece${c.reduce((s,i)=>s+i.qty,0)>1?'s':''} • ready to pack.`:"Your bag is empty.";document.getElementById("bagItems").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-family:Georgia,serif;font-size:16px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: ${i.size||'M'} • ₹${i.price}</div><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button onclick="chQty('${i.id}',-1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">-</button><span style="font-size:14px;min-width:20px;text-align:center;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">+</button></div></div><div style="text-align:right;"><div style="font-weight:600;">₹${i.price*i.qty}</div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:8px;cursor:pointer;">REMOVE</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";document.getElementById("bagSub").textContent="₹"+sTot();document.getElementById("bagDsc").textContent="-₹"+gDsc();const shippingCost=gShp();document.getElementById("bagShp").textContent=shippingCost===0?"FREE":"₹"+shippingCost;document.getElementById("bagTot").textContent="₹"+tot();}
 
 function oCart(){document.getElementById("cOv").classList.add("open");document.getElementById("cDr").classList.add("open");rCart();}
 function cCart(){document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");}
 
-function showBag(){const c=gCart();if(!c.length){t("Your bag is empty!");return;}rBag();document.getElementById("bagPg").classList.add("open");document.body.style.overflow="hidden";cDet();}
+function showBag(){
+  const c=gCart();
+  if(!c.length){
+    t("Your bag is empty!");
+    document.getElementById("cOv").classList.remove("open");
+    document.getElementById("cDr").classList.remove("open");
+    return;
+  }
+  rBag();
+  document.getElementById("bagPg").classList.add("open");
+  document.body.style.overflow="hidden";
+  cDet();
+}
 function showCheckout(){rBag();document.getElementById("chkTot").textContent="₹"+tot();document.getElementById("bagPg").classList.remove("open");document.getElementById("chkPg").classList.add("open");document.getElementById("chErr").textContent="";}
 function goHome(){document.getElementById("bagPg").classList.remove("open");document.getElementById("chkPg").classList.remove("open");document.getElementById("detPg").classList.remove("open");document.body.style.overflow="";if(window.location.hash)window.location.hash="";}
 
