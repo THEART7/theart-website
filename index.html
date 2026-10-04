@@ -29,11 +29,10 @@ body{background:#F8F7F4;color:#1A1A1A;font-family:-apple-system,BlinkMacSystemFo
 .mnu-section-title{font-size:10px;color:#888;letter-spacing:2px;text-transform:uppercase;padding:0 20px;margin-bottom:10px;}
 .mnu-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:#1A1A1A;text-decoration:none;font-size:15px;transition:background 0.2s;}
 .mnu-item:hover{background:#F5F5F5;}
-.mnu-item .icon{font-size:18px;width:24px;text-align:center;}
+.mnu-item .icon{font-size:16px;width:20px;text-align:center;color:#666;}
 .mnu-item.logout{color:#a33;}
 .social-links{display:flex;gap:15px;padding:15px 20px;}
 .social-links a{display:flex;align-items:center;gap:8px;color:#1A1A1A;text-decoration:none;font-size:13px;}
-.social-links a img{width:20px;height:20px;}
 .hero{padding:15px;}
 .hcard{position:relative;aspect-ratio:3/4;max-height:520px;background:#E5E5E5;border-radius:4px;overflow:hidden;cursor:pointer;}
 .himg{width:100%;height:100%;background-size:cover;background-position:center;transition:opacity 0.4s;}
@@ -108,12 +107,17 @@ footer{background:#fff;padding:35px 20px;border-top:1px solid #E5E5E5;margin-top
 footer h4{font-size:10px;letter-spacing:2px;margin:18px 0 8px;text-transform:uppercase;color:#888;}
 footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size:13px;}
 @media(min-width:700px){.grd{grid-template-columns:repeat(3,1fr);}.csec h2{font-size:32px;}.coll h2{font-size:36px;}}
-.login-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
-.login-modal.open{display:flex;}
-.login-box{background:#fff;padding:30px;border-radius:12px;max-width:400px;width:100%;}
-.login-box h2{font-family:Georgia,serif;margin-bottom:20px;text-align:center;}
-.login-box input{width:100%;padding:12px;margin:8px 0;border:1px solid #E5E5E5;border-radius:6px;font-size:14px;}
-.login-box button{width:100%;padding:12px;background:#1A1A1A;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-top:10px;font-size:14px;}
+.auth-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.auth-modal.open{display:flex;}
+.auth-box{background:#fff;padding:30px;border-radius:12px;max-width:400px;width:100%;}
+.auth-box h2{font-family:Georgia,serif;margin-bottom:20px;text-align:center;font-size:24px;}
+.auth-box .tabs{display:flex;gap:10px;margin-bottom:20px;}
+.auth-box .tab{flex:1;padding:10px;text-align:center;background:#F5F5F5;border-radius:6px;cursor:pointer;font-size:14px;}
+.auth-box .tab.active{background:#1A1A1A;color:#fff;}
+.auth-box input{width:100%;padding:12px;margin:8px 0;border:1px solid #E5E5E5;border-radius:6px;font-size:14px;}
+.auth-box button{width:100%;padding:12px;background:#1A1A1A;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-top:10px;font-size:14px;}
+.auth-box .switch-text{text-align:center;margin-top:15px;font-size:13px;color:#888;}
+.auth-box .switch-text a{color:#1A1A1A;text-decoration:underline;cursor:pointer;}
 .orders-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
 .orders-modal.open{display:flex;}
 .orders-box{background:#fff;padding:25px;border-radius:12px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;}
@@ -148,33 +152,47 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
   <div class="mnu-header">
     <button class="mcl" onclick="tMnu()">×</button>
     <h3 id="menuUserName">Welcome</h3>
-    <p id="menuUserEmail">Login to access your account</p>
+    <p id="menuUserPhone">Login to access your account</p>
   </div>
   <div class="mnu-section">
     <div class="mnu-section-title">Navigate</div>
-    <a href="#" class="mnu-item" onclick="tMnu();goHome();return false;"><span class="icon">🏠</span> Home</a>
-    <a href="#" class="mnu-item" onclick="tMnu();showBag();return false;"><span class="icon">🛍️</span> My Bag</a>
+    <a href="#" class="mnu-item" onclick="tMnu();goHome();return false;"><span class="icon">⌂</span> Home</a>
+    <a href="#" class="mnu-item" onclick="tMnu();showBag();return false;"><span class="icon">◈</span> My Bag</a>
   </div>
   <div class="mnu-section" id="accountSection">
     <div class="mnu-section-title">My Account</div>
-    <a href="#" class="mnu-item" onclick="tMnu();openLogin();return false;" id="loginMenuItem"><span class="icon"></span> Login</a>
-    <a href="#" class="mnu-item" onclick="tMnu();openProfile();return false;" id="profileMenuItem" style="display:none;"><span class="icon">⚙️</span> My Profile</a>
-    <a href="#" class="mnu-item" onclick="tMnu();openOrders();return false;" id="ordersMenuItem" style="display:none;"><span class="icon">📦</span> My Orders</a>
-    <a href="#" class="mnu-item logout" onclick="tMnu();logout();return false;" id="logoutMenuItem" style="display:none;"><span class="icon">🚪</span> Logout</a>
+    <a href="#" class="mnu-item" onclick="tMnu();openAuth();return false;" id="loginMenuItem"><span class="icon">◉</span> Login</a>
+    <a href="#" class="mnu-item" onclick="tMnu();openProfile();return false;" id="profileMenuItem" style="display:none;"><span class="icon">◎</span> My Profile</a>
+    <a href="#" class="mnu-item" onclick="tMnu();openOrders();return false;" id="ordersMenuItem" style="display:none;"><span class="icon">▤</span> My Orders</a>
+    <a href="#" class="mnu-item logout" onclick="tMnu();logout();return false;" id="logoutMenuItem" style="display:none;"><span class="icon"></span> Logout</a>
   </div>
   <div class="mnu-section">
     <div class="mnu-section-title">Connect</div>
-    <div class="social-links"><a href="https://instagram.com/t.heart_7" target="_blank"><span style="font-size:20px;">📷</span> Instagram</a></div>
-    <div class="social-links"><a href="https://wa.me/919315640226" target="_blank"><span style="font-size:20px;">💬</span> WhatsApp</a></div>
-    <div class="social-links"><a href="mailto:t.heart7support@gmail.com"><span style="font-size:20px;">️</span> Email</a></div>
+    <a href="https://instagram.com/t.heart_7" target="_blank" class="mnu-item"><span class="icon">◐</span> Instagram</a>
+    <a href="https://wa.me/919315640226" target="_blank" class="mnu-item"><span class="icon">◑</span> WhatsApp</a>
+    <a href="mailto:t.heart7support@gmail.com" class="mnu-item"><span class="icon">◒</span> Email</a>
   </div>
 </div>
-<div class="login-modal" id="loginModal">
-  <div class="login-box">
+<div class="auth-modal" id="authModal">
+  <div class="auth-box">
     <h2>Welcome to T-HEART</h2>
-    <input id="loginEmail" type="email" placeholder="Enter your email">
-    <button onclick="doLogin()">Continue</button>
-    <button class="secondary" onclick="closeLogin()" style="background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:8px;">Cancel</button>
+    <div class="tabs">
+      <div class="tab active" id="loginTab" onclick="switchAuthTab('login')">Login</div>
+      <div class="tab" id="signupTab" onclick="switchAuthTab('signup')">Sign Up</div>
+    </div>
+    <div id="loginForm">
+      <input id="loginPhone" type="tel" placeholder="Phone Number" maxlength="10">
+      <input id="loginPassword" type="password" placeholder="Password">
+      <button onclick="doLogin()">Login</button>
+    </div>
+    <div id="signupForm" style="display:none;">
+      <input id="signupName" placeholder="Full Name">
+      <input id="signupPhone" type="tel" placeholder="Phone Number" maxlength="10">
+      <input id="signupPassword" type="password" placeholder="Password (min 6 characters)">
+      <button onclick="doSignup()">Sign Up</button>
+    </div>
+    <button class="secondary" onclick="closeAuth()" style="background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:8px;">Cancel</button>
+    <p id="authMsg" style="font-size:12px;color:#a33;margin-top:10px;text-align:center;"></p>
   </div>
 </div>
 <div class="profile-modal" id="profileModal">
@@ -182,10 +200,10 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
     <h2>My Profile</h2>
     <label style="font-size:12px;color:#888;">Name</label>
     <input id="profileName" placeholder="Your name">
-    <label style="font-size:12px;color:#888;">Email</label>
-    <input id="profileEmail" type="email" placeholder="Your email" readonly>
     <label style="font-size:12px;color:#888;">Phone</label>
-    <input id="profilePhone" placeholder="Your phone">
+    <input id="profilePhone" placeholder="Your phone" readonly>
+    <label style="font-size:12px;color:#888;">New Password (optional)</label>
+    <input id="profilePassword" type="password" placeholder="Leave blank to keep current">
     <button onclick="saveProfile()">Save Changes</button>
     <button class="secondary" onclick="closeProfile()" style="background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:8px;">Cancel</button>
   </div>
@@ -224,8 +242,8 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
     <a href="mailto:t.heart7support@gmail.com">Email</a>
     <p style="margin-top:15px;font-size:10px;color:#aaa;">© 2026 T-HEART. Made in India.</p>
   </footer>
-      </div>
-      <div class="det" id="detPg">
+</div>
+<div class="det" id="detPg">
   <div class="detl">
     <button class="detback" onclick="cDet()">← Back</button>
     <div class="detimg" id="detImg"></div>
@@ -278,7 +296,6 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
     <div class="chb">
       <label>First Name</label><input id="chFN" placeholder="Aanya">
       <label>Last Name</label><input id="chLN" placeholder="Mehra">
-      <label>Email</label><input id="chE" type="email" placeholder="you@email.com">
       <label>Phone</label><input id="chP" placeholder="9876543210" maxlength="10">
       <label>Address</label><textarea id="chA" placeholder="House, street, area, landmark"></textarea>
       <button class="locbtn" onclick="useMyLocation()"> Use My Current Location</button>
@@ -307,7 +324,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
   </div>
 </div>
 <div class="tst" id="tst"></div>
-  <script>
+<script>
 const U="https://kxkmbqvsswfevrpdhjsh.supabase.co";
 const K="sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
 const RAZORPAY_KEY_ID="rzp_live_TddrVsrjZZUL5v";
@@ -323,51 +340,101 @@ function loadProfile(){
   if(s){
     prof=JSON.parse(s);
     document.getElementById("menuUserName").textContent=prof.name||"Welcome";
-    document.getElementById("menuUserEmail").textContent=prof.email||"";
+    document.getElementById("menuUserPhone").textContent=prof.phone||"";
     document.getElementById("loginMenuItem").style.display="none";
     document.getElementById("profileMenuItem").style.display="flex";
     document.getElementById("ordersMenuItem").style.display="flex";
     document.getElementById("logoutMenuItem").style.display="flex";
-    const names=(prof.name||"").split(" ");
-    document.getElementById("chFN").value=names[0]||"";
-    document.getElementById("chLN").value=names.slice(1).join(" ")||"";
-    document.getElementById("chE").value=prof.email||"";
+    document.getElementById("chFN").value=(prof.name||"").split(" ")[0]||"";
+    document.getElementById("chLN").value=(prof.name||"").split(" ").slice(1).join(" ")||"";
     document.getElementById("chP").value=prof.phone||"";
     if(prof.address){document.getElementById("chA").value=prof.address||"";document.getElementById("chC").value=prof.city||"";document.getElementById("chPi").value=prof.pincode||"";}
   }
 }
-function openLogin(){document.getElementById("loginModal").classList.add("open");}
-function closeLogin(){document.getElementById("loginModal").classList.remove("open");}
-function doLogin(){
-  const email=document.getElementById("loginEmail").value.trim();
-  if(!email){alert("Please enter email");return;}
-  const existing=localStorage.getItem("th_profile");
-  if(existing){const p=JSON.parse(existing);if(p.email===email){t("Already logged in!");closeLogin();return;}}
-  prof={name:"",email:email,phone:"",address:"",city:"",pincode:""};
-  localStorage.setItem("th_profile",JSON.stringify(prof));
-  loadProfile();closeLogin();t("Logged in successfully!");
+
+function openAuth(){document.getElementById("authModal").classList.add("open");}
+function closeAuth(){document.getElementById("authModal").classList.remove("open");document.getElementById("authMsg").textContent="";}
+function switchAuthTab(tab){
+  if(tab==='login'){
+    document.getElementById("loginTab").classList.add("active");
+    document.getElementById("signupTab").classList.remove("active");
+    document.getElementById("loginForm").style.display="block";
+    document.getElementById("signupForm").style.display="none";
+  }else{
+    document.getElementById("signupTab").classList.add("active");
+    document.getElementById("loginTab").classList.remove("active");
+    document.getElementById("signupForm").style.display="block";
+    document.getElementById("loginForm").style.display="none";
+  }
+  document.getElementById("authMsg").textContent="";
 }
+
+async function doSignup(){
+  const name=document.getElementById("signupName").value.trim();
+  const phone=document.getElementById("signupPhone").value.trim();
+  const password=document.getElementById("signupPassword").value;
+  const msg=document.getElementById("authMsg");
+  if(!name){msg.textContent="Name required";return;}
+  if(!/^[6-9]\d{9}$/.test(phone)){msg.textContent="Valid 10-digit phone required";return;}
+  if(password.length<6){msg.textContent="Password min 6 characters";return;}
+  msg.textContent="Creating account...";
+  try{
+    const{data:existing}=await db.from("customers").select("*").eq("phone",phone).limit(1);
+    if(existing&&existing.length>0){msg.textContent="Phone already registered. Please login.";return;}
+    const{error}=await db.from("customers").insert([{name,phone,password}]);
+    if(error){msg.textContent="Error: "+error.message;return;}
+    prof={name,phone,password,address:"",city:"",pincode:""};
+    localStorage.setItem("th_profile",JSON.stringify(prof));
+    loadProfile();closeAuth();t("Account created!");
+  }catch(e){msg.textContent="Error: "+e.message;}
+}
+
+async function doLogin(){
+  const phone=document.getElementById("loginPhone").value.trim();
+  const password=document.getElementById("loginPassword").value;
+  const msg=document.getElementById("authMsg");
+  if(!/^[6-9]\d{9}$/.test(phone)){msg.textContent="Valid phone required";return;}
+  if(!password){msg.textContent="Password required";return;}
+  msg.textContent="Logging in...";
+  try{
+    const{data,error}=await db.from("customers").select("*").eq("phone",phone).eq("password",password).limit(1);
+    if(error){msg.textContent="Error: "+error.message;return;}
+    if(!data||data.length===0){msg.textContent="Invalid phone or password";return;}
+    prof=data[0];
+    localStorage.setItem("th_profile",JSON.stringify(prof));
+    loadProfile();closeAuth();t("Welcome back!");
+  }catch(e){msg.textContent="Error: "+e.message;}
+}
+
 function openProfile(){
   if(!prof)return;
   document.getElementById("profileName").value=prof.name||"";
-  document.getElementById("profileEmail").value=prof.email||"";
   document.getElementById("profilePhone").value=prof.phone||"";
+  document.getElementById("profilePassword").value="";
   document.getElementById("profileModal").classList.add("open");
 }
 function closeProfile(){document.getElementById("profileModal").classList.remove("open");}
-function saveProfile(){
+async function saveProfile(){
   const name=document.getElementById("profileName").value.trim();
-  const phone=document.getElementById("profilePhone").value.trim();
+  const password=document.getElementById("profilePassword").value;
+  const msg=document.getElementById("authMsg");
   if(!name){alert("Name required");return;}
-  prof.name=name;prof.phone=phone;
+  prof.name=name;
+  if(password&&password.length>=6){prof.password=password;}
   localStorage.setItem("th_profile",JSON.stringify(prof));
+  try{
+    const updateData={name:prof.name};
+    if(password&&password.length>=6)updateData.password=password;
+    await db.from("customers").update(updateData).eq("phone",prof.phone);
+  }catch(e){}
   loadProfile();closeProfile();t("Profile updated!");
 }
+
 function logout(){
   if(confirm("Are you sure you want to logout?")){
     localStorage.removeItem("th_profile");prof=null;
     document.getElementById("menuUserName").textContent="Welcome";
-    document.getElementById("menuUserEmail").textContent="Login to access your account";
+    document.getElementById("menuUserPhone").textContent="Login to access your account";
     document.getElementById("loginMenuItem").style.display="flex";
     document.getElementById("profileMenuItem").style.display="none";
     document.getElementById("ordersMenuItem").style.display="none";
@@ -375,12 +442,13 @@ function logout(){
     t("Logged out");
   }
 }
+
 async function openOrders(){
-  if(!prof||!prof.email){t("Please login first");openLogin();return;}
+  if(!prof||!prof.phone){t("Please login first");openAuth();return;}
   document.getElementById("ordersList").innerHTML="<p>Loading orders...</p>";
   document.getElementById("ordersModal").classList.add("open");
   try{
-    const{data,error}=await db.from("Orders table").select("*").eq("customer_email",prof.email).order("created_at",{ascending:false});
+    const{data,error}=await db.from("Orders table").select("*").eq("customer_phone",prof.phone).order("created_at",{ascending:false});
     if(error){document.getElementById("ordersList").innerHTML="<p>Error loading orders</p>";return;}
     if(!data||data.length===0){document.getElementById("ordersList").innerHTML="<p>No orders yet</p>";return;}
     document.getElementById("ordersList").innerHTML=data.map(o=>{
@@ -495,108 +563,105 @@ function rCart(){
 function rBag(){
   const c=gCart();
   document.getElementById("bagCnt").textContent=c.length?`${c.reduce((s,i)=>s+i.qty,0)} piece${c.reduce((s,i)=>s+i.qty,0)>1?'s':''} • ready to pack.`:"Your bag is empty.";
-  document.getElementById("bagItems").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-family:Georgia,serif;font-size:16px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: ${i.size||'M'} • ₹${i.price}</div><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button onclick="chQty('${i.id}',-1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">-</button><span style="font-size:14px;min-width:20px;text-align:center;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">+</button></div></div><div style="text-align:right;"><div style="font-weight:600;">${i.price*i.qty}</div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:8px;cursor:pointer;">REMOVE</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
-  document.getElementById("bagSub").textContent="₹"+sTot();
-  document.getElementById("bagDsc").textContent="-"+gDsc();
-  const shippingCost=gShp();
-  document.getElementById("bagShp").textContent=shippingCost===0?"FREE":"₹"+shippingCost;
-  document.getElementById("bagTot").textContent="₹"+tot();
-}
-function oCart(){document.getElementById("cOv").classList.add("open");document.getElementById("cDr").classList.add("open");rCart();}
-function cCart(){document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");}
-function showBag(){
-  const c=gCart();
-  if(!c.length){t("Your bag is empty!");document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");return;}
-  rBag();
-  document.getElementById("chkPg").classList.remove("open");
-  document.getElementById("bagPg").classList.add("open");
-  document.body.style.overflow="hidden";
-  cDet();
-}
-function showCheckout(){
-  rBag();
-  document.getElementById("chkTot").textContent="₹"+tot();
-  document.getElementById("bagPg").classList.remove("open");
-  document.getElementById("chkPg").classList.add("open");
-  document.getElementById("chErr").textContent="";
-}
-function goHome(){document.getElementById("bagPg").classList.remove("open");document.getElementById("chkPg").classList.remove("open");document.getElementById("detPg").classList.remove("open");document.body.style.overflow="";if(window.location.hash)window.location.hash="";}
+          document.getElementById("bagItems").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-family:Georgia,serif;font-size:16px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: ${i.size||'M'} • ₹${i.price}</div><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button onclick="chQty('${i.id}',-1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">-</button><span style="font-size:14px;min-width:20px;text-align:center;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">+</button></div></div><div style="text-align:right;"><div style="font-weight:600;">₹${i.price*i.qty}</div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:8px;cursor:pointer;">REMOVE</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
+          document.getElementById("bagSub").textContent="₹"+sTot();
+          document.getElementById("bagDsc").textContent="-₹"+gDsc();
+          const shippingCost=gShp();
+          document.getElementById("bagShp").textContent=shippingCost===0?"FREE":"₹"+shippingCost;
+          document.getElementById("bagTot").textContent="₹"+tot();
+        }
+        function oCart(){document.getElementById("cOv").classList.add("open");document.getElementById("cDr").classList.add("open");rCart();}
+        function cCart(){document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");}
+        function showBag(){
+          const c=gCart();
+          if(!c.length){t("Your bag is empty!");document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");return;}
+          rBag();
+          document.getElementById("chkPg").classList.remove("open");
+          document.getElementById("bagPg").classList.add("open");
+          document.body.style.overflow="hidden";
+          cDet();
+        }
+        function showCheckout(){
+          rBag();
+          document.getElementById("chkTot").textContent="₹"+tot();
+          document.getElementById("bagPg").classList.remove("open");
+          document.getElementById("chkPg").classList.add("open");
+          document.getElementById("chErr").textContent="";
+        }
+        function goHome(){document.getElementById("bagPg").classList.remove("open");document.getElementById("chkPg").classList.remove("open");document.getElementById("detPg").classList.remove("open");document.body.style.overflow="";if(window.location.hash)window.location.hash="";}
 
-function validateCheckout(){
-  const fn=document.getElementById("chFN").value.trim();
-  const ln=document.getElementById("chLN").value.trim();
-  const em=document.getElementById("chE").value.trim();
-  const ph=document.getElementById("chP").value.trim();
-  const ad=document.getElementById("chA").value.trim();
-  const ct=document.getElementById("chC").value.trim();
-  const pi=document.getElementById("chPi").value.trim();
-  const err=document.getElementById("chErr");
-  if(!/^[a-zA-Z\s]{2,}$/.test(fn)){err.textContent="Enter valid first name";return false;}
-  if(!/^[a-zA-Z\s]{2,}$/.test(ln)){err.textContent="Enter valid last name";return false;}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){err.textContent="Enter valid email";return false;}
-  if(!/^[6-9]\d{9}$/.test(ph)){err.textContent="Enter valid 10-digit mobile";return false;}
-  if(ad.length<15){err.textContent="Enter complete address (min 15 chars)";return false;}
-  if(ct.length<2){err.textContent="Enter valid city";return false;}
-  if(!/^[1-8]\d{5}$/.test(pi)){err.textContent="Enter valid 6-digit pincode";return false;}
-  err.textContent="";return true;
-}
-function useMyLocation(){
-  if(!navigator.geolocation){alert("Geolocation not supported");return;}
-  const btn=event.target;btn.textContent="📍 Locating...";btn.disabled=true;
-  navigator.geolocation.getCurrentPosition(
-    async (pos)=>{
-      custLat=pos.coords.latitude;custLng=pos.coords.longitude;
-      try{
-        const res=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${custLat}&lon=${custLng}`);
-        const data=await res.json();const a=data.address||{};
-        if(a.road||a.suburb)document.getElementById("chA").value=[a.house_number,a.road,a.suburb].filter(Boolean).join(", ");
-        if(a.city||a.town||a.village)document.getElementById("chC").value=a.city||a.town||a.village;
-        if(a.postcode)document.getElementById("chPi").value=a.postcode;
-        t("✓ Location fetched!");
-      }catch(e){t("Edit address manually");}
-      btn.textContent="📍 Use My Current Location";btn.disabled=false;
-    },
-    (err)=>{alert("Location denied");btn.textContent=" Use My Current Location";btn.disabled=false;},
-    {enableHighAccuracy:true,timeout:10000}
-  );
-}
-async function plOrd(){
-  if(!validateCheckout())return;
-  const fn=document.getElementById("chFN").value.trim();
-  const ln=document.getElementById("chLN").value.trim();
-  const em=document.getElementById("chE").value.trim();
-  const ph=document.getElementById("chP").value.trim();
-  const ad=document.getElementById("chA").value.trim();
-  const ct=document.getElementById("chC").value.trim();
-  const pi=document.getElementById("chPi").value.trim();
-  const err=document.getElementById("chErr");
-  const totalAmount=tot();
-  if(totalAmount<=0){err.textContent="Invalid amount";return;}
-  err.textContent="Processing...";
-  const options={
-    key:RAZORPAY_KEY_ID,amount:totalAmount*100,currency:"INR",name:"T-HEART",description:"Order Payment",
-    prefill:{name:`${fn} ${ln}`,email:em,contact:ph},theme:{color:"#1A1A1A"},
-    handler:async function(response){
-      err.textContent="Verifying...";
-      try{
-        const orderData={customer_name:`${fn} ${ln}`,customer_email:em,customer_phone:ph,address:`${ad}, ${ct} - ${pi}`,items:gCart(),total_amount:totalAmount,discount_amount:gDsc(),coupon_code:cpn?cpn.code:null,payment_status:"Paid",payment_method:"Razorpay",razorpay_payment_id:response.razorpay_payment_id,razorpay_order_id:response.razorpay_order_id,razorpay_signature:response.razorpay_signature,order_status:"Confirmed",customer_lat:custLat,customer_lng:custLng};
-        const{error}=await db.from("Orders table").insert([orderData]);
-        if(error){err.textContent="Order error: "+error.message;return;}
-        if(prof){prof.address=ad;prof.city=ct;prof.pincode=pi;localStorage.setItem("th_profile",JSON.stringify(prof));}
-        localStorage.removeItem("th_c");cpn=null;custLat=null;custLng=null;uCnt();goHome();
-        alert("✅ Payment Successful!\nOrder ID: "+response.razorpay_payment_id);
-        ["chFN","chLN","chE","chP","chA","chC","chPi"].forEach(id=>document.getElementById(id).value="");
-      }catch(e){err.textContent="Error: "+e.message;}
-    },
-    modal:{ondismiss:function(){err.textContent="Payment cancelled";err.style.color="#a33";}}
-  };
-  try{const rzp=new Razorpay(options);rzp.open();}catch(e){err.textContent="Payment error";}
-}
+        function validateCheckout(){
+          const fn=document.getElementById("chFN").value.trim();
+          const ln=document.getElementById("chLN").value.trim();
+          const ph=document.getElementById("chP").value.trim();
+          const ad=document.getElementById("chA").value.trim();
+          const ct=document.getElementById("chC").value.trim();
+          const pi=document.getElementById("chPi").value.trim();
+          const err=document.getElementById("chErr");
+          if(!/^[a-zA-Z\s]{2,}$/.test(fn)){err.textContent="Enter valid first name";return false;}
+          if(!/^[a-zA-Z\s]{2,}$/.test(ln)){err.textContent="Enter valid last name";return false;}
+          if(!/^[6-9]\d{9}$/.test(ph)){err.textContent="Enter valid 10-digit mobile";return false;}
+          if(ad.length<15){err.textContent="Enter complete address (min 15 chars)";return false;}
+          if(ct.length<2){err.textContent="Enter valid city";return false;}
+          if(!/^[1-8]\d{5}$/.test(pi)){err.textContent="Enter valid 6-digit pincode";return false;}
+          err.textContent="";return true;
+        }
+        function useMyLocation(){
+          if(!navigator.geolocation){alert("Geolocation not supported");return;}
+          const btn=event.target;btn.textContent="📍 Locating...";btn.disabled=true;
+          navigator.geolocation.getCurrentPosition(
+            async (pos)=>{
+              custLat=pos.coords.latitude;custLng=pos.coords.longitude;
+              try{
+                const res=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${custLat}&lon=${custLng}`);
+                const data=await res.json();const a=data.address||{};
+                if(a.road||a.suburb)document.getElementById("chA").value=[a.house_number,a.road,a.suburb].filter(Boolean).join(", ");
+                if(a.city||a.town||a.village)document.getElementById("chC").value=a.city||a.town||a.village;
+                if(a.postcode)document.getElementById("chPi").value=a.postcode;
+                t("✓ Location fetched!");
+              }catch(e){t("Edit address manually");}
+              btn.textContent="📍 Use My Current Location";btn.disabled=false;
+            },
+            (err)=>{alert("Location denied");btn.textContent="📍 Use My Current Location";btn.disabled=false;},
+            {enableHighAccuracy:true,timeout:10000}
+          );
+        }
+        async function plOrd(){
+          if(!validateCheckout())return;
+          const fn=document.getElementById("chFN").value.trim();
+          const ln=document.getElementById("chLN").value.trim();
+          const ph=document.getElementById("chP").value.trim();
+          const ad=document.getElementById("chA").value.trim();
+          const ct=document.getElementById("chC").value.trim();
+          const pi=document.getElementById("chPi").value.trim();
+          const err=document.getElementById("chErr");
+          const totalAmount=tot();
+          if(totalAmount<=0){err.textContent="Invalid amount";return;}
+          err.textContent="Processing...";
+          const options={
+            key:RAZORPAY_KEY_ID,amount:totalAmount*100,currency:"INR",name:"T-HEART",description:"Order Payment",
+            prefill:{name:`${fn} ${ln}`,contact:ph},theme:{color:"#1A1A1A"},
+            handler:async function(response){
+              err.textContent="Verifying...";
+              try{
+                const orderData={customer_name:`${fn} ${ln}`,customer_phone:ph,address:`${ad}, ${ct} - ${pi}`,items:gCart(),total_amount:totalAmount,discount_amount:gDsc(),coupon_code:cpn?cpn.code:null,payment_status:"Paid",payment_method:"Razorpay",razorpay_payment_id:response.razorpay_payment_id,razorpay_order_id:response.razorpay_order_id,razorpay_signature:response.razorpay_signature,order_status:"Confirmed",customer_lat:custLat,customer_lng:custLng};
+                const{error}=await db.from("Orders table").insert([orderData]);
+                if(error){err.textContent="Order error: "+error.message;return;}
+                if(prof){prof.address=ad;prof.city=ct;prof.pincode=pi;localStorage.setItem("th_profile",JSON.stringify(prof));}
+                localStorage.removeItem("th_c");cpn=null;custLat=null;custLng=null;uCnt();goHome();
+                alert("✅ Payment Successful!\nOrder ID: "+response.razorpay_payment_id);
+                ["chFN","chLN","chP","chA","chC","chPi"].forEach(id=>document.getElementById(id).value="");
+              }catch(e){err.textContent="Error: "+e.message;}
+            },
+            modal:{ondismiss:function(){err.textContent="Payment cancelled";err.style.color="#a33";}}
+          };
+          try{const rzp=new Razorpay(options);rzp.open();}catch(e){err.textContent="Payment error";}
+        }
 
-loadProfile();ldSet();ldAnn();ldCats();
-ldProds().then(()=>{const hash=window.location.hash;if(hash.startsWith("#product=")){const pid=hash.replace("#product=","");setTimeout(()=>oDet(pid),400);}});
-uCnt();
-window.addEventListener("hashchange",()=>{if(!window.location.hash.startsWith("#product=")){const det=document.getElementById("detPg");if(det.classList.contains("open"))cDet();}});
-</script>
-</body>
-</html>
+        loadProfile();ldSet();ldAnn();ldCats();
+        ldProds().then(()=>{const hash=window.location.hash;if(hash.startsWith("#product=")){const pid=hash.replace("#product=","");setTimeout(()=>oDet(pid),400);}});
+        uCnt();
+        window.addEventListener("hashchange",()=>{if(!window.location.hash.startsWith("#product=")){const det=document.getElementById("detPg");if(det.classList.contains("open"))cDet();}});
+        </script>
+        </body>
+        </html>
