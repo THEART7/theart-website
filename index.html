@@ -85,6 +85,7 @@ body{background:#F8F7F4;color:#1A1A1A;font-family:-apple-system,BlinkMacSystemFo
 .cov.open{display:block;}
 .cdr{position:fixed;top:0;right:-100%;width:100%;max-width:380px;height:100%;background:#F8F7F4;z-index:251;transition:right 0.3s;display:flex;flex-direction:column;}
 .cdr.open{right:0;}
+.cdr.open{right:0;}
 .cdrh{padding:18px;border-bottom:1px solid #E5E5E5;display:flex;justify-content:space-between;align-items:center;}
 .cdrh h3{font-family:Georgia,serif;font-size:20px;}
 .cit{flex:1;overflow-y:auto;padding:15px;}
@@ -471,7 +472,7 @@ async function ldSet(){
     if(setting.tagline){document.getElementById("sTag").textContent=setting.tagline;document.getElementById("fTag").textContent=setting.tagline;}
     if(setting.free_shipping_above!==undefined&&setting.free_shipping_above!==null){const fs=Number(setting.free_shipping_above);if(!isNaN(fs))sSet.fs=fs;}
     if(setting.shipping_fee!==undefined&&setting.shipping_fee!==null){const sf=Number(setting.shipping_fee);if(!isNaN(sf))sSet.sf=sf;}
-    document.getElementById("shipNote").textContent=`Free shipping above ₹${sSet.fs||500}. Returns within 7 days if unworn.`;
+    document.getElementById("shipNote").textContent=`Free shipping above ₹${sSet.fs||500}. All sales are final.`;
     let hids=setting.hero_product_ids;
     if(typeof hids==='string'){try{hids=JSON.parse(hids);}catch(e){hids=null;}}
     if(hids&&Array.isArray(hids)&&hids.length>0){await ldHero(hids);}
@@ -537,6 +538,25 @@ function oDet(id){
   window.location.hash="product="+p.id;
   document.getElementById("detPg").classList.add("open");
   document.body.style.overflow="hidden";
+  
+  // Image Swipe Logic
+  let currentImgIndex=0;
+  const detImgEl=document.getElementById("detImg");
+  let swipeStartX=0,swipeStartY=0;
+  detImgEl.ontouchstart=(e)=>{swipeStartX=e.touches[0].clientX;swipeStartY=e.touches[0].clientY;};
+  detImgEl.ontouchend=(e)=>{
+    const dx=swipeStartX-e.changedTouches[0].clientX;
+    const dy=swipeStartY-e.changedTouches[0].clientY;
+    if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+      if(dx>0&&currentImgIndex<imgs.length-1){currentImgIndex++;}
+      else if(dx<0&&currentImgIndex>0){currentImgIndex--;}
+      else{return;}
+      document.getElementById("mainDetImg").src=imgs[currentImgIndex];
+      const thumbs=document.querySelectorAll("#detThumbs img");
+      thumbs.forEach(t=>t.classList.remove("active"));
+      if(thumbs[currentImgIndex])thumbs[currentImgIndex].classList.add("active");
+    }
+  };
 }
 function selectSize(btn){btn.parentElement.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 function cDet(){document.getElementById("detPg").classList.remove("open");document.body.style.overflow="";if(window.location.hash.startsWith("#product="))window.location.hash="";}
