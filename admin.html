@@ -7,43 +7,94 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:1100px;margin:auto;padding:16px;background:#0a0a0a;color:#e8e8e8;}
-h1{margin-bottom:20px;color:#fff;font-family:Georgia,serif;letter-spacing:2px;} h2{margin-bottom:12px;color:#fff;}
-.card{background:#141414;padding:18px;margin-bottom:18px;border-radius:12px;border:1px solid #1f1f1f;}
-input,textarea,button,select{width:100%;padding:11px;margin:6px 0;background:#0a0a0a;color:#fff;border:1px solid #2a2a2a;border-radius:6px;font-family:inherit;font-size:14px;}
-input:focus,select:focus{outline:none;border-color:#c9a96e;}
-button{cursor:pointer;font-weight:bold;background:#fff;color:#000;border:0;padding:12px;transition:0.2s;}
-button:hover{background:#c9a96e;}
-button.secondary{background:#1f1f1f;color:#fff;border:1px solid #333;} button.secondary:hover{background:#333;} 
-button.danger{background:#a33;color:#fff;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:1200px;margin:auto;padding:16px;background:#0f172a;color:#e2e8f0;}
+h1{margin-bottom:20px;color:#fff;font-family:Georgia,serif;letter-spacing:2px;}
+h2{margin-bottom:15px;color:#fff;font-size:20px;}
+h3{color:#cbd5e1;font-size:16px;margin-bottom:10px;}
+.card{background:#1e293b;padding:18px;margin-bottom:18px;border-radius:12px;border:1px solid #334155;}
+input,textarea,button,select{width:100%;padding:11px;margin:6px 0;background:#0f172a;color:#fff;border:1px solid #334155;border-radius:6px;font-family:inherit;font-size:14px;}
+input:focus,select:focus{outline:none;border-color:#3b82f6;}
+button{cursor:pointer;font-weight:bold;background:#3b82f6;color:#fff;border:0;padding:12px;transition:0.2s;}
+button:hover{background:#2563eb;}
+button.secondary{background:#475569;color:#fff;}
+button.danger{background:#ef4444;color:#fff;}
+button.success{background:#10b981;color:#fff;}
 button.small{width:auto;padding:6px 12px;font-size:12px;margin:3px;}
-.hidden{display:none;} 
-.item-row{border:1px solid #1f1f1f;padding:12px;margin:8px 0;border-radius:8px;background:#0f0f0f;display:flex;justify-content:space-between;align-items:center;gap:10px;}
-.error{color:#e57373;font-size:13px;} .success{color:#81c784;font-size:13px;}
-label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
+.hidden{display:none;}
+.item-row{border:1px solid #334155;padding:12px;margin:8px 0;border-radius:8px;background:#0f172a;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.error{color:#ef4444;font-size:13px;}
+.success{color:#10b981;font-size:13px;}
+label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b8;}
 .navbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
-.navbar button{background:#1f1f1f;color:#fff;flex:1;min-width:100px;} .navbar button.active{background:#fff;color:#000;}
+.navbar button{background:#1e293b;color:#cbd5e1;flex:1;min-width:100px;border:1px solid #334155;}
+.navbar button.active{background:#3b82f6;color:#fff;border-color:#3b82f6;}
 .size-options{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0;}
 .size-options label{display:flex;align-items:center;gap:5px;font-weight:normal;margin:0;width:auto;font-size:14px;}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:99;padding:16px;}
 .overlay.open{display:flex;}
-.modal-box{background:#141414;padding:20px;border-radius:12px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;border:1px solid #1f1f1f;}
+.modal-box{background:#1e293b;padding:20px;border-radius:12px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;border:1px solid #334155;}
 .thumb{width:60px;height:80px;object-fit:cover;border-radius:4px;flex-shrink:0;}
 
-/* New Hero UI Styles */
-.hero-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:12px;margin-top:15px;}
-.hero-card{background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:0.2s;}
-.hero-card:hover{border-color:#c9a96e;}
-.hero-card img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:4px;margin-bottom:8px;}
-.hero-card h4{font-size:13px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.hero-card p{font-size:11px;color:#888;}
-.current-hero-list{display:flex;gap:10px;overflow-x:auto;padding:10px 0;margin-bottom:15px;}
-.current-hero-item{position:relative;flex-shrink:0;width:80px;text-align:center;}
-.current-hero-item img{width:80px;height:106px;object-fit:cover;border-radius:6px;border:2px solid #c9a96e;}
-.current-hero-item span{position:absolute;top:-5px;left:-5px;background:#c9a96e;color:#000;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:bold;display:flex;align-items:center;justify-content:center;}
-.current-hero-item button{position:absolute;top:-5px;right:-5px;background:#a33;color:#fff;border:none;width:20px;height:20px;border-radius:50%;font-size:12px;cursor:pointer;padding:0;}
+/* Dashboard Styles */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:20px;}
+.stat-card{padding:20px;border-radius:12px;color:#fff;position:relative;overflow:hidden;}
+.stat-card.green{background:linear-gradient(135deg,#10b981,#059669);}
+.stat-card.blue{background:linear-gradient(135deg,#3b82f6,#2563eb);}
+.stat-card.purple{background:linear-gradient(135deg,#8b5cf6,#7c3aed);}
+.stat-card.orange{background:linear-gradient(135deg,#f59e0b,#d97706);}
+.stat-card .label{font-size:12px;opacity:0.9;margin-bottom:8px;}
+.stat-card .value{font-size:28px;font-weight:bold;margin-bottom:5px;}
+.stat-card .trend{font-size:12px;display:flex;align-items:center;gap:4px;}
+.stat-card .trend.up{color:#d1fae5;}
+.stat-card .trend.down{color:#fecaca;}
+.dashboard-grid{display:grid;grid-template-columns:2fr 1fr;gap:15px;margin-bottom:15px;}
+@media(max-width:768px){.dashboard-grid{grid-template-columns:1fr;}}
+.chart-container{background:#1e293b;padding:15px;border-radius:12px;border:1px solid #334155;}
+.filter-bar{display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;}
+.filter-bar button{width:auto;padding:8px 16px;margin:0;background:#334155;font-size:13px;}
+.filter-bar button.active{background:#3b82f6;}
+
+/* Drag Drop Styles */
+.drag-list{display:flex;flex-direction:column;gap:8px;}
+.drag-item{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;cursor:grab;}
+.drag-item:active{cursor:grabbing;}
+.drag-handle{color:#64748b;font-size:18px;cursor:grab;padding:5px;}
+.drag-item img{width:50px;height:65px;object-fit:cover;border-radius:4px;}
+.drag-item .info{flex:1;}
+.drag-item .info b{font-size:14px;}
+.drag-item .info small{color:#94a3b8;font-size:11px;}
+.drag-item .remove-btn{background:#ef4444;color:#fff;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:14px;padding:0;}
+
+/* Image Grid for Product */
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin:10px 0;}
+.img-grid-item{position:relative;aspect-ratio:3/4;border-radius:6px;overflow:hidden;border:2px solid #334155;cursor:grab;}
+.img-grid-item img{width:100%;height:100%;object-fit:cover;}
+.img-grid-item .img-handle{position:absolute;top:5px;left:5px;background:rgba(0,0,0,0.7);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;cursor:grab;}
+.img-grid-item .img-remove{position:absolute;top:5px;right:5px;background:#ef4444;color:#fff;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;padding:0;}
+.img-grid-item.sortable-ghost{opacity:0.4;}
+
+/* Hero Drag Row */
+.hero-drag-row{display:flex;gap:10px;overflow-x:auto;padding:10px 0;}
+.hero-drag-item{min-width:120px;background:#0f172a;border:2px solid #334155;border-radius:8px;padding:8px;text-align:center;cursor:grab;position:relative;}
+.hero-drag-item img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:4px;margin-bottom:5px;}
+.hero-drag-item .pos-badge{position:absolute;top:-8px;left:-8px;background:#3b82f6;color:#fff;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:bold;display:flex;align-items:center;justify-content:center;}
+.hero-drag-item .hero-remove{position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px;padding:0;}
+.hero-drag-item small{font-size:11px;color:#94a3b8;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* Orders Table */
+.orders-table{width:100%;border-collapse:collapse;font-size:13px;}
+.orders-table th,.orders-table td{padding:10px;text-align:left;border-bottom:1px solid #334155;}
+.orders-table th{color:#94a3b8;font-size:11px;text-transform:uppercase;}
+.status-badge{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;display:inline-block;}
+.status-confirmed{background:#10b981;color:#fff;}
+.status-shipped{background:#3b82f6;color:#fff;}
+.status-delivered{background:#8b5cf6;color:#fff;}
+.status-pending{background:#f59e0b;color:#000;}
+.status-cancelled{background:#ef4444;color:#fff;}
 </style>
 </head>
 <body>
@@ -55,10 +106,10 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
   <button onclick="login()">Login</button>
   <p id="loginMessage" class="error"></p>
 </div>
-  <div id="adminPanel" class="hidden">
-  <p id="welcome" style="font-size:13px;color:#888;margin-bottom:15px;"></p>
+<div id="adminPanel" class="hidden">
+  <p id="welcome" style="font-size:13px;color:#94a3b8;margin-bottom:15px;"></p>
   <div class="navbar">
-    <button onclick="showSection('overview')" id="nav-overview">Overview</button>
+    <button onclick="showSection('dashboard')" id="nav-dashboard" class="active">Dashboard</button>
     <button onclick="showSection('products')" id="nav-products">Products</button>
     <button onclick="showSection('categories')" id="nav-categories">Categories</button>
     <button onclick="showSection('orders')" id="nav-orders">Orders</button>
@@ -66,18 +117,38 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
     <button onclick="showSection('settings')" id="nav-settings">Settings</button>
     <button class="secondary" onclick="logout()">Logout</button>
   </div>
-  
-  <div id="section-overview" class="section"><div class="card"><h2>Overview</h2><div id="overviewStats"></div></div></div>
-  
-  <div id="section-categories" class="section hidden">
-    <div class="card">
-      <h2>Categories</h2>
-      <input id="newCategoryName" placeholder="New category name">
-      <button onclick="addCategory()">Add Category</button>
-      <div id="categoriesList" style="margin-top:15px;"></div>
+
+  <!-- DASHBOARD SECTION -->
+  <div id="section-dashboard" class="section">
+    <div class="filter-bar">
+      <button class="active" onclick="setDashFilter(7,this)">Last 7 Days</button>
+      <button onclick="setDashFilter(30,this)">Last 30 Days</button>
+      <button onclick="setDashFilter(0,this)">All Time</button>
+    </div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="dashboard-grid">
+      <div class="chart-container">
+        <h3>Sales & Revenue (Daily)</h3>
+        <canvas id="salesChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <h3>Order Status</h3>
+        <canvas id="statusChart"></canvas>
+      </div>
+    </div>
+    <div class="dashboard-grid">
+      <div class="card">
+        <h3>Recent Orders</h3>
+        <div id="recentOrders"></div>
+      </div>
+      <div class="card">
+        <h3>Top Selling Products</h3>
+        <div id="topProducts"></div>
+      </div>
     </div>
   </div>
-  
+
+  <!-- PRODUCTS SECTION -->
   <div id="section-products" class="section hidden">
     <div class="card">
       <h2 id="productFormTitle">Add Product</h2>
@@ -94,7 +165,9 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
         <label><input type="checkbox" class="sizeBox" value="XL"> XL</label>
         <label><input type="checkbox" id="allSizesBox" onclick="toggleAllSizes()"> All</label>
       </div>
-      <label>Photos (3:4 crop)</label><input id="productImages" type="file" accept="image/*" multiple>
+      <label>Photos (3:4 crop) — Drag to reorder</label>
+      <input id="productImages" type="file" accept="image/*" multiple>
+      <div id="imgGrid" class="img-grid"></div>
       <label>Stock</label><input id="productStock" type="number" placeholder="0">
       <button onclick="saveProduct()" style="margin-top:15px;">Save Product</button>
       <button class="secondary" onclick="cancelEditProduct()">Cancel</button>
@@ -102,46 +175,56 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
     </div>
     <div class="card"><h2>All Products</h2><div id="productsList"></div></div>
   </div>
-  
-  <div id="section-orders" class="section hidden">
-    <div class="card"><h2>Orders</h2><div id="ordersList"></div></div>
+
+  <!-- CATEGORIES SECTION -->
+  <div id="section-categories" class="section hidden">
+    <div class="card">
+      <h2>Categories</h2>
+      <input id="newCategoryName" placeholder="New category name">
+      <button onclick="addCategory()">Add Category</button>
+      <div id="categoriesList" style="margin-top:15px;"></div>
+    </div>
   </div>
-  
+
+  <!-- ORDERS SECTION -->
+  <div id="section-orders" class="section hidden">
+    <div class="card">
+      <h2>All Orders</h2>
+      <div id="ordersList"></div>
+    </div>
+  </div>
+
+  <!-- CUSTOMERS SECTION -->
   <div id="section-customers" class="section hidden">
     <div class="card"><h2>Registered Customers</h2><div id="customersList"></div></div>
   </div>
-  
+
+  <!-- SETTINGS SECTION -->
   <div id="section-settings" class="section hidden">
     <div class="card">
       <h2>Brand & Shipping</h2>
       <label>Brand Name</label><input id="settingBrandName" placeholder="T-HEART">
       <label>Tagline</label><input id="settingTagline" placeholder="Premium Clothing">
       <label>Free Shipping Above (₹)</label><input id="settingFreeShipAbove" type="number" placeholder="0 = Always Free">
-      <label>Shipping Fee (₹)</label><input id="settingShipFee" type="number" placeholder="99">
+      <label>Shipping Fee ()</label><input id="settingShipFee" type="number" placeholder="99">
       <button onclick="saveSettings()">Save Settings</button>
       <p id="settingsMessage" class="success"></p>
     </div>
-    
     <div class="card">
       <h2>Coupons</h2>
-      <input id="newCouponCode" placeholder="Coupon Code (e.g., WELCOME10)">
-      <input id="newCouponPercent" type="number" placeholder="Discount % (e.g., 10)">
-      <input id="newCouponMin" type="number" placeholder="Min Order Amount (e.g., 500)">
+      <input id="newCouponCode" placeholder="Coupon Code">
+      <input id="newCouponPercent" type="number" placeholder="Discount %">
+      <input id="newCouponMin" type="number" placeholder="Min Order Amount">
       <button onclick="addCoupon()" style="margin-top:10px;">Add Coupon</button>
       <div id="couponsList" style="margin-top:15px;"></div>
     </div>
-
-    <!-- NEW HERO PRODUCTS UI -->
     <div class="card">
-      <h2>Hero Slider Management</h2>
-      <p style="font-size:12px;color:#888;margin-bottom:10px;">Manage the products shown in the main slider (Max 3).</p>
-      
-      <h3 style="font-size:14px;color:#c9a96e;margin-top:15px;">Current Hero Products:</h3>
-      <div id="currentHeroList" class="current-hero-list">
-        <p style="color:#888;font-size:12px;">No products selected yet.</p>
-      </div>
-      
-      <button onclick="openHeroSelector()" style="margin-top:10px;background:#c9a96e;color:#000;">+ Add Product to Hero Slider</button>
+      <h2>Hero Slider (Drag to Reorder)</h2>
+      <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;">Drag products to change order. Click + to add.</p>
+      <div id="heroDragRow" class="hero-drag-row"></div>
+      <button onclick="openHeroPicker()" style="margin-top:10px;background:#10b981;">+ Add Product to Hero</button>
+      <button class="success" onclick="saveHeroOrder()" style="margin-top:10px;">Save Hero Order</button>
+      <p id="heroMsg" class="success"></p>
     </div>
   </div>
 </div>
@@ -157,62 +240,42 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#aaa;}
 <!-- Cropper Modal -->
 <div class="overlay" id="cropperOverlay">
   <div class="modal-box">
-    <h3 id="cropperTitle" style="margin-bottom:10px;color:#c9a96e;">Crop Image (3:4)</h3>
-    <p style="font-size:12px;color:#888;margin-bottom:15px;">Box drag karke adjust karo.</p>
+    <h3 style="margin-bottom:10px;color:#3b82f6;">Crop Image (3:4)</h3>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:15px;">Drag box to adjust.</p>
     <div style="max-height:350px;overflow:hidden;background:#000;margin:15px 0;border-radius:6px;">
       <img id="cropperImage" style="max-width:100%;display:block;">
     </div>
     <div style="display:flex;gap:10px;">
-      <button onclick="confirmCrop()" style="flex:1;">✓ Use Crop</button>
+      <button onclick="confirmCrop()" style="flex:1;background:#10b981;">✓ Use Crop</button>
       <button class="secondary" onclick="cancelCrop()" style="flex:1;">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- Hero Selector Modal -->
-<div class="overlay" id="heroSelectorOverlay">
+<!-- Hero Picker Modal -->
+<div class="overlay" id="heroPickerOverlay">
   <div class="modal-box">
-    <h3 style="margin-bottom:15px;color:#c9a96e;">Select a Product for Hero</h3>
-    <div id="heroProductGrid" class="hero-grid"></div>
-    <button class="secondary" onclick="closeHeroSelector()" style="margin-top:15px;">Cancel</button>
+    <h3 style="margin-bottom:15px;color:#3b82f6;">Pick a Product for Hero</h3>
+    <div id="heroPickerGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-height:400px;overflow-y:auto;"></div>
+    <button class="secondary" onclick="closeHeroPicker()" style="margin-top:15px;">Cancel</button>
   </div>
 </div>
-
-<!-- Hero Edit Modal -->
-<div class="overlay" id="heroEditOverlay">
-  <div class="modal-box">
-    <h3 id="heroEditTitle" style="margin-bottom:10px;color:#c9a96e;">Edit Hero Product</h3>
-    <img id="heroEditImg" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;margin-bottom:15px;">
-    
-    <label>Position in Slider</label>
-    <select id="heroPosSelect">
-      <option value="">Remove from Hero</option>
-      <option value="1">1 (First Slide)</option>
-      <option value="2">2 (Second Slide)</option>
-      <option value="3">3 (Third Slide)</option>
-    </select>
-    
-    <label>Upload New 3:4 Hero Image</label>
-    <input type="file" id="heroImgInput" accept="image/*">
-    <button onclick="cropHeroImage()" class="secondary" style="margin-top:5px;">Crop & Upload Image</button>
-    
-    <button onclick="saveHeroPosition()" style="margin-top:15px;background:#c9a96e;color:#000;">Save Position</button>
-    <button class="secondary" onclick="closeHeroEdit()" style="margin-top:8px;">Close</button>
-  </div>
-</div>
-  <script>
+<script>
 const SUPABASE_URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let allCategories=[], allProductsAdmin=[], allOrdersAdmin=[];
-let currentHeroIds = []; // Stores IDs in order [id1, id2, id3]
-let settingRowId = null; // Stores the ID of the site_setting row
+let allCategories=[], allProductsAdmin=[], allOrdersAdmin=[], allCustomers=[];
+let currentHeroIds = [];
+let settingRowId = null;
+let dashFilterDays = 7;
+let salesChartInstance = null;
+let statusChartInstance = null;
 
 let cropperInstance=null, pendingCropFiles=[], currentCropIndex=0, croppedFiles=[];
 let currentCropType='product', currentHeroPid=null;
+let productImageUrls = []; // Stores ordered image URLs for current product being edited
 
-// Helper to safely get the single settings row
 async function getSettingRow() {
   const { data, error } = await supabaseClient.from("site_setting").select("*").limit(1);
   if (error || !data || data.length === 0) return null;
@@ -230,20 +293,20 @@ async function login() {
       document.getElementById("loginBox").classList.add("hidden");
       document.getElementById("adminPanel").classList.remove("hidden");
       document.getElementById("welcome").textContent = "Logged in as " + email;
-      showSection("overview");
+      showSection("dashboard");
     } catch(e) { msg.textContent = "Login failed."; }
   } else { msg.textContent = "Invalid credentials."; }
 }
 function logout() { supabaseClient.auth.signOut(); location.reload(); }
 
 function showSection(name) {
-  ["overview","products","categories","orders","customers","settings"].forEach(s => {
+  ["dashboard","products","categories","orders","customers","settings"].forEach(s => {
     document.getElementById("section-"+s).classList.add("hidden");
     document.getElementById("nav-"+s).classList.remove("active");
   });
   document.getElementById("section-"+name).classList.remove("hidden");
   document.getElementById("nav-"+name).classList.add("active");
-  if(name==="overview") loadOverview();
+  if(name==="dashboard") loadDashboard();
   if(name==="products") loadProducts();
   if(name==="categories") loadCategories();
   if(name==="orders") loadOrders();
@@ -251,12 +314,174 @@ function showSection(name) {
   if(name==="settings") loadSettings();
 }
 
-async function loadOverview() {
-  const { data } = await supabaseClient.from("Orders table").select("total_amount");
-  const total = data ? data.reduce((s,o)=>s+Number(o.total_amount||0),0) : 0;
-  document.getElementById("overviewStats").innerHTML = `<div style="font-size:20px;color:#c9a96e;">Total Orders: ${data?data.length:0}</div><div style="font-size:20px;color:#c9a96e;margin-top:10px;">Revenue: ₹${total}</div>`;
+// ============ DASHBOARD ============
+function setDashFilter(days, btn) {
+  dashFilterDays = days;
+  document.querySelectorAll(".filter-bar button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  loadDashboard();
 }
 
+async function loadDashboard() {
+  const { data: orders, error } = await supabaseClient.from("Orders table").select("*").order("created_at", {ascending:false});
+  if(error) { document.getElementById("statsGrid").innerHTML = "<p class='error'>Error loading data</p>"; return; }
+  allOrdersAdmin = orders || [];
+  
+  const { data: customers } = await supabaseClient.from("customers").select("*");
+  allCustomers = customers || [];
+  
+  const { data: products } = await supabaseClient.from("Products").select("*");
+  allProductsAdmin = products || [];
+  
+  const now = new Date();
+  const cutoff7 = new Date(now.getTime() - 7*24*60*60*1000);
+  const cutoff30 = new Date(now.getTime() - 30*24*60*60*1000);
+  
+  const filtered = dashFilterDays === 0 ? allOrdersAdmin : 
+                   allOrdersAdmin.filter(o => new Date(o.created_at) >= (dashFilterDays===7?cutoff7:cutoff30));
+  const prevFiltered = dashFilterDays === 0 ? [] :
+                       allOrdersAdmin.filter(o => {
+                         const d = new Date(o.created_at);
+                         if(dashFilterDays===7) return d >= new Date(now.getTime()-14*24*60*60*1000) && d < cutoff7;
+                         return d >= new Date(now.getTime()-60*24*60*60*1000) && d < cutoff30;
+                       });
+  
+  const totalOrders = filtered.length;
+  const totalRevenue = filtered.reduce((s,o)=>s+Number(o.total_amount||0),0);
+  const totalProductsSold = filtered.reduce((s,o)=>{
+    const items = o.items || [];
+    return s + items.reduce((ss,i)=>ss+Number(i.qty||0),0);
+  },0);
+  
+  const prevOrders = prevFiltered.length;
+  const prevRevenue = prevFiltered.reduce((s,o)=>s+Number(o.total_amount||0),0);
+  
+  const orderTrend = prevOrders>0 ? ((totalOrders-prevOrders)/prevOrders*100).toFixed(0) : 0;
+  const revenueTrend = prevRevenue>0 ? ((totalRevenue-prevRevenue)/prevRevenue*100).toFixed(0) : 0;
+  
+  const newCustomers = dashFilterDays===0 ? allCustomers.length :
+    allCustomers.filter(c => new Date(c.created_at) >= (dashFilterDays===7?cutoff7:cutoff30)).length;
+  
+  const avgOrder = totalOrders>0 ? Math.round(totalRevenue/totalOrders) : 0;
+  
+  document.getElementById("statsGrid").innerHTML = `
+    <div class="stat-card green">
+      <div class="label">Total Orders</div>
+      <div class="value">${totalOrders}</div>
+      <div class="trend ${orderTrend>=0?'up':'down'}">${orderTrend>=0?'↑':'↓'} ${Math.abs(orderTrend)}% vs prev period</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="label">Revenue</div>
+      <div class="value">₹${totalRevenue.toLocaleString()}</div>
+      <div class="trend ${revenueTrend>=0?'up':'down'}">${revenueTrend>=0?'↑':'↓'} ${Math.abs(revenueTrend)}% vs prev period</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="label">Products Sold</div>
+      <div class="value">${totalProductsSold}</div>
+      <div class="trend up">Units shipped</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="label">Avg Order Value</div>
+      <div class="value">₹${avgOrder}</div>
+      <div class="trend up">${newCustomers} new customers</div>
+    </div>
+  `;
+  
+  // Sales Chart (daily)
+  const dailyData = {};
+  const days = dashFilterDays===0?30:dashFilterDays;
+  for(let i=days-1;i>=0;i--){
+    const d = new Date(now.getTime()-i*24*60*60*1000);
+    const key = d.toISOString().split('T')[0];
+    dailyData[key] = {revenue:0, orders:0};
+  }
+  filtered.forEach(o=>{
+    const key = o.created_at?o.created_at.split('T')[0]:null;
+    if(key && dailyData[key]){
+      dailyData[key].revenue += Number(o.total_amount||0);
+      dailyData[key].orders += 1;
+    }
+  });
+  const chartLabels = Object.keys(dailyData).map(k=>k.slice(5));
+  const chartRevenue = Object.values(dailyData).map(d=>d.revenue);
+  const chartOrders = Object.values(dailyData).map(d=>d.orders);
+  
+  if(salesChartInstance) salesChartInstance.destroy();
+  salesChartInstance = new Chart(document.getElementById("salesChart"), {
+    type: 'bar',
+    data: {
+      labels: chartLabels,
+      datasets: [
+        {label:'Revenue (₹)', data:chartRevenue, backgroundColor:'#3b82f6', yAxisID:'y'},
+        {label:'Orders', data:chartOrders, type:'line', borderColor:'#10b981', backgroundColor:'#10b981', yAxisID:'y1'}
+      ]
+    },
+    options: {
+      responsive:true,
+      scales: {
+        y:{beginAtZero:true, grid:{color:'#334155'}, ticks:{color:'#94a3b8'}},
+        y1:{beginAtZero:true, position:'right', grid:{drawOnChartArea:false}, ticks:{color:'#94a3b8'}},
+        x:{grid:{color:'#334155'}, ticks:{color:'#94a3b8', maxTicksLimit:10}}
+      },
+      plugins:{legend:{labels:{color:'#e2e8f0'}}}
+    }
+  });
+  
+  // Status Chart
+  const statusCount = {};
+  filtered.forEach(o=>{
+    const s = o.order_status||'Pending';
+    statusCount[s] = (statusCount[s]||0)+1;
+  });
+  const statusColors = {'Confirmed':'#10b981','Shipped':'#3b82f6','Delivered':'#8b5cf6','Pending':'#f59e0b','Cancelled':'#ef4444'};
+  if(statusChartInstance) statusChartInstance.destroy();
+  statusChartInstance = new Chart(document.getElementById("statusChart"), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(statusCount),
+      datasets: [{data:Object.values(statusCount), backgroundColor:Object.keys(statusCount).map(k=>statusColors[k]||'#64748b')}]
+    },
+    options: {
+      responsive:true,
+      plugins:{legend:{position:'bottom',labels:{color:'#e2e8f0',padding:10}}}
+    }
+  });
+  
+  // Recent Orders
+  document.getElementById("recentOrders").innerHTML = filtered.slice(0,5).map(o=>`
+    <div class="item-row" style="flex-direction:column;align-items:flex-start;">
+      <div style="display:flex;justify-content:space-between;width:100%;">
+        <b>#${String(o.id).substring(0,8)}</b>
+        <span class="status-badge status-${(o.order_status||'pending').toLowerCase()}">${o.order_status||'Pending'}</span>
+      </div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:5px;">${o.customer_name||'N/A'} • ₹${o.total_amount||0}</div>
+      <div style="font-size:11px;color:#64748b;">${o.created_at?new Date(o.created_at).toLocaleDateString():''}</div>
+    </div>
+  `).join("") || "<p style='color:#94a3b8;'>No orders</p>";
+  
+  // Top Products
+  const productSales = {};
+  filtered.forEach(o=>{
+    (o.items||[]).forEach(i=>{
+      const key = i.name||'Unknown';
+      if(!productSales[key]) productSales[key]={qty:0,revenue:0,img:i.img||''};
+      productSales[key].qty += Number(i.qty||0);
+      productSales[key].revenue += Number(i.qty||0)*Number(i.price||0);
+    });
+  });
+  const topList = Object.entries(productSales).sort((a,b)=>b[1].qty-a[1].qty).slice(0,5);
+  document.getElementById("topProducts").innerHTML = topList.map(([name,data],idx)=>`
+    <div class="item-row">
+      ${data.img?`<img class="thumb" src="${data.img}">`:""}
+      <div style="flex:1;">
+        <b>#${idx+1} ${name}</b>
+        <div style="font-size:11px;color:#94a3b8;">${data.qty} sold • ₹${data.revenue}</div>
+      </div>
+    </div>
+  `).join("") || "<p style='color:#94a3b8;'>No sales yet</p>";
+}
+
+// ============ CATEGORIES ============
 async function loadCategories() {
   const { data } = await supabaseClient.from("categories").select("*").order("sort_order");
   allCategories = data || [];
@@ -273,7 +498,6 @@ async function loadCategories() {
   </div>`).join("");
   select.innerHTML = '<option value="">Select Category</option>' + allCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
 }
-
 async function addCategory() {
   const name = document.getElementById("newCategoryName").value.trim().toUpperCase();
   if(!name) return;
@@ -301,10 +525,11 @@ async function moveCat(id, dir) {
 }
 async function delCat(id) { if(confirm("Delete?")) { await supabaseClient.from("categories").delete().eq("id",id); loadCategories(); } }
 
+// ============ PRODUCTS WITH DRAG-DROP IMAGES ============
 document.getElementById("productImages").addEventListener("change", function(e) {
   if(e.target.files.length) {
     currentCropType = 'product';
-    pendingCropFiles = Array.from(e.target.files); currentCropIndex=0; croppedFiles=[];
+    pendingCropFiles = Array.from(e.target.files); currentCropIndex=0;
     showCropperNext();
   }
 });
@@ -312,14 +537,24 @@ document.getElementById("productImages").addEventListener("change", function(e) 
 function showCropperNext() {
   if(currentCropIndex >= pendingCropFiles.length) {
     document.getElementById("productImages").value="";
-    document.getElementById("productMessage").textContent = croppedFiles.length + " images ready.";
+    document.getElementById("productMessage").textContent = croppedFiles.length + " image(s) ready. Drag to reorder below.";
     document.getElementById("productMessage").className = "success";
+    // Add cropped files to productImageUrls
+    croppedFiles.forEach(f=>{
+      const reader = new FileReader();
+      reader.onload = ev => {
+        productImageUrls.push({url:ev.target.result, file:f});
+        renderImgGrid();
+      };
+      reader.readAsDataURL(f);
+    });
+    croppedFiles=[];
     return;
   }
   const reader = new FileReader();
   reader.onload = ev => {
     document.getElementById("cropperImage").src = ev.target.result;
-    document.getElementById("cropperTitle").textContent = "Crop Product Image (3:4) - " + (currentCropIndex+1) + "/" + pendingCropFiles.length;
+    document.getElementById("cropperTitle").textContent = "Crop Image (3:4) - " + (currentCropIndex+1) + "/" + pendingCropFiles.length;
     document.getElementById("cropperOverlay").classList.add("open");
     setTimeout(() => {
       if(cropperInstance) cropperInstance.destroy();
@@ -352,26 +587,64 @@ function confirmCrop() {
 function cancelCrop() { if(cropperInstance) cropperInstance.destroy(); cropperInstance = null; currentHeroPid = null; document.getElementById("cropperOverlay").classList.remove("open"); pendingCropFiles=[]; croppedFiles=[]; }
 function toggleAllSizes() { const all = document.getElementById("allSizesBox").checked; document.querySelectorAll(".sizeBox").forEach(b=>b.checked=all); }
 
+function renderImgGrid() {
+  const grid = document.getElementById("imgGrid");
+  grid.innerHTML = productImageUrls.map((item, idx) => `
+    <div class="img-grid-item" data-idx="${idx}">
+      <div class="img-handle">⋮</div>
+      <button class="img-remove" onclick="removeImg(${idx})">×</button>
+      <img src="${item.url}">
+    </div>
+  `).join("");
+  
+  // Initialize Sortable
+  if(window.imgSortable) window.imgSortable.destroy();
+  window.imgSortable = new Sortable(grid, {
+    animation: 150,
+    handle: '.img-handle',
+    ghostClass: 'sortable-ghost',
+    onEnd: function(evt) {
+      const item = productImageUrls.splice(evt.oldIndex, 1)[0];
+      productImageUrls.splice(evt.newIndex, 0, item);
+      renderImgGrid();
+    }
+  });
+}
+
+function removeImg(idx) {
+  productImageUrls.splice(idx, 1);
+  renderImgGrid();
+}
+
 async function saveProduct() {
   const id = document.getElementById("editingProductId").value;
   const name = document.getElementById("productName").value.trim();
   const price = document.getElementById("productPrice").value;
   if(!name || !price) { document.getElementById("productMessage").textContent="Name/Price required"; return; }
-  let imagesArray = [];
-  let filesToUpload = croppedFiles.length ? croppedFiles : Array.from(document.getElementById("productImages").files);
+  
+  // Upload any new files that aren't already in productImageUrls as data URLs
+  // (already handled via crop flow)
+  
+  const imagesArray = productImageUrls.map(p=>p.url).filter(u=>u.startsWith('http'));
+  const filesToUpload = productImageUrls.filter(p=>!p.url.startsWith('http')).map(p=>p.file);
+  
   if(filesToUpload.length) {
     for(let f of filesToUpload) {
-      const fname = Date.now()+"-"+f.name;
-      await supabaseClient.storage.from("product-images").upload(fname, f);
+      const fname = Date.now()+"-"+Math.random().toString(36).substring(7)+"-"+f.name;
+      const { error: upErr } = await supabaseClient.storage.from("product-images").upload(fname, f);
+      if(upErr) { alert("Upload failed: "+upErr.message); return; }
       const { data } = supabaseClient.storage.from("product-images").getPublicUrl(fname);
       imagesArray.push(data.publicUrl);
     }
   }
+  
   const sizes = Array.from(document.querySelectorAll(".sizeBox:checked")).map(b=>b.value).join(",");
   const payload = { name, description: document.getElementById("productDescription").value, price: Number(price), category: document.getElementById("productCategory").value, sizes, stock: Number(document.getElementById("productStock").value||0), is_active: true };
   if(imagesArray.length) { payload.images = imagesArray; payload.image_url = imagesArray[0]; }
+  
   if(id) await supabaseClient.from("Products").update(payload).eq("id",id);
   else await supabaseClient.from("Products").insert([payload]);
+  
   cancelEditProduct(); loadProducts();
 }
 
@@ -380,12 +653,13 @@ function cancelEditProduct() {
   document.getElementById("productFormTitle").textContent="Add Product";
   ["productName","productDescription","productPrice","productStock"].forEach(id=>document.getElementById(id).value="");
   document.querySelectorAll(".sizeBox").forEach(b=>b.checked=false);
-  croppedFiles=[];
+  productImageUrls = [];
+  renderImgGrid();
 }
 
 function editProduct(id) {
   const p = allProductsAdmin.find(x=>String(x.id)===String(id)); 
-  if(!p) return;
+  if(!p) { alert("Product not found!"); return; }
   document.getElementById("editingProductId").value = p.id;
   document.getElementById("productFormTitle").textContent = "Edit: "+p.name;
   document.getElementById("productName").value = p.name;
@@ -395,7 +669,11 @@ function editProduct(id) {
   document.getElementById("productCategory").value = p.category||"";
   const sizes = (p.sizes||"").split(",");
   document.querySelectorAll(".sizeBox").forEach(b=>b.checked = sizes.includes(b.value));
-  document.getElementById("section-products").scrollIntoView({behavior:"smooth"});
+  // Load existing images
+  productImageUrls = (p.images||[]).map(url=>({url, file:null}));
+  renderImgGrid();
+  showSection('products');
+  setTimeout(()=>{ document.getElementById("productFormTitle").scrollIntoView({behavior:"smooth"}); }, 100);
 }
 
 async function toggleActive(id, cur) { await supabaseClient.from("Products").update({is_active:!cur}).eq("id",id); loadProducts(); }
@@ -415,49 +693,62 @@ async function loadProducts() {
     </div>`;
   }).join("");
 }
-    async function loadOrders() {
+  // ============ ORDERS ============
+async function loadOrders() {
   const { data, error } = await supabaseClient.from("Orders table").select("*").order("created_at",{ascending:false});
   if(error) { document.getElementById("ordersList").innerHTML = `<p class="error">Error: ${error.message}</p>`; return; }
   allOrdersAdmin = data || [];
   document.getElementById("ordersList").innerHTML = allOrdersAdmin.length ? 
-    allOrdersAdmin.map(o => `<div class="item-row"><div style="flex:1;"><strong>#${String(o.id).substring(0,8)}</strong><br>${o.customer_name||'N/A'} - ₹${o.total_amount||0}<br><small style="color:#888;">${o.order_status||'Pending'}</small></div><button class="small" onclick="openOrderDetail('${o.id}')">View</button></div>`).join("")
-    : "<p>No orders yet.</p>";
+    `<table class="orders-table"><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>` +
+    allOrdersAdmin.map(o => `<tr>
+      <td><b>#${String(o.id).substring(0,8)}</b><br><small style="color:#64748b;">${o.created_at?new Date(o.created_at).toLocaleDateString():''}</small></td>
+      <td>${o.customer_name||'N/A'}<br><small style="color:#64748b;">${o.customer_phone||''}</small></td>
+      <td>₹${o.total_amount||0}</td>
+      <td><span class="status-badge status-${(o.order_status||'pending').toLowerCase()}">${o.order_status||'Pending'}</span></td>
+      <td><button class="small" onclick="openOrderDetail('${o.id}')">View</button></td>
+    </tr>`).join("") + `</tbody></table>`
+    : "<p style='color:#94a3b8;'>No orders yet.</p>";
 }
 
 function openOrderDetail(id) {
   const o = allOrdersAdmin.find(x=>String(x.id)===String(id)); 
   if(!o) return;
-  let items = (o.items||[]).map(i=>`<div style="padding:8px;background:#1f1f1f;margin:5px 0;border-radius:4px;"><b>${i.name}</b> — Size: ${i.size||'M'} — Qty: ${i.qty} — ₹${i.price}</div>`).join("");
+  let items = (o.items||[]).map(i=>`<div style="padding:8px;background:#0f172a;margin:5px 0;border-radius:4px;display:flex;gap:10px;align-items:center;">
+    ${i.img?`<img src="${i.img}" style="width:40px;height:50px;object-fit:cover;border-radius:4px;">`:""}
+    <div style="flex:1;"><b>${i.name}</b><br><small style="color:#94a3b8;">Size: ${i.size||'M'} • Qty: ${i.qty} • ₹${i.price}</small></div>
+  </div>`).join("");
   const payStatus = o.payment_status || "Pending";
-  const payColor = payStatus === "Paid" ? "#81c784" : "#e57373";
+  const payColor = payStatus === "Paid" ? "#10b981" : "#f59e0b";
   const lat = o.customer_lat; const lng = o.customer_lng;
-  const mapsBtn = (lat && lng) ? `<button onclick="window.open('https://www.google.com/maps?q=${lat},${lng}','_blank')" style="margin-top:8px;background:#4285F4;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;font-size:12px;">🗺️ Open in Google Maps</button>` : `<p style="font-size:11px;color:#888;">📍 Location not shared</p>`;
+  const mapsBtn = (lat && lng) ? `<button onclick="window.open('https://www.google.com/maps?q=${lat},${lng}','_blank')" style="margin-top:8px;background:#3b82f6;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;font-size:12px;">🗺️ Open in Google Maps</button>` : `<p style="font-size:11px;color:#64748b;">📍 Location not shared</p>`;
   
   document.getElementById("orderDetailContent").innerHTML = `
-    <h2 style="margin-bottom:15px;color:#c9a96e;">Order #${String(o.id).substring(0,8)}</h2>
-    <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin-bottom:15px;">
+    <h2 style="margin-bottom:15px;color:#3b82f6;">Order #${String(o.id).substring(0,8)}</h2>
+    <div style="background:#0f172a;padding:15px;border-radius:6px;margin-bottom:15px;">
       <p><b>Customer:</b> ${o.customer_name||'N/A'}</p>
       <p><b>Phone:</b> ${o.customer_phone||'N/A'}</p>
       <p><b>Address:</b> ${o.address||'N/A'}</p>
       <p><b>Date:</b> ${o.created_at ? new Date(o.created_at).toLocaleString() : 'N/A'}</p>
     </div>
-    <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin-bottom:15px;border-left: 4px solid ${payColor};">
+    <div style="background:#0f172a;padding:15px;border-radius:6px;margin-bottom:15px;border-left: 4px solid ${payColor};">
       <p><b>Payment:</b> <span style="color:${payColor};font-weight:bold;">${payStatus}</span> (${o.payment_method||'N/A'})</p>
-      <p><b>Razorpay ID:</b> <code style="background:#1f1f1f;padding:2px 6px;border-radius:4px;">${o.razorpay_payment_id || 'N/A'}</code></p>
+      <p><b>Razorpay ID:</b> <code style="background:#1e293b;padding:2px 6px;border-radius:4px;">${o.razorpay_payment_id || 'N/A'}</code></p>
     </div>
-    <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin-bottom:15px;">
-      <p style="font-size:12px;color:#888;margin-bottom:5px;">📍 Customer Location</p>
+    <div style="background:#0f172a;padding:15px;border-radius:6px;margin-bottom:15px;">
+      <p style="font-size:12px;color:#94a3b8;margin-bottom:5px;">📍 Customer Location</p>
       ${mapsBtn}
     </div>
     <h3 style="margin:15px 0 5px;">Items:</h3>${items || "<p>No items</p>"}
-    <div style="background:#0f0f0f;padding:15px;border-radius:6px;margin:15px 0;">
+    <div style="background:#0f172a;padding:15px;border-radius:6px;margin:15px 0;">
       <p><b>Total:</b> ₹${o.total_amount||0}</p>
+      ${o.discount_amount?`<p><b>Discount:</b> -₹${o.discount_amount}</p>`:""}
+      ${o.coupon_code?`<p><b>Coupon:</b> ${o.coupon_code}</p>`:""}
     </div>
-    <label>Update Status</label>
+    <label>Update Order Status</label>
     <select id="orderStatusSelect" style="margin:10px 0;">
       ${["Pending","Confirmed","Shipped","Delivered"].map(s=>`<option ${o.order_status===s?"selected":""}>${s}</option>`).join("")}
     </select>
-    <button onclick="updateOrderStatus('${o.id}')" style="margin-top:10px;">Update Status</button>
+    <button onclick="updateOrderStatus('${o.id}')" style="margin-top:10px;background:#10b981;">Update Status</button>
   `;
   document.getElementById("orderDetailOverlay").classList.add("open");
 }
@@ -467,17 +758,21 @@ async function updateOrderStatus(id) {
   const payload = {order_status: status};
   if(status==="Delivered") payload.delivered_at = new Date().toISOString();
   await supabaseClient.from("Orders table").update(payload).eq("id",id);
-  alert("Status updated!"); closeOrderDetail(); loadOrders(); loadOverview();
+  alert("Status updated!"); closeOrderDetail(); loadOrders(); loadDashboard();
 }
 
+// ============ CUSTOMERS ============
 async function loadCustomers() {
   const { data, error } = await supabaseClient.from("customers").select("*").order("created_at",{ascending:false});
   const container = document.getElementById("customersList");
   if(error) { container.innerHTML = `<p class="error">Error: ${error.message}</p>`; return; }
-  if(!data || !data.length) { container.innerHTML = "<p>No customers yet.</p>"; return; }
-  container.innerHTML = data.map(c => `<div class="item-row"><div><b>${c.name||'N/A'}</b><br>📧 ${c.email||'N/A'}<br> ${c.phone||'N/A'}</div></div>`).join("");
+  if(!data || !data.length) { container.innerHTML = "<p style='color:#94a3b8;'>No customers yet.</p>"; return; }
+  container.innerHTML = data.map(c => `<div class="item-row">
+    <div><b>${c.name||'N/A'}</b><br>📧 ${c.email||'N/A'}<br>📱 ${c.phone||'N/A'}<br><small style="color:#64748b;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small></div>
+  </div>`).join("");
 }
 
+// ============ SETTINGS ============
 async function loadSettings() {
   const setting = await getSettingRow();
   if(setting) {
@@ -486,16 +781,13 @@ async function loadSettings() {
     document.getElementById("settingTagline").value = setting.tagline||"";
     document.getElementById("settingFreeShipAbove").value = setting.free_shipping_above!==undefined?setting.free_shipping_above:0;
     document.getElementById("settingShipFee").value = setting.shipping_fee!==undefined?setting.shipping_fee:0;
-    
-    // Load Hero IDs
     let hids = setting.hero_product_ids;
     if(typeof hids === 'string') { try{hids=JSON.parse(hids);}catch(e){hids=[];} }
     currentHeroIds = Array.isArray(hids) ? hids : [];
-    renderCurrentHeroList();
+    renderHeroDragRow();
   } else {
-    // If no setting row exists, create one silently
     const { data } = await supabaseClient.from("site_setting").insert([{brand_name:'T-HEART', tagline:'Clothing brand', free_shipping_above:0, shipping_fee:0, hero_product_ids:[]}]).select().single();
-    if(data) { settingRowId = data.id; currentHeroIds = []; renderCurrentHeroList(); }
+    if(data) { settingRowId = data.id; currentHeroIds = []; renderHeroDragRow(); }
   }
   loadCoupons();
 }
@@ -513,16 +805,17 @@ async function saveSettings() {
     const { data } = await supabaseClient.from("site_setting").insert([payload]).select().single();
     if(data) settingRowId = data.id;
   }
-  document.getElementById("settingsMessage").textContent = "Saved! Website refresh kar.";
+  document.getElementById("settingsMessage").textContent = "Saved! Refresh website to see changes.";
 }
 
+// ============ COUPONS ============
 async function loadCoupons() {
   const { data, error } = await supabaseClient.from("coupons").select("*").order("created_at", {ascending: false});
   const container = document.getElementById("couponsList");
   if(error) { container.innerHTML = `<p class="error">Error: ${error.message}</p>`; return; }
-  if(!data || !data.length) { container.innerHTML = "<p>No coupons yet.</p>"; return; }
+  if(!data || !data.length) { container.innerHTML = "<p style='color:#94a3b8;'>No coupons yet.</p>"; return; }
   container.innerHTML = data.map(c => `<div class="item-row">
-    <div><b>${c.code}</b> — ${c.discount_percent}% off (Min: ₹${c.min_order_amount})</div>
+    <div><b>${c.code}</b> — ${c.discount_percent}% off (Min: ₹${c.min_order_amount}) — ${c.is_active?'<span style="color:#10b981;">Active</span>':'<span style="color:#ef4444;">Inactive</span>'}</div>
     <div>
       <button class="small" onclick="toggleCoupon('${c.id}', ${c.is_active})">${c.is_active?'Disable':'Enable'}</button>
       <button class="small danger" onclick="deleteCoupon('${c.id}')">Del</button>
@@ -541,120 +834,82 @@ async function addCoupon() {
 async function toggleCoupon(id, current) { await supabaseClient.from("coupons").update({is_active: !current}).eq("id", id); loadCoupons(); }
 async function deleteCoupon(id) { if(confirm("Delete?")) { await supabaseClient.from("coupons").delete().eq("id", id); loadCoupons(); } }
 
-// --- NEW HERO LOGIC ---
-function renderCurrentHeroList() {
-  const container = document.getElementById("currentHeroList");
+// ============ HERO DRAG-DROP ============
+function renderHeroDragRow() {
+  const row = document.getElementById("heroDragRow");
   if(currentHeroIds.length === 0) {
-    container.innerHTML = '<p style="color:#888;font-size:12px;">No products selected yet.</p>';
+    row.innerHTML = '<p style="color:#64748b;font-size:13px;padding:10px;">No products in hero. Click "+ Add Product" above.</p>';
+    initHeroSortable();
     return;
   }
-  container.innerHTML = currentHeroIds.map((id, index) => {
+  row.innerHTML = currentHeroIds.map((id, index) => {
     const p = allProductsAdmin.find(x => String(x.id) === String(id));
     if(!p) return '';
     const img = p.hero_image_url || (p.images&&p.images[0]) || p.image_url;
-    return `<div class="current-hero-item">
-      <span>${index+1}</span>
-      <button onclick="removeFromHero('${id}')">×</button>
+    return `<div class="hero-drag-item" data-id="${p.id}">
+      <div class="pos-badge">${index+1}</div>
+      <button class="hero-remove" onclick="removeFromHero('${p.id}')">×</button>
       <img src="${img||''}">
-      <p style="font-size:10px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</p>
+      <small>${p.name}</small>
+      <small style="color:#3b82f6;">₹${p.price}</small>
     </div>`;
   }).join("");
+  initHeroSortable();
 }
 
-function openHeroSelector() {
-  const grid = document.getElementById("heroProductGrid");
-  // Show products that are NOT already in hero (or all if you prefer)
-  const available = allProductsAdmin.filter(p => !currentHeroIds.includes(p.id));
-  
-  if(available.length === 0) {
-    grid.innerHTML = '<p style="color:#888;">All products are already in the hero slider!</p>';
-  } else {
-    grid.innerHTML = available.map(p => {
-      const img = (p.images&&p.images[0]) || p.image_url;
-      return `<div class="hero-card" onclick="openHeroEdit('${p.id}')">
-        <img src="${img||''}">
-        <h4>${p.name}</h4>
-        <p>₹${p.price}</p>
-      </div>`;
-    }).join("");
-  }
-  document.getElementById("heroSelectorOverlay").classList.add("open");
+function initHeroSortable() {
+  const row = document.getElementById("heroDragRow");
+  if(window.heroSortable) window.heroSortable.destroy();
+  window.heroSortable = new Sortable(row, {
+    animation: 150,
+    ghostClass: 'sortable-ghost',
+    onEnd: function(evt) {
+      const item = currentHeroIds.splice(evt.oldIndex, 1)[0];
+      currentHeroIds.splice(evt.newIndex, 0, item);
+      renderHeroDragRow();
+    }
+  });
 }
-function closeHeroSelector() { document.getElementById("heroSelectorOverlay").classList.remove("open"); }
-
-let editingHeroId = null;
-function openHeroEdit(id) {
-  closeHeroSelector();
-  editingHeroId = id;
-  const p = allProductsAdmin.find(x => String(x.id) === String(id));
-  if(!p) return;
-  
-  document.getElementById("heroEditTitle").textContent = "Edit: " + p.name;
-  const img = p.hero_image_url || (p.images&&p.images[0]) || p.image_url;
-  document.getElementById("heroEditImg").src = img || '';
-  document.getElementById("heroImgInput").value = '';
-  
-  // Set dropdown to current position
-  const pos = currentHeroIds.indexOf(p.id) + 1;
-  document.getElementById("heroPosSelect").value = pos > 0 ? String(pos) : "";
-  
-  document.getElementById("heroEditOverlay").classList.add("open");
-}
-function closeHeroEdit() { document.getElementById("heroEditOverlay").classList.remove("open"); editingHeroId = null; }
 
 function removeFromHero(id) {
   currentHeroIds = currentHeroIds.filter(x => String(x) !== String(id));
-  saveHeroIdsToDB();
+  renderHeroDragRow();
 }
 
-async function saveHeroPosition() {
-  if(!editingHeroId) return;
-  const posVal = document.getElementById("heroPosSelect").value;
-  
-  // Remove from current list first
-  currentHeroIds = currentHeroIds.filter(x => String(x) !== String(editingHeroId));
-  
-  if(posVal) {
-    const pos = Number(posVal);
-    // Insert at correct position (pos-1 index)
-    currentHeroIds.splice(pos-1, 0, editingHeroId);
+function openHeroPicker() {
+  const grid = document.getElementById("heroPickerGrid");
+  const available = allProductsAdmin.filter(p => !currentHeroIds.includes(p.id));
+  if(available.length === 0) {
+    grid.innerHTML = '<p style="color:#94a3b8;grid-column:1/-1;">All products already in hero!</p>';
+  } else {
+    grid.innerHTML = available.map(p => {
+      const img = (p.images&&p.images[0]) || p.image_url;
+      return `<div class="item-row" style="cursor:pointer;flex-direction:column;align-items:flex-start;" onclick="addToHero('${p.id}')">
+        ${img?`<img class="thumb" src="${img}" style="width:100%;height:120px;">`:""}
+        <b style="margin-top:5px;">${p.name}</b>
+        <small style="color:#94a3b8;">₹${p.price}</small>
+      </div>`;
+    }).join("");
   }
-  
-  // Keep only max 3
-  currentHeroIds = currentHeroIds.slice(0, 3);
-  
-  await saveHeroIdsToDB();
-  closeHeroEdit();
+  document.getElementById("heroPickerOverlay").classList.add("open");
+}
+function closeHeroPicker() { document.getElementById("heroPickerOverlay").classList.remove("open"); }
+function addToHero(id) {
+  if(currentHeroIds.length >= 5) { alert("Max 5 products in hero"); return; }
+  currentHeroIds.push(id);
+  renderHeroDragRow();
+  closeHeroPicker();
 }
 
-async function saveHeroIdsToDB() {
-  renderCurrentHeroList();
+async function saveHeroOrder() {
   if(!settingRowId) {
     const { data } = await supabaseClient.from("site_setting").insert([{hero_product_ids: currentHeroIds}]).select().single();
     if(data) settingRowId = data.id;
   } else {
     await supabaseClient.from("site_setting").update({hero_product_ids: currentHeroIds}).eq("id", settingRowId);
   }
-}
-
-function cropHeroImage() {
-  const fileInput = document.getElementById("heroImgInput");
-  const file = fileInput.files[0];
-  if(!file) return alert("Pehle image select karo!");
-  currentCropType = 'hero';
-  currentHeroPid = editingHeroId;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    document.getElementById("cropperImage").src = ev.target.result;
-    document.getElementById("cropperTitle").textContent = "Crop Hero Image (3:4)";
-    document.getElementById("heroEditOverlay").classList.remove("open"); // Hide edit modal temporarily
-    document.getElementById("cropperOverlay").classList.add("open");
-    setTimeout(() => {
-      if(cropperInstance) cropperInstance.destroy();
-      cropperInstance = new Cropper(document.getElementById("cropperImage"), { aspectRatio: 3/4, viewMode: 1 });
-    }, 100);
-  };
-  reader.readAsDataURL(file);
+  document.getElementById("heroMsg").textContent = "✓ Hero order saved! Refresh website to see changes.";
+  setTimeout(()=>{document.getElementById("heroMsg").textContent="";}, 3000);
 }
 </script>
 </body>
