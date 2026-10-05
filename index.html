@@ -216,6 +216,24 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
     <button class="secondary" onclick="closeOrders()" style="background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:15px;width:100%;padding:12px;">Close</button>
   </div>
 </div>
+  <!-- Request Cancellation/Return Modal -->
+<div class="auth-modal" id="requestModal">
+  <div class="auth-box">
+    <h2 id="requestTitle">Request</h2>
+    <p id="requestOrderId" style="font-size:12px;color:#888;margin-bottom:15px;text-align:center;"></p>
+    <label style="font-size:12px;color:#888;">Reason for request</label>
+    <select id="requestReason" style="width:100%;padding:12px;margin:8px 0;border:1px solid #E5E5E5;border-radius:6px;font-size:14px;background:#fff;">
+      <option value="Changed my mind">Changed my mind</option>
+      <option value="Found it cheaper elsewhere">Found it cheaper elsewhere</option>
+      <option value="Ordered by mistake">Ordered by mistake</option>
+      <option value="Product defective/damaged">Product defective/damaged</option>
+      <option value="Wrong item received">Wrong item received</option>
+    </select>
+    <button id="submitRequestBtn" onclick="submitRequest()">Submit Request</button>
+    <button class="secondary" onclick="closeRequestModal()" style="background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:8px;">Cancel</button>
+    <p id="requestMsg" style="font-size:12px;color:#a33;margin-top:10px;text-align:center;"></p>
+  </div>
+</div>
 <div id="mainPage">
   <section class="hero">
     <div class="hcard" id="hCard">
@@ -444,6 +462,9 @@ function logout(){
   }
 }
 
+let currentRequestId = null;
+let currentRequestType = '';
+
 async function openOrders(){
   if(!prof||!prof.phone){t("Please login first");openAuth();return;}
   document.getElementById("ordersList").innerHTML="<p>Loading orders...</p>";
@@ -452,13 +473,77 @@ async function openOrders(){
     const{data,error}=await db.from("Orders table").select("*").eq("customer_phone",prof.phone).order("created_at",{ascending:false});
     if(error){document.getElementById("ordersList").innerHTML="<p>Error loading orders</p>";return;}
     if(!data||data.length===0){document.getElementById("ordersList").innerHTML="<p>No orders yet</p>";return;}
+    
     document.getElementById("ordersList").innerHTML=data.map(o=>{
       const status=o.order_status||"Pending";
       const statusClass="status-"+status.toLowerCase();
       const date=o.created_at?new Date(o.created_at).toLocaleDateString():"";
-      return `<div class="order-item"><h4>Order #${String(o.id).substring(0,8)}</h4><p style="font-size:13px;color:#888;margin:5px 0;">${date}</p><p style="font-size:14px;margin:5px 0;">Total: ₹${o.total_amount||0}</p><span class="order-status ${statusClass}">${status}</span></div>`;
+      const orderDate = new Date(o.created_at);
+      const now = new Date();
+      const diffHours = (now - orderDate) / (1000 * 60 * 60);
+      const isWithin3Days = diffHours <= 72;
+      
+      let actionButtons = "";
+      // Cancel Logic: Within 3 days and not yet shipped/delivered
+      if(isWithin3Days && status !== 'Shipped' && status !== 'Delivered') {
+        actionButtons += `<button onclick="openRequestModal('cancel', '${o.id}')" style="margin-top:10px;padding:8px;background:#ef4444;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;width:100%;">Request Cancellation</button>`;
+      }
+      // Return Logic: Within 3 days (assuming delivered or just time-based)
+      if(isWithin3Days && status === 'Delivered') {
+        actionButtons += `<button onclick="openRequestModal('return', '${o.id}')" style="margin-top:10px;padding:8px;background:#f59e0b;color:#000;border:none;border-radius:4px;cursor:pointer;font-size:12px;width:100%;">Request Return</button>`;
+      }
+
+      return `<div class="order-item">
+        <h4>Order #${String(o.id).substring(0,8)}</h4>
+        <p style="font-size:13px;color:#888;margin:5px 0;">${date}</p>
+        <p style="font-size:14px;margin:5px 0;">Total: ₹${o.total_amount||0}</p>
+        <span class="order-status ${statusClass}">${status}</span>
+        ${actionButtons}
+      </div>`;
     }).join("");
   }catch(e){document.getElementById("ordersList").innerHTML="<p>Error loading orders</p>";}
+}
+
+function openRequestModal(type, orderId) {
+  currentRequestType = type;
+  currentRequestId = orderId;
+  document.getElementById("requestTitle").textContent = type === 'cancel' ? "Request Cancellation" : "Request Return";
+  document.getElementById("requestOrderId").textContent = "Order ID: " + String(orderId).substring(0,8);
+  document.getElementById("requestMsg").textContent = "";
+  document.getElementById("requestModal").classList.add("open");
+}
+function closeRequestModal() {
+  document.getElementById("requestModal").classList.remove("open");
+}
+
+async function submitRequest() {
+  const reason = document.getElementById("requestReason").value;
+  const msg = document.getElementById("requestMsg");
+  if(!reason) { msg.textContent = "Please select a reason"; return; }
+  
+  msg.textContent = "Submitting...";
+  const tableName = currentRequestType === 'cancel' ? 'cancellation_requests' : 'return_requests';
+  
+  const payload = {
+    order_id: currentRequestId,
+    customer_phone: prof.phone,
+    reason: reason,
+    status: 'pending',
+    refund_amount: 0 // Will be updated by admin
+  };
+
+  try {
+    const { error } = await db.from(tableName).insert([payload]);
+    if(error) { msg.textContent = "Error: " + error.message; return; }
+    msg.style.color = "#10b981";
+    msg.textContent = "Request submitted successfully! Admin will review it.";
+    setTimeout(() => {
+      closeRequestModal();
+      openOrders(); // Refresh list
+    }, 2000);
+  } catch(e) {
+    msg.textContent = "Error: " + e.message;
+  }
 }
 function closeOrders(){document.getElementById("ordersModal").classList.remove("open");}
 
