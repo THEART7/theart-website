@@ -732,36 +732,51 @@ function rBag(){
           );
         }
         async function plOrd(){
-          if(!validateCheckout())return;
-          const fn=document.getElementById("chFN").value.trim();
-          const ln=document.getElementById("chLN").value.trim();
-          const ph=document.getElementById("chP").value.trim();
-          const ad=document.getElementById("chA").value.trim();
-          const ct=document.getElementById("chC").value.trim();
-          const pi=document.getElementById("chPi").value.trim();
-          const err=document.getElementById("chErr");
-          const totalAmount=tot();
-          if(totalAmount<=0){err.textContent="Invalid amount";return;}
-          err.textContent="Processing...";
-          const options={
-            key:RAZORPAY_KEY_ID,amount:totalAmount*100,currency:"INR",name:"T-HEART",description:"Order Payment",
-            prefill:{name:`${fn} ${ln}`,contact:ph},theme:{color:"#1A1A1A"},
-            handler:async function(response){
-              err.textContent="Verifying...";
-              try{
-                const orderData={customer_name:`${fn} ${ln}`,customer_phone:ph,address:`${ad}, ${ct} - ${pi}`,items:gCart(),total_amount:totalAmount,discount_amount:gDsc(),coupon_code:cpn?cpn.code:null,payment_status:"Paid",payment_method:"Razorpay",razorpay_payment_id:response.razorpay_payment_id,razorpay_order_id:response.razorpay_order_id,razorpay_signature:response.razorpay_signature,order_status:"Confirmed",customer_lat:custLat,customer_lng:custLng};
-                const{error}=await db.from("Orders table").insert([orderData]);
-                if(error){err.textContent="Order error: "+error.message;return;}
-                if(prof){prof.address=ad;prof.city=ct;prof.pincode=pi;localStorage.setItem("th_profile",JSON.stringify(prof));}
-                localStorage.removeItem("th_c");cpn=null;custLat=null;custLng=null;uCnt();goHome();
-                alert("✅ Payment Successful!\nOrder ID: "+response.razorpay_payment_id);
-                ["chFN","chLN","chP","chA","chC","chPi"].forEach(id=>document.getElementById(id).value="");
-              }catch(e){err.textContent="Error: "+e.message;}
-            },
-            modal:{ondismiss:function(){err.textContent="Payment cancelled";err.style.color="#a33";}}
-          };
-          try{const rzp=new Razorpay(options);rzp.open();}catch(e){err.textContent="Payment error";}
-        }
+  if(!validateCheckout())return;
+  const fn=document.getElementById("chFN").value.trim();
+  const ln=document.getElementById("chLN").value.trim();
+  const ph=document.getElementById("chP").value.trim();
+  const ad=document.getElementById("chA").value.trim();
+  const ct=document.getElementById("chC").value.trim();
+  const pi=document.getElementById("chPi").value.trim();
+  const err=document.getElementById("chErr");
+  const totalAmount=tot();
+  
+  if(totalAmount<=0){err.textContent="Invalid amount";return;}
+  
+  err.textContent="Placing Order (COD)...";
+  
+  try{
+    // Razorpay bypass karke direct DB me order save kar rahe hain
+    const orderData={
+      customer_name:`${fn} ${ln}`,
+      customer_phone:ph,
+      customer_email: prof ? prof.email : '',
+      address:`${ad}, ${ct} - ${pi}`,
+      items:gCart(),
+      total_amount:totalAmount,
+      discount_amount:gDsc(),
+      coupon_code:cpn?cpn.code:null,
+      payment_status:"Pending (COD)",
+      payment_method:"Cash on Delivery",
+      order_status:"Confirmed",
+      customer_lat:custLat,
+      customer_lng:custLng
+    };
+    
+    const{error}=await db.from("Orders table").insert([orderData]);
+    if(error){err.textContent="Order error: "+error.message;return;}
+    
+    // Profile me address save karo
+    if(prof){prof.address=ad;prof.city=ct;prof.pincode=pi;localStorage.setItem("th_profile",JSON.stringify(prof));}
+    
+    // Cart clear karo aur home pe bhej do
+    localStorage.removeItem("th_c");cpn=null;custLat=null;custLng=null;uCnt();goHome();
+    
+    alert("✅ Order Placed Successfully!\n\nPayment Method: Cash on Delivery (COD)\n\nCheck 'My Orders' to track it.");
+    ["chFN","chLN","chP","chA","chC","chPi"].forEach(id=>document.getElementById(id).value="");
+  }catch(e){err.textContent="Error: "+e.message;}
+}
 
         loadProfile();ldSet();ldAnn();ldCats();
         ldProds().then(()=>{const hash=window.location.hash;if(hash.startsWith("#product=")){const pid=hash.replace("#product=","");setTimeout(()=>oDet(pid),400);}});
