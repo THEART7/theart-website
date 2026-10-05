@@ -39,13 +39,15 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
 .modal-box{background:#1e293b;padding:20px;border-radius:12px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;border:1px solid #334155;}
 .thumb{width:60px;height:80px;object-fit:cover;border-radius:4px;flex-shrink:0;}
 
-/* Dashboard Styles */
+/* Dashboard */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:20px;}
 .stat-card{padding:20px;border-radius:12px;color:#fff;position:relative;overflow:hidden;}
 .stat-card.green{background:linear-gradient(135deg,#10b981,#059669);}
 .stat-card.blue{background:linear-gradient(135deg,#3b82f6,#2563eb);}
 .stat-card.purple{background:linear-gradient(135deg,#8b5cf6,#7c3aed);}
 .stat-card.orange{background:linear-gradient(135deg,#f59e0b,#d97706);}
+.stat-card.red{background:linear-gradient(135deg,#ef4444,#dc2626);}
+.stat-card.yellow{background:linear-gradient(135deg,#eab308,#ca8a04);}
 .stat-card .label{font-size:12px;opacity:0.9;margin-bottom:8px;}
 .stat-card .value{font-size:28px;font-weight:bold;margin-bottom:5px;}
 .stat-card .trend{font-size:12px;display:flex;align-items:center;gap:4px;}
@@ -58,27 +60,17 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
 .filter-bar button{width:auto;padding:8px 16px;margin:0;background:#334155;font-size:13px;}
 .filter-bar button.active{background:#3b82f6;}
 
-/* Drag Drop Styles */
-.drag-list{display:flex;flex-direction:column;gap:8px;}
-.drag-item{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;cursor:grab;}
-.drag-item:active{cursor:grabbing;}
-.drag-handle{color:#64748b;font-size:18px;cursor:grab;padding:5px;}
-.drag-item img{width:50px;height:65px;object-fit:cover;border-radius:4px;}
-.drag-item .info{flex:1;}
-.drag-item .info b{font-size:14px;}
-.drag-item .info small{color:#94a3b8;font-size:11px;}
-.drag-item .remove-btn{background:#ef4444;color:#fff;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:14px;padding:0;}
-
-/* Image Grid for Product */
-.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin:10px 0;}
-.img-grid-item{position:relative;aspect-ratio:3/4;border-radius:6px;overflow:hidden;border:2px solid #334155;cursor:grab;}
+/* Image Grid */
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin:10px 0;min-height:50px;}
+.img-grid-item{position:relative;aspect-ratio:3/4;border-radius:6px;overflow:hidden;border:2px solid #334155;cursor:grab;background:#0f172a;}
 .img-grid-item img{width:100%;height:100%;object-fit:cover;}
-.img-grid-item .img-handle{position:absolute;top:5px;left:5px;background:rgba(0,0,0,0.7);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;cursor:grab;}
-.img-grid-item .img-remove{position:absolute;top:5px;right:5px;background:#ef4444;color:#fff;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;padding:0;}
+.img-grid-item .img-handle{position:absolute;top:5px;left:5px;background:rgba(0,0,0,0.7);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;cursor:grab;z-index:2;}
+.img-grid-item .img-remove{position:absolute;top:5px;right:5px;background:#ef4444;color:#fff;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;padding:0;z-index:2;}
 .img-grid-item.sortable-ghost{opacity:0.4;}
+.img-grid-empty{grid-column:1/-1;text-align:center;color:#64748b;padding:20px;font-size:13px;}
 
-/* Hero Drag Row */
-.hero-drag-row{display:flex;gap:10px;overflow-x:auto;padding:10px 0;}
+/* Hero Drag */
+.hero-drag-row{display:flex;gap:10px;overflow-x:auto;padding:10px 0;min-height:150px;}
 .hero-drag-item{min-width:120px;background:#0f172a;border:2px solid #334155;border-radius:8px;padding:8px;text-align:center;cursor:grab;position:relative;}
 .hero-drag-item img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:4px;margin-bottom:5px;}
 .hero-drag-item .pos-badge{position:absolute;top:-8px;left:-8px;background:#3b82f6;color:#fff;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:bold;display:flex;align-items:center;justify-content:center;}
@@ -95,6 +87,18 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
 .status-delivered{background:#8b5cf6;color:#fff;}
 .status-pending{background:#f59e0b;color:#000;}
 .status-cancelled{background:#ef4444;color:#fff;}
+
+/* Cancellation/Return */
+.req-item{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:15px;margin-bottom:10px;}
+.req-item .req-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.req-item .req-title{font-weight:bold;font-size:14px;}
+.req-item .req-status{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;}
+.req-status.pending{background:#f59e0b;color:#000;}
+.req-status.approved{background:#10b981;color:#fff;}
+.req-status.rejected{background:#ef4444;color:#fff;}
+.req-item .req-details{font-size:12px;color:#94a3b8;margin-bottom:10px;}
+.req-item .req-actions{display:flex;gap:8px;}
+.req-item .req-actions button{flex:1;padding:8px;font-size:12px;}
 </style>
 </head>
 <body>
@@ -114,11 +118,12 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
     <button onclick="showSection('categories')" id="nav-categories">Categories</button>
     <button onclick="showSection('orders')" id="nav-orders">Orders</button>
     <button onclick="showSection('customers')" id="nav-customers">Customers</button>
+    <button onclick="showSection('cancellations')" id="nav-cancellations">Cancellations</button>
     <button onclick="showSection('settings')" id="nav-settings">Settings</button>
     <button class="secondary" onclick="logout()">Logout</button>
   </div>
 
-  <!-- DASHBOARD SECTION -->
+  <!-- DASHBOARD -->
   <div id="section-dashboard" class="section">
     <div class="filter-bar">
       <button class="active" onclick="setDashFilter(7,this)">Last 7 Days</button>
@@ -127,28 +132,16 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
     </div>
     <div class="stats-grid" id="statsGrid"></div>
     <div class="dashboard-grid">
-      <div class="chart-container">
-        <h3>Sales & Revenue (Daily)</h3>
-        <canvas id="salesChart"></canvas>
-      </div>
-      <div class="chart-container">
-        <h3>Order Status</h3>
-        <canvas id="statusChart"></canvas>
-      </div>
+      <div class="chart-container"><h3>Sales & Revenue (Daily)</h3><canvas id="salesChart"></canvas></div>
+      <div class="chart-container"><h3>Order Status</h3><canvas id="statusChart"></canvas></div>
     </div>
     <div class="dashboard-grid">
-      <div class="card">
-        <h3>Recent Orders</h3>
-        <div id="recentOrders"></div>
-      </div>
-      <div class="card">
-        <h3>Top Selling Products</h3>
-        <div id="topProducts"></div>
-      </div>
+      <div class="card"><h3>Recent Orders</h3><div id="recentOrders"></div></div>
+      <div class="card"><h3>Top Selling Products</h3><div id="topProducts"></div></div>
     </div>
   </div>
 
-  <!-- PRODUCTS SECTION -->
+  <!-- PRODUCTS -->
   <div id="section-products" class="section hidden">
     <div class="card">
       <h2 id="productFormTitle">Add Product</h2>
@@ -167,7 +160,7 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
       </div>
       <label>Photos (3:4 crop) — Drag to reorder</label>
       <input id="productImages" type="file" accept="image/*" multiple>
-      <div id="imgGrid" class="img-grid"></div>
+      <div id="imgGrid" class="img-grid"><div class="img-grid-empty">No images yet. Choose files above.</div></div>
       <label>Stock</label><input id="productStock" type="number" placeholder="0">
       <button onclick="saveProduct()" style="margin-top:15px;">Save Product</button>
       <button class="secondary" onclick="cancelEditProduct()">Cancel</button>
@@ -176,7 +169,7 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
     <div class="card"><h2>All Products</h2><div id="productsList"></div></div>
   </div>
 
-  <!-- CATEGORIES SECTION -->
+  <!-- CATEGORIES -->
   <div id="section-categories" class="section hidden">
     <div class="card">
       <h2>Categories</h2>
@@ -186,27 +179,31 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
     </div>
   </div>
 
-  <!-- ORDERS SECTION -->
+  <!-- ORDERS -->
   <div id="section-orders" class="section hidden">
-    <div class="card">
-      <h2>All Orders</h2>
-      <div id="ordersList"></div>
-    </div>
+    <div class="card"><h2>All Orders</h2><div id="ordersList"></div></div>
   </div>
 
-  <!-- CUSTOMERS SECTION -->
+  <!-- CUSTOMERS -->
   <div id="section-customers" class="section hidden">
     <div class="card"><h2>Registered Customers</h2><div id="customersList"></div></div>
   </div>
 
-  <!-- SETTINGS SECTION -->
+  <!-- CANCELLATIONS -->
+  <div id="section-cancellations" class="section hidden">
+    <div class="stats-grid" id="cancellationStats"></div>
+    <div class="card"><h2>Cancellation Requests</h2><div id="cancellationList"></div></div>
+    <div class="card"><h2>Return Requests</h2><div id="returnList"></div></div>
+  </div>
+
+  <!-- SETTINGS -->
   <div id="section-settings" class="section hidden">
     <div class="card">
       <h2>Brand & Shipping</h2>
       <label>Brand Name</label><input id="settingBrandName" placeholder="T-HEART">
       <label>Tagline</label><input id="settingTagline" placeholder="Premium Clothing">
       <label>Free Shipping Above (₹)</label><input id="settingFreeShipAbove" type="number" placeholder="0 = Always Free">
-      <label>Shipping Fee ()</label><input id="settingShipFee" type="number" placeholder="99">
+      <label>Shipping Fee (₹)</label><input id="settingShipFee" type="number" placeholder="99">
       <button onclick="saveSettings()">Save Settings</button>
       <p id="settingsMessage" class="success"></p>
     </div>
@@ -274,7 +271,7 @@ let statusChartInstance = null;
 
 let cropperInstance=null, pendingCropFiles=[], currentCropIndex=0, croppedFiles=[];
 let currentCropType='product', currentHeroPid=null;
-let productImageUrls = []; // Stores ordered image URLs for current product being edited
+let productImageUrls = [];
 
 async function getSettingRow() {
   const { data, error } = await supabaseClient.from("site_setting").select("*").limit(1);
@@ -300,7 +297,7 @@ async function login() {
 function logout() { supabaseClient.auth.signOut(); location.reload(); }
 
 function showSection(name) {
-  ["dashboard","products","categories","orders","customers","settings"].forEach(s => {
+  ["dashboard","products","categories","orders","customers","cancellations","settings"].forEach(s => {
     document.getElementById("section-"+s).classList.add("hidden");
     document.getElementById("nav-"+s).classList.remove("active");
   });
@@ -311,6 +308,7 @@ function showSection(name) {
   if(name==="categories") loadCategories();
   if(name==="orders") loadOrders();
   if(name==="customers") loadCustomers();
+  if(name==="cancellations") loadCancellations();
   if(name==="settings") loadSettings();
 }
 
@@ -387,7 +385,6 @@ async function loadDashboard() {
     </div>
   `;
   
-  // Sales Chart (daily)
   const dailyData = {};
   const days = dashFilterDays===0?30:dashFilterDays;
   for(let i=days-1;i>=0;i--){
@@ -427,7 +424,6 @@ async function loadDashboard() {
     }
   });
   
-  // Status Chart
   const statusCount = {};
   filtered.forEach(o=>{
     const s = o.order_status||'Pending';
@@ -447,7 +443,6 @@ async function loadDashboard() {
     }
   });
   
-  // Recent Orders
   document.getElementById("recentOrders").innerHTML = filtered.slice(0,5).map(o=>`
     <div class="item-row" style="flex-direction:column;align-items:flex-start;">
       <div style="display:flex;justify-content:space-between;width:100%;">
@@ -459,7 +454,6 @@ async function loadDashboard() {
     </div>
   `).join("") || "<p style='color:#94a3b8;'>No orders</p>";
   
-  // Top Products
   const productSales = {};
   filtered.forEach(o=>{
     (o.items||[]).forEach(i=>{
@@ -524,80 +518,122 @@ async function moveCat(id, dir) {
   loadCategories();
 }
 async function delCat(id) { if(confirm("Delete?")) { await supabaseClient.from("categories").delete().eq("id",id); loadCategories(); } }
-
-// ============ PRODUCTS WITH DRAG-DROP IMAGES ============
+  // ============ PRODUCTS WITH FIXED IMAGE UPLOAD ============
 document.getElementById("productImages").addEventListener("change", function(e) {
   if(e.target.files.length) {
     currentCropType = 'product';
-    pendingCropFiles = Array.from(e.target.files); currentCropIndex=0;
+    pendingCropFiles = Array.from(e.target.files);
+    currentCropIndex = 0;
+    croppedFiles = [];
     showCropperNext();
   }
 });
 
 function showCropperNext() {
   if(currentCropIndex >= pendingCropFiles.length) {
-    document.getElementById("productImages").value="";
-    document.getElementById("productMessage").textContent = croppedFiles.length + " image(s) ready. Drag to reorder below.";
+    document.getElementById("productImages").value = "";
+    document.getElementById("productMessage").textContent = croppedFiles.length + " image(s) cropped. Drag to reorder below.";
     document.getElementById("productMessage").className = "success";
-    // Add cropped files to productImageUrls
-    croppedFiles.forEach(f=>{
+    
+    // Convert cropped files to data URLs and add to productImageUrls
+    let processed = 0;
+    croppedFiles.forEach((f, idx) => {
       const reader = new FileReader();
-      reader.onload = ev => {
-        productImageUrls.push({url:ev.target.result, file:f});
-        renderImgGrid();
+      reader.onload = function(ev) {
+        productImageUrls.push({ url: ev.target.result, file: f });
+        processed++;
+        if(processed === croppedFiles.length) {
+          renderImgGrid();
+        }
       };
       reader.readAsDataURL(f);
     });
-    croppedFiles=[];
+    croppedFiles = [];
     return;
   }
+  
+  const file = pendingCropFiles[currentCropIndex];
   const reader = new FileReader();
-  reader.onload = ev => {
+  reader.onload = function(ev) {
     document.getElementById("cropperImage").src = ev.target.result;
-    document.getElementById("cropperTitle").textContent = "Crop Image (3:4) - " + (currentCropIndex+1) + "/" + pendingCropFiles.length;
     document.getElementById("cropperOverlay").classList.add("open");
     setTimeout(() => {
       if(cropperInstance) cropperInstance.destroy();
-      cropperInstance = new Cropper(document.getElementById("cropperImage"), { aspectRatio: 3/4, viewMode: 1 });
-    }, 100);
+      cropperInstance = new Cropper(document.getElementById("cropperImage"), { 
+        aspectRatio: 3/4, 
+        viewMode: 1,
+        autoCropArea: 1
+      });
+    }, 200);
   };
-  reader.readAsDataURL(pendingCropFiles[currentCropIndex]);
+  reader.readAsDataURL(file);
 }
 
 function confirmCrop() {
   if(!cropperInstance) return;
-  const canvas = cropperInstance.getCroppedCanvas({width:750, height:1000});
-  canvas.toBlob(async blob => {
-    const file = new File([blob], "crop-"+Date.now()+".png", {type:"image/png"});
+  const canvas = cropperInstance.getCroppedCanvas({ width: 750, height: 1000 });
+  canvas.toBlob(function(blob) {
+    const file = new File([blob], "crop-" + Date.now() + "-" + currentCropIndex + ".png", { type: "image/png" });
+    
     if(currentCropType === 'hero') {
-      const fname = "hero-"+Date.now()+"-"+file.name;
-      const { error: upErr } = await supabaseClient.storage.from("product-images").upload(fname, file);
-      if(upErr) { alert("Upload failed: "+upErr.message); return; }
-      const { data } = supabaseClient.storage.from("product-images").getPublicUrl(fname);
-      await supabaseClient.from("Products").update({hero_image_url: data.publicUrl}).eq("id", currentHeroPid);
-      alert("Hero Image Updated!");
-      currentHeroPid = null;
-      loadProducts(); loadSettings();
-    } else { croppedFiles.push(file); currentCropIndex++; }
-    cropperInstance.destroy(); cropperInstance = null;
+      // Hero image upload
+      const fname = "hero-" + Date.now() + "-" + file.name;
+      supabaseClient.storage.from("product-images").upload(fname, file).then(({ error: upErr }) => {
+        if(upErr) { alert("Upload failed: " + upErr.message); return; }
+        const { data } = supabaseClient.storage.from("product-images").getPublicUrl(fname);
+        supabaseClient.from("Products").update({ hero_image_url: data.publicUrl }).eq("id", currentHeroPid).then(() => {
+          alert("Hero Image Updated!");
+          currentHeroPid = null;
+          loadProducts();
+          loadSettings();
+        });
+      });
+    } else {
+      // Product image - add to croppedFiles array
+      croppedFiles.push(file);
+      currentCropIndex++;
+    }
+    
+    cropperInstance.destroy();
+    cropperInstance = null;
     document.getElementById("cropperOverlay").classList.remove("open");
-    if(currentCropType === 'product') showCropperNext();
+    
+    if(currentCropType === 'product') {
+      showCropperNext();
+    }
   }, "image/png", 0.9);
 }
-function cancelCrop() { if(cropperInstance) cropperInstance.destroy(); cropperInstance = null; currentHeroPid = null; document.getElementById("cropperOverlay").classList.remove("open"); pendingCropFiles=[]; croppedFiles=[]; }
-function toggleAllSizes() { const all = document.getElementById("allSizesBox").checked; document.querySelectorAll(".sizeBox").forEach(b=>b.checked=all); }
+
+function cancelCrop() {
+  if(cropperInstance) cropperInstance.destroy();
+  cropperInstance = null;
+  currentHeroPid = null;
+  document.getElementById("cropperOverlay").classList.remove("open");
+  pendingCropFiles = [];
+  croppedFiles = [];
+}
+
+function toggleAllSizes() {
+  const all = document.getElementById("allSizesBox").checked;
+  document.querySelectorAll(".sizeBox").forEach(b => b.checked = all);
+}
 
 function renderImgGrid() {
   const grid = document.getElementById("imgGrid");
+  if(productImageUrls.length === 0) {
+    grid.innerHTML = '<div class="img-grid-empty">No images yet. Choose files above.</div>';
+    return;
+  }
+  
   grid.innerHTML = productImageUrls.map((item, idx) => `
     <div class="img-grid-item" data-idx="${idx}">
       <div class="img-handle">⋮</div>
       <button class="img-remove" onclick="removeImg(${idx})">×</button>
-      <img src="${item.url}">
+      <img src="${item.url}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22133%22><rect fill=%22%23334155%22 width=%22100%22 height=%22133%22/><text x=%2250%22 y=%2266%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2212%22>No Image</text></svg>'">
     </div>
   `).join("");
   
-  // Initialize Sortable
+  // Initialize Sortable for drag-drop
   if(window.imgSortable) window.imgSortable.destroy();
   window.imgSortable = new Sortable(grid, {
     animation: 150,
@@ -620,102 +656,160 @@ async function saveProduct() {
   const id = document.getElementById("editingProductId").value;
   const name = document.getElementById("productName").value.trim();
   const price = document.getElementById("productPrice").value;
-  if(!name || !price) { document.getElementById("productMessage").textContent="Name/Price required"; return; }
+  if(!name || !price) { 
+    document.getElementById("productMessage").textContent = "Name and Price required"; 
+    return; 
+  }
   
-  // Upload any new files that aren't already in productImageUrls as data URLs
-  // (already handled via crop flow)
+  document.getElementById("productMessage").textContent = "Saving... Uploading images...";
+  document.getElementById("productMessage").className = "success";
   
-  const imagesArray = productImageUrls.map(p=>p.url).filter(u=>u.startsWith('http'));
-  const filesToUpload = productImageUrls.filter(p=>!p.url.startsWith('http')).map(p=>p.file);
+  // Separate existing URLs from new files
+  const existingUrls = productImageUrls.filter(p => p.url.startsWith('http')).map(p => p.url);
+  const newFiles = productImageUrls.filter(p => !p.url.startsWith('http')).map(p => p.file);
   
-  if(filesToUpload.length) {
-    for(let f of filesToUpload) {
-      const fname = Date.now()+"-"+Math.random().toString(36).substring(7)+"-"+f.name;
-      const { error: upErr } = await supabaseClient.storage.from("product-images").upload(fname, f);
-      if(upErr) { alert("Upload failed: "+upErr.message); return; }
-      const { data } = supabaseClient.storage.from("product-images").getPublicUrl(fname);
-      imagesArray.push(data.publicUrl);
+  let finalImages = [...existingUrls];
+  
+  // Upload new files to Supabase storage
+  if(newFiles.length > 0) {
+    for(let i = 0; i < newFiles.length; i++) {
+      const f = newFiles[i];
+      const fname = Date.now() + "-" + Math.random().toString(36).substring(2, 9) + "-" + f.name;
+      const { error: upErr, data: upData } = await supabaseClient.storage.from("product-images").upload(fname, f);
+      if(upErr) { 
+        document.getElementById("productMessage").textContent = "Upload failed: " + upErr.message; 
+        document.getElementById("productMessage").className = "error";
+        return; 
+      }
+      const { data: urlData } = supabaseClient.storage.from("product-images").getPublicUrl(fname);
+      finalImages.push(urlData.publicUrl);
     }
   }
   
-  const sizes = Array.from(document.querySelectorAll(".sizeBox:checked")).map(b=>b.value).join(",");
-  const payload = { name, description: document.getElementById("productDescription").value, price: Number(price), category: document.getElementById("productCategory").value, sizes, stock: Number(document.getElementById("productStock").value||0), is_active: true };
-  if(imagesArray.length) { payload.images = imagesArray; payload.image_url = imagesArray[0]; }
+  const sizes = Array.from(document.querySelectorAll(".sizeBox:checked")).map(b => b.value).join(",");
+  const payload = { 
+    name, 
+    description: document.getElementById("productDescription").value, 
+    price: Number(price), 
+    category: document.getElementById("productCategory").value, 
+    sizes, 
+    stock: Number(document.getElementById("productStock").value || 0), 
+    is_active: true 
+  };
   
-  if(id) await supabaseClient.from("Products").update(payload).eq("id",id);
-  else await supabaseClient.from("Products").insert([payload]);
+  if(finalImages.length > 0) { 
+    payload.images = finalImages; 
+    payload.image_url = finalImages[0]; 
+  }
   
-  cancelEditProduct(); loadProducts();
+  let error;
+  if(id) {
+    const res = await supabaseClient.from("Products").update(payload).eq("id", id);
+    error = res.error;
+  } else {
+    const res = await supabaseClient.from("Products").insert([payload]);
+    error = res.error;
+  }
+  
+  if(error) { 
+    document.getElementById("productMessage").textContent = "Error: " + error.message; 
+    document.getElementById("productMessage").className = "error";
+    return; 
+  }
+  
+  document.getElementById("productMessage").textContent = "Product saved successfully!";
+  document.getElementById("productMessage").className = "success";
+  
+  setTimeout(() => {
+    cancelEditProduct();
+    loadProducts();
+  }, 1000);
 }
 
 function cancelEditProduct() {
-  document.getElementById("editingProductId").value="";
-  document.getElementById("productFormTitle").textContent="Add Product";
-  ["productName","productDescription","productPrice","productStock"].forEach(id=>document.getElementById(id).value="");
-  document.querySelectorAll(".sizeBox").forEach(b=>b.checked=false);
+  document.getElementById("editingProductId").value = "";
+  document.getElementById("productFormTitle").textContent = "Add Product";
+  ["productName","productDescription","productPrice","productStock"].forEach(id => document.getElementById(id).value = "");
+  document.querySelectorAll(".sizeBox").forEach(b => b.checked = false);
   productImageUrls = [];
   renderImgGrid();
+  document.getElementById("productMessage").textContent = "";
 }
 
 function editProduct(id) {
-  const p = allProductsAdmin.find(x=>String(x.id)===String(id)); 
+  const p = allProductsAdmin.find(x => String(x.id) === String(id)); 
   if(!p) { alert("Product not found!"); return; }
   document.getElementById("editingProductId").value = p.id;
-  document.getElementById("productFormTitle").textContent = "Edit: "+p.name;
+  document.getElementById("productFormTitle").textContent = "Edit: " + p.name;
   document.getElementById("productName").value = p.name;
-  document.getElementById("productDescription").value = p.description||"";
+  document.getElementById("productDescription").value = p.description || "";
   document.getElementById("productPrice").value = p.price;
-  document.getElementById("productStock").value = p.stock||0;
-  document.getElementById("productCategory").value = p.category||"";
-  const sizes = (p.sizes||"").split(",");
-  document.querySelectorAll(".sizeBox").forEach(b=>b.checked = sizes.includes(b.value));
-  // Load existing images
-  productImageUrls = (p.images||[]).map(url=>({url, file:null}));
+  document.getElementById("productStock").value = p.stock || 0;
+  document.getElementById("productCategory").value = p.category || "";
+  const sizes = (p.sizes || "").split(",");
+  document.querySelectorAll(".sizeBox").forEach(b => b.checked = sizes.includes(b.value));
+  
+  // Load existing images into productImageUrls
+  productImageUrls = (p.images || []).map(url => ({ url: url, file: null }));
   renderImgGrid();
+  
   showSection('products');
-  setTimeout(()=>{ document.getElementById("productFormTitle").scrollIntoView({behavior:"smooth"}); }, 100);
+  setTimeout(() => { 
+    document.getElementById("productFormTitle").scrollIntoView({ behavior: "smooth" }); 
+  }, 100);
 }
 
-async function toggleActive(id, cur) { await supabaseClient.from("Products").update({is_active:!cur}).eq("id",id); loadProducts(); }
-async function deleteProduct(id) { if(confirm("Delete?")) { await supabaseClient.from("Products").delete().eq("id",id); loadProducts(); } }
+async function toggleActive(id, cur) { 
+  await supabaseClient.from("Products").update({ is_active: !cur }).eq("id", id); 
+  loadProducts(); 
+}
+async function deleteProduct(id) { 
+  if(confirm("Delete?")) { 
+    await supabaseClient.from("Products").delete().eq("id", id); 
+    loadProducts(); 
+  } 
+}
 
 async function loadProducts() {
   const { data } = await supabaseClient.from("Products").select("*").order("sort_order");
   allProductsAdmin = data || [];
   document.getElementById("productsList").innerHTML = allProductsAdmin.map(p => {
-    const img = (p.images&&p.images[0]) || p.image_url;
+    const img = (p.images && p.images[0]) || p.image_url;
     return `<div class="item-row">
-      ${img?`<img class="thumb" src="${img}">`:""}
-      <div style="flex:1;"><strong>${p.name}</strong><br>₹${p.price} | ${p.category||"-"} | Stock:${p.stock||0}</div>
+      ${img ? `<img class="thumb" src="${img}" onerror="this.style.display='none'">` : ""}
+      <div style="flex:1;">
+        <strong>${p.name}</strong><br>
+        ₹${p.price} | ${p.category || "-"} | Stock: ${p.stock || 0}
+      </div>
       <button class="small" onclick="editProduct('${p.id}')">Edit</button>
-      <button class="small secondary" onclick="toggleActive('${p.id}',${p.is_active})">${p.is_active?"Hide":"Show"}</button>
+      <button class="small secondary" onclick="toggleActive('${p.id}', ${p.is_active})">${p.is_active ? "Hide" : "Show"}</button>
       <button class="small danger" onclick="deleteProduct('${p.id}')">Del</button>
     </div>`;
   }).join("");
-}
+    }
   // ============ ORDERS ============
 async function loadOrders() {
-  const { data, error } = await supabaseClient.from("Orders table").select("*").order("created_at",{ascending:false});
+  const { data, error } = await supabaseClient.from("Orders table").select("*").order("created_at", { ascending: false });
   if(error) { document.getElementById("ordersList").innerHTML = `<p class="error">Error: ${error.message}</p>`; return; }
   allOrdersAdmin = data || [];
   document.getElementById("ordersList").innerHTML = allOrdersAdmin.length ? 
     `<table class="orders-table"><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>` +
     allOrdersAdmin.map(o => `<tr>
-      <td><b>#${String(o.id).substring(0,8)}</b><br><small style="color:#64748b;">${o.created_at?new Date(o.created_at).toLocaleDateString():''}</small></td>
-      <td>${o.customer_name||'N/A'}<br><small style="color:#64748b;">${o.customer_phone||''}</small></td>
-      <td>₹${o.total_amount||0}</td>
-      <td><span class="status-badge status-${(o.order_status||'pending').toLowerCase()}">${o.order_status||'Pending'}</span></td>
+      <td><b>#${String(o.id).substring(0,8)}</b><br><small style="color:#64748b;">${o.created_at ? new Date(o.created_at).toLocaleDateString() : ''}</small></td>
+      <td>${o.customer_name || 'N/A'}<br><small style="color:#64748b;">${o.customer_phone || ''}</small></td>
+      <td>₹${o.total_amount || 0}</td>
+      <td><span class="status-badge status-${(o.order_status || 'pending').toLowerCase()}">${o.order_status || 'Pending'}</span></td>
       <td><button class="small" onclick="openOrderDetail('${o.id}')">View</button></td>
     </tr>`).join("") + `</tbody></table>`
     : "<p style='color:#94a3b8;'>No orders yet.</p>";
 }
 
 function openOrderDetail(id) {
-  const o = allOrdersAdmin.find(x=>String(x.id)===String(id)); 
+  const o = allOrdersAdmin.find(x => String(x.id) === String(id)); 
   if(!o) return;
-  let items = (o.items||[]).map(i=>`<div style="padding:8px;background:#0f172a;margin:5px 0;border-radius:4px;display:flex;gap:10px;align-items:center;">
-    ${i.img?`<img src="${i.img}" style="width:40px;height:50px;object-fit:cover;border-radius:4px;">`:""}
-    <div style="flex:1;"><b>${i.name}</b><br><small style="color:#94a3b8;">Size: ${i.size||'M'} • Qty: ${i.qty} • ₹${i.price}</small></div>
+  let items = (o.items || []).map(i => `<div style="padding:8px;background:#0f172a;margin:5px 0;border-radius:4px;display:flex;gap:10px;align-items:center;">
+    ${i.img ? `<img src="${i.img}" style="width:40px;height:50px;object-fit:cover;border-radius:4px;">` : ""}
+    <div style="flex:1;"><b>${i.name}</b><br><small style="color:#94a3b8;">Size: ${i.size || 'M'} • Qty: ${i.qty} • ₹${i.price}</small></div>
   </div>`).join("");
   const payStatus = o.payment_status || "Pending";
   const payColor = payStatus === "Paid" ? "#10b981" : "#f59e0b";
@@ -725,13 +819,13 @@ function openOrderDetail(id) {
   document.getElementById("orderDetailContent").innerHTML = `
     <h2 style="margin-bottom:15px;color:#3b82f6;">Order #${String(o.id).substring(0,8)}</h2>
     <div style="background:#0f172a;padding:15px;border-radius:6px;margin-bottom:15px;">
-      <p><b>Customer:</b> ${o.customer_name||'N/A'}</p>
-      <p><b>Phone:</b> ${o.customer_phone||'N/A'}</p>
-      <p><b>Address:</b> ${o.address||'N/A'}</p>
+      <p><b>Customer:</b> ${o.customer_name || 'N/A'}</p>
+      <p><b>Phone:</b> ${o.customer_phone || 'N/A'}</p>
+      <p><b>Address:</b> ${o.address || 'N/A'}</p>
       <p><b>Date:</b> ${o.created_at ? new Date(o.created_at).toLocaleString() : 'N/A'}</p>
     </div>
     <div style="background:#0f172a;padding:15px;border-radius:6px;margin-bottom:15px;border-left: 4px solid ${payColor};">
-      <p><b>Payment:</b> <span style="color:${payColor};font-weight:bold;">${payStatus}</span> (${o.payment_method||'N/A'})</p>
+      <p><b>Payment:</b> <span style="color:${payColor};font-weight:bold;">${payStatus}</span> (${o.payment_method || 'N/A'})</p>
       <p><b>Razorpay ID:</b> <code style="background:#1e293b;padding:2px 6px;border-radius:4px;">${o.razorpay_payment_id || 'N/A'}</code></p>
     </div>
     <div style="background:#0f172a;padding:15px;border-radius:6px;margin-bottom:15px;">
@@ -740,13 +834,13 @@ function openOrderDetail(id) {
     </div>
     <h3 style="margin:15px 0 5px;">Items:</h3>${items || "<p>No items</p>"}
     <div style="background:#0f172a;padding:15px;border-radius:6px;margin:15px 0;">
-      <p><b>Total:</b> ₹${o.total_amount||0}</p>
-      ${o.discount_amount?`<p><b>Discount:</b> -₹${o.discount_amount}</p>`:""}
-      ${o.coupon_code?`<p><b>Coupon:</b> ${o.coupon_code}</p>`:""}
+      <p><b>Total:</b> ₹${o.total_amount || 0}</p>
+      ${o.discount_amount ? `<p><b>Discount:</b> -₹${o.discount_amount}</p>` : ""}
+      ${o.coupon_code ? `<p><b>Coupon:</b> ${o.coupon_code}</p>` : ""}
     </div>
     <label>Update Order Status</label>
     <select id="orderStatusSelect" style="margin:10px 0;">
-      ${["Pending","Confirmed","Shipped","Delivered"].map(s=>`<option ${o.order_status===s?"selected":""}>${s}</option>`).join("")}
+      ${["Pending","Confirmed","Shipped","Delivered","Cancelled"].map(s => `<option ${o.order_status === s ? "selected" : ""}>${s}</option>`).join("")}
     </select>
     <button onclick="updateOrderStatus('${o.id}')" style="margin-top:10px;background:#10b981;">Update Status</button>
   `;
@@ -755,20 +849,20 @@ function openOrderDetail(id) {
 function closeOrderDetail() { document.getElementById("orderDetailOverlay").classList.remove("open"); }
 async function updateOrderStatus(id) {
   const status = document.getElementById("orderStatusSelect").value;
-  const payload = {order_status: status};
-  if(status==="Delivered") payload.delivered_at = new Date().toISOString();
-  await supabaseClient.from("Orders table").update(payload).eq("id",id);
+  const payload = { order_status: status };
+  if(status === "Delivered") payload.delivered_at = new Date().toISOString();
+  await supabaseClient.from("Orders table").update(payload).eq("id", id);
   alert("Status updated!"); closeOrderDetail(); loadOrders(); loadDashboard();
 }
 
 // ============ CUSTOMERS ============
 async function loadCustomers() {
-  const { data, error } = await supabaseClient.from("customers").select("*").order("created_at",{ascending:false});
+  const { data, error } = await supabaseClient.from("customers").select("*").order("created_at", { ascending: false });
   const container = document.getElementById("customersList");
   if(error) { container.innerHTML = `<p class="error">Error: ${error.message}</p>`; return; }
   if(!data || !data.length) { container.innerHTML = "<p style='color:#94a3b8;'>No customers yet.</p>"; return; }
   container.innerHTML = data.map(c => `<div class="item-row">
-    <div><b>${c.name||'N/A'}</b><br>📧 ${c.email||'N/A'}<br>📱 ${c.phone||'N/A'}<br><small style="color:#64748b;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small></div>
+    <div><b>${c.name || 'N/A'}</b><br>📱 ${c.phone || 'N/A'}<br><small style="color:#64748b;">${c.created_at ? new Date(c.created_at).toLocaleString() : ''}</small></div>
   </div>`).join("");
 }
 
@@ -777,16 +871,16 @@ async function loadSettings() {
   const setting = await getSettingRow();
   if(setting) {
     settingRowId = setting.id;
-    document.getElementById("settingBrandName").value = setting.brand_name||"";
-    document.getElementById("settingTagline").value = setting.tagline||"";
-    document.getElementById("settingFreeShipAbove").value = setting.free_shipping_above!==undefined?setting.free_shipping_above:0;
-    document.getElementById("settingShipFee").value = setting.shipping_fee!==undefined?setting.shipping_fee:0;
+    document.getElementById("settingBrandName").value = setting.brand_name || "";
+    document.getElementById("settingTagline").value = setting.tagline || "";
+    document.getElementById("settingFreeShipAbove").value = setting.free_shipping_above !== undefined ? setting.free_shipping_above : 0;
+    document.getElementById("settingShipFee").value = setting.shipping_fee !== undefined ? setting.shipping_fee : 0;
     let hids = setting.hero_product_ids;
-    if(typeof hids === 'string') { try{hids=JSON.parse(hids);}catch(e){hids=[];} }
+    if(typeof hids === 'string') { try { hids = JSON.parse(hids); } catch(e) { hids = []; } }
     currentHeroIds = Array.isArray(hids) ? hids : [];
     renderHeroDragRow();
   } else {
-    const { data } = await supabaseClient.from("site_setting").insert([{brand_name:'T-HEART', tagline:'Clothing brand', free_shipping_above:0, shipping_fee:0, hero_product_ids:[]}]).select().single();
+    const { data } = await supabaseClient.from("site_setting").insert([{ brand_name: 'T-HEART', tagline: 'Clothing brand', free_shipping_above: 0, shipping_fee: 0, hero_product_ids: [] }]).select().single();
     if(data) { settingRowId = data.id; currentHeroIds = []; renderHeroDragRow(); }
   }
   loadCoupons();
@@ -796,8 +890,8 @@ async function saveSettings() {
   const payload = {
     brand_name: document.getElementById("settingBrandName").value,
     tagline: document.getElementById("settingTagline").value,
-    free_shipping_above: Number(document.getElementById("settingFreeShipAbove").value||0),
-    shipping_fee: Number(document.getElementById("settingShipFee").value||0)
+    free_shipping_above: Number(document.getElementById("settingFreeShipAbove").value || 0),
+    shipping_fee: Number(document.getElementById("settingShipFee").value || 0)
   };
   if(settingRowId) {
     await supabaseClient.from("site_setting").update(payload).eq("id", settingRowId);
@@ -810,14 +904,14 @@ async function saveSettings() {
 
 // ============ COUPONS ============
 async function loadCoupons() {
-  const { data, error } = await supabaseClient.from("coupons").select("*").order("created_at", {ascending: false});
+  const { data, error } = await supabaseClient.from("coupons").select("*").order("created_at", { ascending: false });
   const container = document.getElementById("couponsList");
   if(error) { container.innerHTML = `<p class="error">Error: ${error.message}</p>`; return; }
   if(!data || !data.length) { container.innerHTML = "<p style='color:#94a3b8;'>No coupons yet.</p>"; return; }
   container.innerHTML = data.map(c => `<div class="item-row">
-    <div><b>${c.code}</b> — ${c.discount_percent}% off (Min: ₹${c.min_order_amount}) — ${c.is_active?'<span style="color:#10b981;">Active</span>':'<span style="color:#ef4444;">Inactive</span>'}</div>
+    <div><b>${c.code}</b> — ${c.discount_percent}% off (Min: ₹${c.min_order_amount}) — ${c.is_active ? '<span style="color:#10b981;">Active</span>' : '<span style="color:#ef4444;">Inactive</span>'}</div>
     <div>
-      <button class="small" onclick="toggleCoupon('${c.id}', ${c.is_active})">${c.is_active?'Disable':'Enable'}</button>
+      <button class="small" onclick="toggleCoupon('${c.id}', ${c.is_active})">${c.is_active ? 'Disable' : 'Enable'}</button>
       <button class="small danger" onclick="deleteCoupon('${c.id}')">Del</button>
     </div>
   </div>`).join("");
@@ -827,11 +921,11 @@ async function addCoupon() {
   const percent = Number(document.getElementById("newCouponPercent").value);
   const min = Number(document.getElementById("newCouponMin").value);
   if(!code || !percent || !min) { alert("Fill all fields"); return; }
-  await supabaseClient.from("coupons").insert([{code, discount_percent: percent, min_order_amount: min, is_active: true}]);
-  document.getElementById("newCouponCode").value=""; document.getElementById("newCouponPercent").value=""; document.getElementById("newCouponMin").value="";
+  await supabaseClient.from("coupons").insert([{ code, discount_percent: percent, min_order_amount: min, is_active: true }]);
+  document.getElementById("newCouponCode").value = ""; document.getElementById("newCouponPercent").value = ""; document.getElementById("newCouponMin").value = "";
   loadCoupons();
 }
-async function toggleCoupon(id, current) { await supabaseClient.from("coupons").update({is_active: !current}).eq("id", id); loadCoupons(); }
+async function toggleCoupon(id, current) { await supabaseClient.from("coupons").update({ is_active: !current }).eq("id", id); loadCoupons(); }
 async function deleteCoupon(id) { if(confirm("Delete?")) { await supabaseClient.from("coupons").delete().eq("id", id); loadCoupons(); } }
 
 // ============ HERO DRAG-DROP ============
@@ -845,11 +939,11 @@ function renderHeroDragRow() {
   row.innerHTML = currentHeroIds.map((id, index) => {
     const p = allProductsAdmin.find(x => String(x.id) === String(id));
     if(!p) return '';
-    const img = p.hero_image_url || (p.images&&p.images[0]) || p.image_url;
+    const img = p.hero_image_url || (p.images && p.images[0]) || p.image_url;
     return `<div class="hero-drag-item" data-id="${p.id}">
-      <div class="pos-badge">${index+1}</div>
+      <div class="pos-badge">${index + 1}</div>
       <button class="hero-remove" onclick="removeFromHero('${p.id}')">×</button>
-      <img src="${img||''}">
+      <img src="${img || ''}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22160%22><rect fill=%22%23334155%22 width=%22120%22 height=%22160%22/><text x=%2260%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2210%22>No Image</text></svg>'">
       <small>${p.name}</small>
       <small style="color:#3b82f6;">₹${p.price}</small>
     </div>`;
@@ -883,11 +977,11 @@ function openHeroPicker() {
     grid.innerHTML = '<p style="color:#94a3b8;grid-column:1/-1;">All products already in hero!</p>';
   } else {
     grid.innerHTML = available.map(p => {
-      const img = (p.images&&p.images[0]) || p.image_url;
+      const img = (p.images && p.images[0]) || p.image_url;
       return `<div class="item-row" style="cursor:pointer;flex-direction:column;align-items:flex-start;" onclick="addToHero('${p.id}')">
-        ${img?`<img class="thumb" src="${img}" style="width:100%;height:120px;">`:""}
+        ${img ? `<img class="thumb" src="${img}" style="width:100%;height:120px;" onerror="this.style.display='none'">` : ""}
         <b style="margin-top:5px;">${p.name}</b>
-        <small style="color:#94a3b8;">₹${p.price}</small>
+        <small style="color:#94a3b8;">${p.price}</small>
       </div>`;
     }).join("");
   }
@@ -903,13 +997,137 @@ function addToHero(id) {
 
 async function saveHeroOrder() {
   if(!settingRowId) {
-    const { data } = await supabaseClient.from("site_setting").insert([{hero_product_ids: currentHeroIds}]).select().single();
+    const { data } = await supabaseClient.from("site_setting").insert([{ hero_product_ids: currentHeroIds }]).select().single();
     if(data) settingRowId = data.id;
   } else {
-    await supabaseClient.from("site_setting").update({hero_product_ids: currentHeroIds}).eq("id", settingRowId);
+    await supabaseClient.from("site_setting").update({ hero_product_ids: currentHeroIds }).eq("id", settingRowId);
   }
   document.getElementById("heroMsg").textContent = "✓ Hero order saved! Refresh website to see changes.";
-  setTimeout(()=>{document.getElementById("heroMsg").textContent="";}, 3000);
+  setTimeout(() => { document.getElementById("heroMsg").textContent = ""; }, 3000);
+}
+
+// ============ CANCELLATIONS & RETURNS ============
+async function loadCancellations() {
+  const { data: cancellations } = await supabaseClient.from("cancellation_requests").select("*").order("requested_at", { ascending: false });
+  const { data: returns } = await supabaseClient.from("return_requests").select("*").order("requested_at", { ascending: false });
+
+  const allCancellations = cancellations || [];
+  const allReturns = returns || [];
+
+  const pendingCancellations = allCancellations.filter(c => c.status === 'pending').length;
+  const pendingReturns = allReturns.filter(r => r.status === 'pending').length;
+  const totalRefundAmount = [
+    ...allCancellations.filter(c => c.status === 'approved'),
+    ...allReturns.filter(r => r.status === 'approved')
+  ].reduce((sum, req) => sum + Number(req.refund_amount || 0), 0);
+
+  document.getElementById("cancellationStats").innerHTML = `
+    <div class="stat-card yellow">
+      <div class="label">Pending Cancellations</div>
+      <div class="value">${pendingCancellations}</div>
+      <div class="trend">Needs your review</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="label">Pending Returns</div>
+      <div class="value">${pendingReturns}</div>
+      <div class="trend">Pickup required</div>
+    </div>
+    <div class="stat-card red">
+      <div class="label">Total Refunds</div>
+      <div class="value">₹${totalRefundAmount.toLocaleString()}</div>
+      <div class="trend">This month</div>
+    </div>
+  `;
+
+  document.getElementById("cancellationList").innerHTML = allCancellations.length ? 
+    allCancellations.map(req => {
+      const order = allOrdersAdmin.find(o => String(o.id) === String(req.order_id));
+      return `
+        <div class="req-item">
+          <div class="req-header">
+            <div class="req-title">Order #${String(req.order_id).substring(0,8)}</div>
+            <span class="req-status ${req.status}">${req.status.toUpperCase()}</span>
+          </div>
+          <div class="req-details">
+            <p><b>Customer:</b> ${order?.customer_name || 'N/A'} (${req.customer_phone})</p>
+            <p><b>Reason:</b> ${req.reason}</p>
+            <p><b>Amount:</b> ₹${order?.total_amount || 0}</p>
+            <p><b>Requested:</b> ${new Date(req.requested_at).toLocaleString()}</p>
+          </div>
+          ${req.status === 'pending' ? `
+            <div class="req-actions">
+              <button class="success" onclick="approveCancellation('${req.id}', '${req.order_id}', ${order?.total_amount || 0})">Approve & Refund</button>
+              <button class="danger" onclick="rejectCancellation('${req.id}')">Reject</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join("")
+    : "<p style='color:#94a3b8;'>No cancellation requests</p>";
+
+  document.getElementById("returnList").innerHTML = allReturns.length ? 
+    allReturns.map(req => {
+      const order = allOrdersAdmin.find(o => String(o.id) === String(req.order_id));
+      return `
+        <div class="req-item">
+          <div class="req-header">
+            <div class="req-title">Order #${String(req.order_id).substring(0,8)}</div>
+            <span class="req-status ${req.status}">${req.status.toUpperCase()}</span>
+          </div>
+          <div class="req-details">
+            <p><b>Customer:</b> ${order?.customer_name || 'N/A'} (${req.customer_phone})</p>
+            <p><b>Reason:</b> ${req.reason}</p>
+            <p><b>Pickup Address:</b> ${req.pickup_address || order?.address || 'N/A'}</p>
+            <p><b>Amount:</b> ₹${order?.total_amount || 0}</p>
+            <p><b>Requested:</b> ${new Date(req.requested_at).toLocaleString()}</p>
+          </div>
+          ${req.status === 'pending' ? `
+            <div class="req-actions">
+              <button class="success" onclick="approveReturn('${req.id}', '${req.order_id}', ${order?.total_amount || 0})">Approve & Refund</button>
+              <button class="danger" onclick="rejectReturn('${req.id}')">Reject</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join("")
+    : "<p style='color:#94a3b8;'>No return requests</p>";
+}
+
+async function approveCancellation(reqId, orderId, amount) {
+  if(!confirm(`Approve cancellation for Order #${String(orderId).substring(0,8)}? Refund: ₹${amount}`)) return;
+  
+  await supabaseClient.from("cancellation_requests").update({ status: 'approved', processed_at: new Date().toISOString(), refund_amount: amount }).eq("id", reqId);
+  await supabaseClient.from("Orders table").update({ order_status: 'Cancelled' }).eq("id", orderId);
+  
+  window.open(`https://dashboard.razorpay.com/app/payments?search=${orderId}`, '_blank');
+  alert("Request approved! Please process refund in Razorpay dashboard.");
+  loadCancellations();
+  loadDashboard();
+}
+
+async function rejectCancellation(reqId) {
+  if(!confirm("Reject this cancellation request?")) return;
+  await supabaseClient.from("cancellation_requests").update({ status: 'rejected', processed_at: new Date().toISOString() }).eq("id", reqId);
+  alert("Request rejected");
+  loadCancellations();
+}
+
+async function approveReturn(reqId, orderId, amount) {
+  if(!confirm(`Approve return for Order #${String(orderId).substring(0,8)}? Refund: ₹${amount}`)) return;
+  
+  await supabaseClient.from("return_requests").update({ status: 'approved', processed_at: new Date().toISOString(), refund_amount: amount }).eq("id", reqId);
+  
+  window.open(`https://dashboard.razorpay.com/app/payments?search=${orderId}`, '_blank');
+  alert("Return approved! Process refund in Razorpay after receiving product.");
+  loadCancellations();
+  loadDashboard();
+}
+
+async function rejectReturn(reqId) {
+  if(!confirm("Reject this return request?")) return;
+  await supabaseClient.from("return_requests").update({ status: 'rejected', processed_at: new Date().toISOString() }).eq("id", reqId);
+  alert("Request rejected");
+  loadCancellations();
 }
 </script>
 </body>
