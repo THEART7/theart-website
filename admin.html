@@ -633,12 +633,20 @@ function renderImgGrid() {
     </div>
   `).join("");
   
-  // Initialize Sortable for drag-drop
-  if(window.imgSortable) window.imgSortable.destroy();
+  // Initialize Sortable with mobile support
+  if(window.imgSortable) {
+    window.imgSortable.destroy();
+  }
+  
   window.imgSortable = new Sortable(grid, {
     animation: 150,
     handle: '.img-handle',
     ghostClass: 'sortable-ghost',
+    forceFallback: true,
+    fallbackTolerance: 3,
+    touchStartThreshold: 5,
+    delay: 100,
+    delayOnTouchOnly: true,
     onEnd: function(evt) {
       const item = productImageUrls.splice(evt.oldIndex, 1)[0];
       productImageUrls.splice(evt.newIndex, 0, item);
