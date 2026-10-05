@@ -75,6 +75,7 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
 .hero-drag-item img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:4px;margin-bottom:5px;}
 .hero-drag-item .pos-badge{position:absolute;top:-8px;left:-8px;background:#3b82f6;color:#fff;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:bold;display:flex;align-items:center;justify-content:center;}
 .hero-drag-item .hero-remove{position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px;padding:0;}
+.hero-drag-item .hero-change-img{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:10px;white-space:nowrap;}
 .hero-drag-item small{font-size:11px;color:#94a3b8;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* Orders Table */
@@ -203,7 +204,7 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
       <label>Brand Name</label><input id="settingBrandName" placeholder="T-HEART">
       <label>Tagline</label><input id="settingTagline" placeholder="Premium Clothing">
       <label>Free Shipping Above (₹)</label><input id="settingFreeShipAbove" type="number" placeholder="0 = Always Free">
-      <label>Shipping Fee (₹)</label><input id="settingShipFee" type="number" placeholder="99">
+      <label>Shipping Fee ()</label><input id="settingShipFee" type="number" placeholder="99">
       <button onclick="saveSettings()">Save Settings</button>
       <p id="settingsMessage" class="success"></p>
     </div>
@@ -217,7 +218,7 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
     </div>
     <div class="card">
       <h2>Hero Slider (Drag to Reorder)</h2>
-      <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;">Drag products to change order. Click + to add.</p>
+      <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;">Drag products to change order. Click "Change Image" to upload custom hero image.</p>
       <div id="heroDragRow" class="hero-drag-row"></div>
       <button onclick="openHeroPicker()" style="margin-top:10px;background:#10b981;">+ Add Product to Hero</button>
       <button class="success" onclick="saveHeroOrder()" style="margin-top:10px;">Save Hero Order</button>
@@ -257,6 +258,20 @@ label{font-size:12px;font-weight:bold;display:block;margin-top:10px;color:#94a3b
     <button class="secondary" onclick="closeHeroPicker()" style="margin-top:15px;">Cancel</button>
   </div>
 </div>
+
+<!-- Hero Image Upload Modal -->
+<div class="overlay" id="heroImageOverlay">
+  <div class="modal-box">
+    <h3 style="margin-bottom:10px;color:#3b82f6;">Upload Hero Image</h3>
+    <p id="heroImageProductName" style="font-size:14px;color:#cbd5e1;margin-bottom:15px;"></p>
+    <input type="file" id="heroImageInput" accept="image/*">
+    <div style="max-height:350px;overflow:hidden;background:#000;margin:15px 0;border-radius:6px;display:none;" id="heroImageCropContainer">
+      <img id="heroImageCrop" style="max-width:100%;display:block;">
+    </div>
+    <button onclick="cropHeroImage()" id="heroCropBtn" style="margin-top:10px;background:#10b981;display:none;">Crop & Save</button>
+    <button class="secondary" onclick="closeHeroImageModal()" style="margin-top:10px;">Cancel</button>
+  </div>
+</div>
 <script>
 const SUPABASE_URL = "https://kxkmbqvsswfevrpdhjsh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
@@ -272,6 +287,9 @@ let statusChartInstance = null;
 let cropperInstance=null, pendingCropFiles=[], currentCropIndex=0, croppedFiles=[];
 let currentCropType='product', currentHeroPid=null;
 let productImageUrls = [];
+
+let heroImageCropper = null;
+let currentHeroImageProductId = null;
 
 async function getSettingRow() {
   const { data, error } = await supabaseClient.from("site_setting").select("*").limit(1);
@@ -518,7 +536,7 @@ async function moveCat(id, dir) {
   loadCategories();
 }
 async function delCat(id) { if(confirm("Delete?")) { await supabaseClient.from("categories").delete().eq("id",id); loadCategories(); } }
-  // ============ PRODUCTS WITH FIXED IMAGE UPLOAD ============
+  // ============ PRODUCTS WITH IMAGE UPLOAD ============
 document.getElementById("productImages").addEventListener("change", function(e) {
   if(e.target.files.length) {
     currentCropType = 'product';
@@ -532,23 +550,25 @@ document.getElementById("productImages").addEventListener("change", function(e) 
 function showCropperNext() {
   if(currentCropIndex >= pendingCropFiles.length) {
     document.getElementById("productImages").value = "";
-    document.getElementById("productMessage").textContent = croppedFiles.length + " image(s) cropped. Drag to reorder below.";
+    document.getElementById("productMessage").textContent = "Processing images...";
     document.getElementById("productMessage").className = "success";
     
-    // Convert cropped files to data URLs and add to productImageUrls
-    let processed = 0;
-    croppedFiles.forEach((f, idx) => {
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        productImageUrls.push({ url: ev.target.result, file: f });
-        processed++;
-        if(processed === croppedFiles.length) {
-          renderImgGrid();
-        }
-      };
-      reader.readAsDataURL(f);
+    let loadPromises = croppedFiles.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          productImageUrls.push({ url: e.target.result, file: file });
+          resolve();
+        };
+        reader.readAsDataURL(file);
+      });
     });
-    croppedFiles = [];
+
+    Promise.all(loadPromises).then(() => {
+      document.getElementById("productMessage").textContent = croppedFiles.length + " image(s) ready. Drag handle () se reorder karo.";
+      renderImgGrid();
+      croppedFiles = [];
+    });
     return;
   }
   
@@ -576,7 +596,6 @@ function confirmCrop() {
     const file = new File([blob], "crop-" + Date.now() + "-" + currentCropIndex + ".png", { type: "image/png" });
     
     if(currentCropType === 'hero') {
-      // Hero image upload
       const fname = "hero-" + Date.now() + "-" + file.name;
       supabaseClient.storage.from("product-images").upload(fname, file).then(({ error: upErr }) => {
         if(upErr) { alert("Upload failed: " + upErr.message); return; }
@@ -589,7 +608,6 @@ function confirmCrop() {
         });
       });
     } else {
-      // Product image - add to croppedFiles array
       croppedFiles.push(file);
       currentCropIndex++;
     }
@@ -622,18 +640,18 @@ function renderImgGrid() {
   const grid = document.getElementById("imgGrid");
   if(productImageUrls.length === 0) {
     grid.innerHTML = '<div class="img-grid-empty">No images yet. Choose files above.</div>';
+    if(window.imgSortable) window.imgSortable.destroy();
     return;
   }
   
   grid.innerHTML = productImageUrls.map((item, idx) => `
     <div class="img-grid-item" data-idx="${idx}">
-      <div class="img-handle">⋮</div>
+      <div class="img-handle">⋮⋮</div>
       <button class="img-remove" onclick="removeImg(${idx})">×</button>
-      <img src="${item.url}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22133%22><rect fill=%22%23334155%22 width=%22100%22 height=%22133%22/><text x=%2250%22 y=%2266%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2212%22>No Image</text></svg>'">
+      <img src="${item.url}">
     </div>
   `).join("");
   
-  // Initialize Sortable with mobile support
   if(window.imgSortable) {
     window.imgSortable.destroy();
   }
@@ -643,9 +661,10 @@ function renderImgGrid() {
     handle: '.img-handle',
     ghostClass: 'sortable-ghost',
     forceFallback: true,
+    fallbackClass: 'sortable-fallback',
     fallbackTolerance: 3,
     touchStartThreshold: 5,
-    delay: 100,
+    delay: 150,
     delayOnTouchOnly: true,
     onEnd: function(evt) {
       const item = productImageUrls.splice(evt.oldIndex, 1)[0];
@@ -672,13 +691,11 @@ async function saveProduct() {
   document.getElementById("productMessage").textContent = "Saving... Uploading images...";
   document.getElementById("productMessage").className = "success";
   
-  // Separate existing URLs from new files
   const existingUrls = productImageUrls.filter(p => p.url.startsWith('http')).map(p => p.url);
   const newFiles = productImageUrls.filter(p => !p.url.startsWith('http')).map(p => p.file);
   
   let finalImages = [...existingUrls];
   
-  // Upload new files to Supabase storage
   if(newFiles.length > 0) {
     for(let i = 0; i < newFiles.length; i++) {
       const f = newFiles[i];
@@ -757,7 +774,6 @@ function editProduct(id) {
   const sizes = (p.sizes || "").split(",");
   document.querySelectorAll(".sizeBox").forEach(b => b.checked = sizes.includes(b.value));
   
-  // Load existing images into productImageUrls
   productImageUrls = (p.images || []).map(url => ({ url: url, file: null }));
   renderImgGrid();
   
@@ -794,6 +810,70 @@ async function loadProducts() {
       <button class="small danger" onclick="deleteProduct('${p.id}')">Del</button>
     </div>`;
   }).join("");
+}
+
+// ============ HERO IMAGE UPLOAD ============
+document.getElementById("heroImageInput").addEventListener("change", function(e) {
+  if(e.target.files.length && currentHeroImageProductId) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      document.getElementById("heroImageCrop").src = ev.target.result;
+      document.getElementById("heroImageCropContainer").style.display = "block";
+      document.getElementById("heroCropBtn").style.display = "block";
+      
+      setTimeout(() => {
+        if(heroImageCropper) heroImageCropper.destroy();
+        heroImageCropper = new Cropper(document.getElementById("heroImageCrop"), { 
+          aspectRatio: 3/4, 
+          viewMode: 1,
+          autoCropArea: 1
+        });
+      }, 200);
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+function cropHeroImage() {
+  if(!heroImageCropper || !currentHeroImageProductId) return;
+  
+  const canvas = heroImageCropper.getCroppedCanvas({ width: 750, height: 1000 });
+  canvas.toBlob(async function(blob) {
+    const file = new File([blob], "hero-" + Date.now() + ".png", { type: "image/png" });
+    const fname = "hero-" + Date.now() + "-" + currentHeroImageProductId + ".png";
+    
+    const { error: upErr } = await supabaseClient.storage.from("product-images").upload(fname, file);
+    if(upErr) { 
+      alert("Upload failed: " + upErr.message); 
+      return; 
+    }
+    
+    const { data } = supabaseClient.storage.from("product-images").getPublicUrl(fname);
+    await supabaseClient.from("Products").update({ hero_image_url: data.publicUrl }).eq("id", currentHeroImageProductId);
+    
+    alert("Hero image updated!");
+    closeHeroImageModal();
+    loadSettings();
+  }, "image/png", 0.9);
+}
+
+function openHeroImageModal(productId, productName) {
+  currentHeroImageProductId = productId;
+  document.getElementById("heroImageProductName").textContent = "Product: " + productName;
+  document.getElementById("heroImageInput").value = "";
+  document.getElementById("heroImageCropContainer").style.display = "none";
+  document.getElementById("heroCropBtn").style.display = "none";
+  document.getElementById("heroImageOverlay").classList.add("open");
+}
+
+function closeHeroImageModal() {
+  document.getElementById("heroImageOverlay").classList.remove("open");
+  if(heroImageCropper) {
+    heroImageCropper.destroy();
+    heroImageCropper = null;
+  }
+  currentHeroImageProductId = null;
     }
   // ============ ORDERS ============
 async function loadOrders() {
@@ -936,7 +1016,7 @@ async function addCoupon() {
 async function toggleCoupon(id, current) { await supabaseClient.from("coupons").update({ is_active: !current }).eq("id", id); loadCoupons(); }
 async function deleteCoupon(id) { if(confirm("Delete?")) { await supabaseClient.from("coupons").delete().eq("id", id); loadCoupons(); } }
 
-// ============ HERO DRAG-DROP ============
+// ============ HERO DRAG-DROP WITH IMAGE UPLOAD ============
 function renderHeroDragRow() {
   const row = document.getElementById("heroDragRow");
   if(currentHeroIds.length === 0) {
@@ -952,6 +1032,7 @@ function renderHeroDragRow() {
       <div class="pos-badge">${index + 1}</div>
       <button class="hero-remove" onclick="removeFromHero('${p.id}')">×</button>
       <img src="${img || ''}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22160%22><rect fill=%22%23334155%22 width=%22120%22 height=%22160%22/><text x=%2260%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2210%22>No Image</text></svg>'">
+      <button class="hero-change-img" onclick="openHeroImageModal('${p.id}','${p.name}')">📷 Change Image</button>
       <small>${p.name}</small>
       <small style="color:#3b82f6;">₹${p.price}</small>
     </div>`;
@@ -965,6 +1046,11 @@ function initHeroSortable() {
   window.heroSortable = new Sortable(row, {
     animation: 150,
     ghostClass: 'sortable-ghost',
+    forceFallback: true,
+    fallbackTolerance: 3,
+    touchStartThreshold: 5,
+    delay: 150,
+    delayOnTouchOnly: true,
     onEnd: function(evt) {
       const item = currentHeroIds.splice(evt.oldIndex, 1)[0];
       currentHeroIds.splice(evt.newIndex, 0, item);
@@ -989,7 +1075,7 @@ function openHeroPicker() {
       return `<div class="item-row" style="cursor:pointer;flex-direction:column;align-items:flex-start;" onclick="addToHero('${p.id}')">
         ${img ? `<img class="thumb" src="${img}" style="width:100%;height:120px;" onerror="this.style.display='none'">` : ""}
         <b style="margin-top:5px;">${p.name}</b>
-        <small style="color:#94a3b8;">${p.price}</small>
+        <small style="color:#94a3b8;">₹${p.price}</small>
       </div>`;
     }).join("");
   }
