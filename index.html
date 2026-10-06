@@ -85,7 +85,6 @@ body{background:#F8F7F4;color:#1A1A1A;font-family:-apple-system,BlinkMacSystemFo
 .cov.open{display:block;}
 .cdr{position:fixed;top:0;right:-100%;width:100%;max-width:380px;height:100%;background:#F8F7F4;z-index:251;transition:right 0.3s;display:flex;flex-direction:column;}
 .cdr.open{right:0;}
-.cdr.open{right:0;}
 .cdrh{padding:18px;border-bottom:1px solid #E5E5E5;display:flex;justify-content:space-between;align-items:center;}
 .cdrh h3{font-family:Georgia,serif;font-size:20px;}
 .cit{flex:1;overflow-y:auto;padding:15px;}
@@ -218,7 +217,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
     <button class="secondary" onclick="closeOrders()" style="background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:15px;width:100%;padding:12px;">Close</button>
   </div>
 </div>
-  <!-- Request Cancellation/Return Modal -->
+<!-- Request Cancellation/Return Modal -->
 <div class="auth-modal" id="requestModal">
   <div class="auth-box">
     <h2 id="requestTitle">Request</h2>
@@ -306,7 +305,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
       </div>
       <button class="abtn" onclick="showCheckout()" style="margin-top:15px;padding:14px;font-size:13px;">Proceed to Checkout</button>
       <button class="abtn secondary" onclick="goHome()" style="margin-top:8px;padding:14px;font-size:13px;">Keep Shopping</button>
-      <p style="font-size:11px;color:#888;margin-top:15px;" id="shipNote">Free shipping above ₹500. Returns within 7 days if unworn.</p>
+      <p style="font-size:11px;color:#888;margin-top:15px;" id="shipNote">Free shipping above ₹500. All sales are final.</p>
     </div>
   </div>
 </div>
@@ -326,13 +325,13 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
       <div class="summary-box" style="margin-top:15px;">
         <div class="summary-row total"><span>Total to Pay</span><span id="chkTot">₹0</span></div>
       </div>
-      <button class="abtn" onclick="plOrd()" style="margin-top:10px;padding:14px;font-size:14px;">Pay with Razorpay</button>
+      <button class="abtn" onclick="plOrd()" style="margin-top:10px;padding:14px;font-size:14px;">Confirm Order (COD)</button>
       <button class="abtn secondary" onclick="showBag()" style="margin-top:8px;padding:14px;font-size:13px;">Back to Bag</button>
-      <p style="font-size:10px;color:#888;margin-top:15px;text-align:center;">Secured by Razorpay • UPI & Cards accepted</p>
+      <p style="font-size:10px;color:#888;margin-top:15px;text-align:center;">Cash on Delivery • Check your orders in profile</p>
     </div>
   </div>
-</div>
-<div class="cov" id="cOv" onclick="cCart()"></div>
+        </div>
+        <div class="cov" id="cOv" onclick="cCart()"></div>
 <div class="cdr" id="cDr">
   <div class="cdrh">
     <h3>Your Bag</h3>
@@ -348,12 +347,13 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
 <script>
 const U="https://kxkmbqvsswfevrpdhjsh.supabase.co";
 const K="sb_publishable_MqDC088EY6O41pc9zcmezw_BiJCaO7-";
-const RAZORPAY_KEY_ID="rzp_live_TddrVsrjZZUL5v";
 const db=window.supabase.createClient(U,K);
 let prods=[],cats=[],hSlides=[],cHero=0,hInt=null;
 let sSet={fs:0,sf:0},cpn=null,prof=null,custLat=null,custLng=null;
+let currentRequestId = null;
+let currentRequestType = '';
 
-function t(m){const x=document.getElementById("tst");x.textContent=m;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2200);}
+function t(m){const x=document.getElementById("tst");x.innerHTML=`<span class="tst-text">${m}</span>`;x.onclick=null;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2200);}
 function tMnu(){document.getElementById("mOv").classList.toggle("open");document.getElementById("mDr").classList.toggle("open");}
 
 function loadProfile(){
@@ -438,7 +438,6 @@ function closeProfile(){document.getElementById("profileModal").classList.remove
 async function saveProfile(){
   const name=document.getElementById("profileName").value.trim();
   const password=document.getElementById("profilePassword").value;
-  const msg=document.getElementById("authMsg");
   if(!name){alert("Name required");return;}
   prof.name=name;
   if(password&&password.length>=6){prof.password=password;}
@@ -464,9 +463,6 @@ function logout(){
   }
 }
 
-let currentRequestId = null;
-let currentRequestType = '';
-
 async function openOrders(){
   if(!prof||!prof.phone){t("Please login first");openAuth();return;}
   document.getElementById("ordersList").innerHTML="<p>Loading orders...</p>";
@@ -475,7 +471,6 @@ async function openOrders(){
     const{data,error}=await db.from("Orders table").select("*").eq("customer_phone",prof.phone).order("created_at",{ascending:false});
     if(error){document.getElementById("ordersList").innerHTML="<p>Error loading orders</p>";return;}
     if(!data||data.length===0){document.getElementById("ordersList").innerHTML="<p>No orders yet</p>";return;}
-    
     document.getElementById("ordersList").innerHTML=data.map(o=>{
       const status=o.order_status||"Pending";
       const statusClass="status-"+status.toLowerCase();
@@ -486,11 +481,9 @@ async function openOrders(){
       const isWithin3Days = diffHours <= 72;
       
       let actionButtons = "";
-      // Cancel Logic: Within 3 days and not yet shipped/delivered
       if(isWithin3Days && status !== 'Shipped' && status !== 'Delivered') {
         actionButtons += `<button onclick="openRequestModal('cancel', '${o.id}')" style="margin-top:10px;padding:8px;background:#ef4444;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;width:100%;">Request Cancellation</button>`;
       }
-      // Return Logic: Within 3 days (assuming delivered or just time-based)
       if(isWithin3Days && status === 'Delivered') {
         actionButtons += `<button onclick="openRequestModal('return', '${o.id}')" style="margin-top:10px;padding:8px;background:#f59e0b;color:#000;border:none;border-radius:4px;cursor:pointer;font-size:12px;width:100%;">Request Return</button>`;
       }
@@ -531,7 +524,7 @@ async function submitRequest() {
     customer_phone: prof.phone,
     reason: reason,
     status: 'pending',
-    refund_amount: 0 // Will be updated by admin
+    refund_amount: 0
   };
 
   try {
@@ -541,7 +534,7 @@ async function submitRequest() {
     msg.textContent = "Request submitted successfully! Admin will review it.";
     setTimeout(() => {
       closeRequestModal();
-      openOrders(); // Refresh list
+      openOrders();
     }, 2000);
   } catch(e) {
     msg.textContent = "Error: " + e.message;
@@ -601,8 +594,7 @@ function rCatSecs(){const c=document.getElementById("catSecs");c.innerHTML="";ca
 function mkCard(p){const img=(p.images&&p.images[0])||p.image_url;const d=document.createElement("div");d.className="cd";d.innerHTML=`<div class="cdi" onclick="oDet('${p.id}')"><img src="${img||''}" loading="lazy" alt="${p.name}"></div><div class="cdn"><div class="cat">${p.category||""}</div><h3>${p.name}</h3><div class="pr">₹${p.price}</div><button class="abtn" onclick="event.stopPropagation();oDet('${p.id}')">View & Add</button></div>`;return d;}
 function rGrd(l){const g=document.getElementById("grd");g.innerHTML="";if(!l.length){g.innerHTML="<p style='grid-column:1/-1;text-align:center;color:#888;padding:20px;'>No products.</p>";return;}l.forEach(p=>g.appendChild(mkCard(p)));}
 function fCat(c){rGrd(c==="ALL"?prods:prods.filter(p=>p.category&&p.category.toUpperCase()===c.toUpperCase()));}
-
-function oDet(id){
+  function oDet(id){
   const p=prods.find(x=>String(x.id)===String(id));if(!p){t("Product not found");return;}
   const imgs=(p.images&&p.images.length)?p.images:[p.image_url];
   document.getElementById("detImg").innerHTML=`<img src="${imgs[0]||''}" id="mainDetImg">`;
@@ -626,7 +618,6 @@ function oDet(id){
   document.getElementById("detPg").classList.add("open");
   document.body.style.overflow="hidden";
   
-  // Image Swipe Logic
   let currentImgIndex=0;
   const detImgEl=document.getElementById("detImg");
   let swipeStartX=0,swipeStartY=0;
@@ -649,18 +640,22 @@ function selectSize(btn){btn.parentElement.querySelectorAll('.sbtn').forEach(b=>
 function cDet(){document.getElementById("detPg").classList.remove("open");document.body.style.overflow="";if(window.location.hash.startsWith("#product="))window.location.hash="";}
 
 function gCart(){try{return JSON.parse(localStorage.getItem("th_c")||"[]");}catch(e){return[];}}
-function sCart(c){localStorage.setItem("th_c",JSON.str
+function sCart(c){localStorage.setItem("th_c",JSON.stringify(c));uCnt();rCart();rBag();}
 function aCart(id,name,price,img,size){const c=gCart();const ex=c.find(i=>String(i.id)===String(id)&&i.size===size);if(ex)ex.qty++;else c.push({id,name,price,img,qty:1,size:size||"M"});sCart(c);showCartNotification();}
-  let cartNotifTimer=null;
+
+function uCnt(){const t=gCart().reduce((s,i)=>s+i.qty,0);const b=document.getElementById("cCnt");b.style.display=t>0?"flex":"none";b.textContent=t;}
+
+let cartNotifTimer=null;
 function showCartNotification(){
   const count=gCart().reduce((s,i)=>s+i.qty,0);
   const x=document.getElementById("tst");
-  x.innerHTML=`<span class="tst-text">🛒 ${count} item${count>1?'s':''} in bag</span><span class="tst-action">View Bag →</span>`;
+  x.innerHTML=`<span class="tst-text"> ${count} item${count>1?'s':''} in bag</span><span class="tst-action">View Bag →</span>`;
   x.onclick=function(){cCart();oCart();};
   x.classList.add("show");
   if(cartNotifTimer)clearTimeout(cartNotifTimer);
   cartNotifTimer=setTimeout(()=>{x.classList.remove("show");x.onclick=null;},3000);
 }
+
 function chQty(id,d){const c=gCart();const i=c.find(x=>String(x.id)===String(id));if(!i)return;i.qty+=d;if(i.qty<=0)sCart(c.filter(x=>String(x.id)!==String(id)));else sCart(c);}
 function sTot(){return gCart().reduce((s,i)=>s+i.price*i.qty,0);}
 function gDsc(){if(!cpn)return 0;const s=sTot();return s>=cpn.min_order_amount?Math.round(s*cpn.discount_percent/100):0;}
@@ -679,70 +674,70 @@ function rCart(){
 function rBag(){
   const c=gCart();
   document.getElementById("bagCnt").textContent=c.length?`${c.reduce((s,i)=>s+i.qty,0)} piece${c.reduce((s,i)=>s+i.qty,0)>1?'s':''} • ready to pack.`:"Your bag is empty.";
-          document.getElementById("bagItems").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-family:Georgia,serif;font-size:16px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: ${i.size||'M'} • ₹${i.price}</div><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button onclick="chQty('${i.id}',-1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">-</button><span style="font-size:14px;min-width:20px;text-align:center;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">+</button></div></div><div style="text-align:right;"><div style="font-weight:600;">₹${i.price*i.qty}</div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:8px;cursor:pointer;">REMOVE</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
-          document.getElementById("bagSub").textContent="₹"+sTot();
-          document.getElementById("bagDsc").textContent="-₹"+gDsc();
-          const shippingCost=gShp();
-          document.getElementById("bagShp").textContent=shippingCost===0?"FREE":"₹"+shippingCost;
-          document.getElementById("bagTot").textContent="₹"+tot();
-        }
-        function oCart(){document.getElementById("cOv").classList.add("open");document.getElementById("cDr").classList.add("open");rCart();}
-        function cCart(){document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");}
-        function showBag(){
-          const c=gCart();
-          if(!c.length){t("Your bag is empty!");document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");return;}
-          rBag();
-          document.getElementById("chkPg").classList.remove("open");
-          document.getElementById("bagPg").classList.add("open");
-          document.body.style.overflow="hidden";
-          cDet();
-        }
-        function showCheckout(){
-          rBag();
-          document.getElementById("chkTot").textContent="₹"+tot();
-          document.getElementById("bagPg").classList.remove("open");
-          document.getElementById("chkPg").classList.add("open");
-          document.getElementById("chErr").textContent="";
-        }
-        function goHome(){document.getElementById("bagPg").classList.remove("open");document.getElementById("chkPg").classList.remove("open");document.getElementById("detPg").classList.remove("open");document.body.style.overflow="";if(window.location.hash)window.location.hash="";}
+  document.getElementById("bagItems").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-family:Georgia,serif;font-size:16px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: ${i.size||'M'} • ₹${i.price}</div><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button onclick="chQty('${i.id}',-1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">-</button><span style="font-size:14px;min-width:20px;text-align:center;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">+</button></div></div><div style="text-align:right;"><div style="font-weight:600;">₹${i.price*i.qty}</div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:8px;cursor:pointer;">REMOVE</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
+  document.getElementById("bagSub").textContent="₹"+sTot();
+  document.getElementById("bagDsc").textContent="-₹"+gDsc();
+  const shippingCost=gShp();
+  document.getElementById("bagShp").textContent=shippingCost===0?"FREE":"₹"+shippingCost;
+  document.getElementById("bagTot").textContent="₹"+tot();
+}
+function oCart(){document.getElementById("cOv").classList.add("open");document.getElementById("cDr").classList.add("open");rCart();}
+function cCart(){document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");}
+function showBag(){
+  const c=gCart();
+  if(!c.length){t("Your bag is empty!");document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");return;}
+  rBag();
+  document.getElementById("chkPg").classList.remove("open");
+  document.getElementById("bagPg").classList.add("open");
+  document.body.style.overflow="hidden";
+  cDet();
+}
+function showCheckout(){
+  rBag();
+  document.getElementById("chkTot").textContent="₹"+tot();
+  document.getElementById("bagPg").classList.remove("open");
+  document.getElementById("chkPg").classList.add("open");
+  document.getElementById("chErr").textContent="";
+}
+function goHome(){document.getElementById("bagPg").classList.remove("open");document.getElementById("chkPg").classList.remove("open");document.getElementById("detPg").classList.remove("open");document.body.style.overflow="";if(window.location.hash)window.location.hash="";}
 
-        function validateCheckout(){
-          const fn=document.getElementById("chFN").value.trim();
-          const ln=document.getElementById("chLN").value.trim();
-          const ph=document.getElementById("chP").value.trim();
-          const ad=document.getElementById("chA").value.trim();
-          const ct=document.getElementById("chC").value.trim();
-          const pi=document.getElementById("chPi").value.trim();
-          const err=document.getElementById("chErr");
-          if(!/^[a-zA-Z\s]{2,}$/.test(fn)){err.textContent="Enter valid first name";return false;}
-          if(!/^[a-zA-Z\s]{2,}$/.test(ln)){err.textContent="Enter valid last name";return false;}
-          if(!/^[6-9]\d{9}$/.test(ph)){err.textContent="Enter valid 10-digit mobile";return false;}
-          if(ad.length<15){err.textContent="Enter complete address (min 15 chars)";return false;}
-          if(ct.length<2){err.textContent="Enter valid city";return false;}
-          if(!/^[1-8]\d{5}$/.test(pi)){err.textContent="Enter valid 6-digit pincode";return false;}
-          err.textContent="";return true;
-        }
-        function useMyLocation(){
-          if(!navigator.geolocation){alert("Geolocation not supported");return;}
-          const btn=event.target;btn.textContent="📍 Locating...";btn.disabled=true;
-          navigator.geolocation.getCurrentPosition(
-            async (pos)=>{
-              custLat=pos.coords.latitude;custLng=pos.coords.longitude;
-              try{
-                const res=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${custLat}&lon=${custLng}`);
-                const data=await res.json();const a=data.address||{};
-                if(a.road||a.suburb)document.getElementById("chA").value=[a.house_number,a.road,a.suburb].filter(Boolean).join(", ");
-                if(a.city||a.town||a.village)document.getElementById("chC").value=a.city||a.town||a.village;
-                if(a.postcode)document.getElementById("chPi").value=a.postcode;
-                t("✓ Location fetched!");
-              }catch(e){t("Edit address manually");}
-              btn.textContent="📍 Use My Current Location";btn.disabled=false;
-            },
-            (err)=>{alert("Location denied");btn.textContent="📍 Use My Current Location";btn.disabled=false;},
-            {enableHighAccuracy:true,timeout:10000}
-          );
-        }
-        async function plOrd(){
+function validateCheckout(){
+  const fn=document.getElementById("chFN").value.trim();
+  const ln=document.getElementById("chLN").value.trim();
+  const ph=document.getElementById("chP").value.trim();
+  const ad=document.getElementById("chA").value.trim();
+  const ct=document.getElementById("chC").value.trim();
+  const pi=document.getElementById("chPi").value.trim();
+  const err=document.getElementById("chErr");
+  if(!/^[a-zA-Z\s]{2,}$/.test(fn)){err.textContent="Enter valid first name";return false;}
+  if(!/^[a-zA-Z\s]{2,}$/.test(ln)){err.textContent="Enter valid last name";return false;}
+  if(!/^[6-9]\d{9}$/.test(ph)){err.textContent="Enter valid 10-digit mobile";return false;}
+  if(ad.length<15){err.textContent="Enter complete address (min 15 chars)";return false;}
+  if(ct.length<2){err.textContent="Enter valid city";return false;}
+  if(!/^[1-8]\d{5}$/.test(pi)){err.textContent="Enter valid 6-digit pincode";return false;}
+  err.textContent="";return true;
+}
+function useMyLocation(){
+  if(!navigator.geolocation){alert("Geolocation not supported");return;}
+  const btn=event.target;btn.textContent="📍 Locating...";btn.disabled=true;
+  navigator.geolocation.getCurrentPosition(
+    async (pos)=>{
+      custLat=pos.coords.latitude;custLng=pos.coords.longitude;
+      try{
+        const res=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${custLat}&lon=${custLng}`);
+        const data=await res.json();const a=data.address||{};
+        if(a.road||a.suburb)document.getElementById("chA").value=[a.house_number,a.road,a.suburb].filter(Boolean).join(", ");
+        if(a.city||a.town||a.village)document.getElementById("chC").value=a.city||a.town||a.village;
+        if(a.postcode)document.getElementById("chPi").value=a.postcode;
+        t("✓ Location fetched!");
+      }catch(e){t("Edit address manually");}
+      btn.textContent="📍 Use My Current Location";btn.disabled=false;
+    },
+    (err)=>{alert("Location denied");btn.textContent="📍 Use My Current Location";btn.disabled=false;},
+    {enableHighAccuracy:true,timeout:10000}
+  );
+}
+async function plOrd(){
   if(!validateCheckout())return;
   const fn=document.getElementById("chFN").value.trim();
   const ln=document.getElementById("chLN").value.trim();
@@ -758,7 +753,6 @@ function rBag(){
   err.textContent="Placing Order (COD)...";
   
   try{
-    // Razorpay bypass karke direct DB me order save kar rahe hain
     const orderData={
       customer_name:`${fn} ${ln}`,
       customer_phone:ph,
@@ -778,10 +772,8 @@ function rBag(){
     const{error}=await db.from("Orders table").insert([orderData]);
     if(error){err.textContent="Order error: "+error.message;return;}
     
-    // Profile me address save karo
     if(prof){prof.address=ad;prof.city=ct;prof.pincode=pi;localStorage.setItem("th_profile",JSON.stringify(prof));}
     
-    // Cart clear karo aur home pe bhej do
     localStorage.removeItem("th_c");cpn=null;custLat=null;custLng=null;uCnt();goHome();
     
     alert("✅ Order Placed Successfully!\n\nPayment Method: Cash on Delivery (COD)\n\nCheck 'My Orders' to track it.");
@@ -789,10 +781,10 @@ function rBag(){
   }catch(e){err.textContent="Error: "+e.message;}
 }
 
-        loadProfile();ldSet();ldAnn();ldCats();
-        ldProds().then(()=>{const hash=window.location.hash;if(hash.startsWith("#product=")){const pid=hash.replace("#product=","");setTimeout(()=>oDet(pid),400);}});
-        uCnt();
-        window.addEventListener("hashchange",()=>{if(!window.location.hash.startsWith("#product=")){const det=document.getElementById("detPg");if(det.classList.contains("open"))cDet();}});
-        </script>
-        </body>
-        </html>
+loadProfile();ldSet();ldAnn();ldCats();
+ldProds().then(()=>{const hash=window.location.hash;if(hash.startsWith("#product=")){const pid=hash.replace("#product=","");setTimeout(()=>oDet(pid),400);}});
+uCnt();
+window.addEventListener("hashchange",()=>{if(!window.location.hash.startsWith("#product=")){const det=document.getElementById("detPg");if(det.classList.contains("open"))cDet();}});
+</script>
+</body>
+</html>
