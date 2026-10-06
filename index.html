@@ -641,20 +641,26 @@ function cDet(){document.getElementById("detPg").classList.remove("open");docume
 
 function gCart(){try{return JSON.parse(localStorage.getItem("th_c")||"[]");}catch(e){return[];}}
 function sCart(c){localStorage.setItem("th_c",JSON.stringify(c));uCnt();rCart();rBag();}
-function aCart(id,name,price,img,size){const c=gCart();const ex=c.find(i=>String(i.id)===String(id)&&i.size===size);if(ex)ex.qty++;else c.push({id,name,price,img,qty:1,size:size||"M"});sCart(c);showCartNotification();}
-
-function uCnt(){const t=gCart().reduce((s,i)=>s+i.qty,0);const b=document.getElementById("cCnt");b.style.display=t>0?"flex":"none";b.textContent=t;}
-
-let cartNotifTimer=null;
-function showCartNotification(){
+function aCart(id,name,price,img,size){const c=gCart();const ex=c.find(i=>String(i.id)===String(id)&&i.size===size);if(ex)ex.qty++;else c.push({id,name,price,img,qty:1,size:size||"M"});sCart(c);}
+function uCnt(){
   const count=gCart().reduce((s,i)=>s+i.qty,0);
+  const b=document.getElementById("cCnt");
+  b.style.display=count>0?"flex":"none";
+  b.textContent=count;
+  
+  // Persistent Bottom Bar Logic
   const x=document.getElementById("tst");
-  x.innerHTML=`<span class="tst-text"> ${count} item${count>1?'s':''} in bag</span><span class="tst-action">View Bag →</span>`;
-  x.onclick=function(){cCart();oCart();};
-  x.classList.add("show");
-  if(cartNotifTimer)clearTimeout(cartNotifTimer);
-  cartNotifTimer=setTimeout(()=>{x.classList.remove("show");x.onclick=null;},3000);
+  if(count > 0){
+    x.innerHTML=`<span class="tst-text">🛒 ${count} item${count>1?'s':''} in bag</span><span class="tst-action">View Bag →</span>`;
+    x.onclick=function(){cCart();oCart();};
+    x.classList.add("show");
+  } else {
+    x.classList.remove("show");
+    x.onclick=null;
+  }
 }
+
+
 
 function chQty(id,d){const c=gCart();const i=c.find(x=>String(x.id)===String(id));if(!i)return;i.qty+=d;if(i.qty<=0)sCart(c.filter(x=>String(x.id)!==String(id)));else sCart(c);}
 function sTot(){return gCart().reduce((s,i)=>s+i.price*i.qty,0);}
