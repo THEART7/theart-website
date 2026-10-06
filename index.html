@@ -217,7 +217,6 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
     <button class="secondary" onclick="closeOrders()" style="background:#fff;color:#1A1A1A;border:1px solid #E5E5E5;margin-top:15px;width:100%;padding:12px;">Close</button>
   </div>
 </div>
-<!-- Request Cancellation/Return Modal -->
 <div class="auth-modal" id="requestModal">
   <div class="auth-box">
     <h2 id="requestTitle">Request</h2>
@@ -291,7 +290,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
     <div id="bagItems"></div>
     <div class="summary-box">
       <h2 style="font-family:Georgia,serif;font-size:22px;margin-bottom:10px;">Summary</h2>
-      <div class="summary-row"><span>Subtotal</span><span id="bagSub">₹0</span></div>
+      <div class="summary-row"><span>Subtotal</span><span id="bagSub">0</span></div>
       <div class="summary-row"><span>Shipping</span><span id="bagShp">₹0</span></div>
       <div class="summary-row"><span>Discount</span><span id="bagDsc">-₹0</span></div>
       <div class="summary-row total"><span>Total</span><span id="bagTot">₹0</span></div>
@@ -303,7 +302,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
         </div>
         <p id="cpMsg" style="font-size:11px;color:#a33;margin:4px 0;"></p>
       </div>
-      <button class="abtn" onclick="showCheckout()" style="margin-top:15px;padding:14px;font-size:13px;">Proceed to Checkout</button>
+      <button class="abtn" id="checkoutBtnMain" onclick="showCheckout()" style="margin-top:15px;padding:14px;font-size:13px;">Proceed to Checkout</button>
       <button class="abtn secondary" onclick="goHome()" style="margin-top:8px;padding:14px;font-size:13px;">Keep Shopping</button>
       <p style="font-size:11px;color:#888;margin-top:15px;" id="shipNote">Free shipping above ₹500. All sales are final.</p>
     </div>
@@ -325,7 +324,7 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
       <div class="summary-box" style="margin-top:15px;">
         <div class="summary-row total"><span>Total to Pay</span><span id="chkTot">₹0</span></div>
       </div>
-      <button class="abtn" onclick="plOrd()" style="margin-top:10px;padding:14px;font-size:14px;">Confirm Order (COD)</button>
+      <button class="abtn" id="confirmOrderBtn" onclick="plOrd()" style="margin-top:10px;padding:14px;font-size:14px;">Confirm Order (COD)</button>
       <button class="abtn secondary" onclick="showBag()" style="margin-top:8px;padding:14px;font-size:13px;">Back to Bag</button>
       <p style="font-size:10px;color:#888;margin-top:15px;text-align:center;">Cash on Delivery • Check your orders in profile</p>
     </div>
@@ -545,7 +544,11 @@ function closeOrders(){document.getElementById("ordersModal").classList.remove("
 async function ldSet(){
   try{
     const{data,error}=await db.from("site_setting").select("*").limit(1);
-    if(error){document.getElementById("hName").textContent="Err: "+error.message;return;}
+    if(error){
+      document.getElementById("hName").textContent="Unable to load";
+      document.getElementById("hDots").innerHTML='<button onclick="ldSet()" style="background:#fff;color:#1A1A1A;border:none;padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;">Retry</button>';
+      return;
+    }
     const setting=data&&data.length>0?data[0]:null;
     if(!setting){document.getElementById("hName").textContent="No Settings";return;}
     if(setting.brand_name){document.getElementById("sBrand").textContent=setting.brand_name;document.getElementById("fBrand").textContent=setting.brand_name;}
@@ -556,14 +559,23 @@ async function ldSet(){
     let hids=setting.hero_product_ids;
     if(typeof hids==='string'){try{hids=JSON.parse(hids);}catch(e){hids=null;}}
     if(hids&&Array.isArray(hids)&&hids.length>0){await ldHero(hids);}
-    else{document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";document.getElementById("hName").textContent="T-HEART Collection";document.getElementById("hDots").innerHTML="";}
+    else{
+      document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
+      document.getElementById("hName").textContent="T-HEART Collection";
+      document.getElementById("hDots").innerHTML="";
+    }
   }catch(e){document.getElementById("hName").textContent="Error";console.log("ldSet error:",e);}
 }
 async function ldHero(ids){
   try{
     if(!ids||!Array.isArray(ids)||ids.length===0){document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";document.getElementById("hName").textContent="T-HEART Collection";return;}
     const{data:products,error}=await db.from("Products").select("*").in("id",ids);
-    if(error||!products||products.length===0){document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";document.getElementById("hName").textContent="T-HEART Collection";return;}
+    if(error||!products||products.length===0){
+      document.getElementById("hImg").style.background="linear-gradient(135deg,#1A1A1A 0%,#333 100%)";
+      document.getElementById("hName").textContent="T-HEART Collection";
+      document.getElementById("hDots").innerHTML='<button onclick="ldSet()" style="background:#fff;color:#1A1A1A;border:none;padding:6px 12px;border-radius:4px;font-size:11px;cursor:pointer;">Retry</button>';
+      return;
+    }
     hSlides=ids.map(id=>products.find(p=>String(p.id)===String(id))).filter(p=>p);
     if(!hSlides.length)return;
     hSlides.forEach(p=>{const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;if(img){new Image().src=img;}});
@@ -589,7 +601,7 @@ function rDots(){document.getElementById("hDots").innerHTML=hSlides.map((_,i)=>`
 
 async function ldAnn(){try{const{data}=await db.from("announcements").select("*").eq("is_active",true).limit(1);if(data&&data.length){document.getElementById("annText").textContent=data[0].text;document.getElementById("annBar").style.display="block";}}catch(e){}}
 async function ldCats(){try{const{data,error}=await db.from("categories").select("*").order("sort_order");if(error)return;if(!data)return;cats=data;const f=document.getElementById("flts");f.innerHTML='<button class="active" onclick="fCat(\'ALL\')">ALL</button>';data.forEach(c=>{const b=document.createElement("button");b.textContent=c.name;b.onclick=()=>{f.querySelectorAll("button").forEach(x=>x.classList.remove("active"));b.classList.add("active");fCat(c.name);};f.appendChild(b);});}catch(e){}}
-async function ldProds(){try{const{data,error}=await db.from("Products").select("*").order("sort_order");if(error){document.getElementById("grd").innerHTML=`<p style="grid-column:1/-1;color:red;">Error</p>`;return;}prods=(data||[]).filter(p=>p.is_active!==false);if(cats.length===0)await ldCats();rCatSecs();rGrd(prods);}catch(e){console.log("Prod err:",e);}}
+async function ldProds(){try{const{data,error}=await db.from("Products").select("*").order("sort_order");if(error){document.getElementById("grd").innerHTML=`<p style="grid-column:1/-1;color:red;">Error loading products. <button onclick="ldProds()" style="background:#1A1A1A;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">Retry</button></p>`;return;}prods=(data||[]).filter(p=>p.is_active!==false);if(cats.length===0)await ldCats();rCatSecs();rGrd(prods);}catch(e){console.log("Prod err:",e);}}
 function rCatSecs(){const c=document.getElementById("catSecs");c.innerHTML="";cats.forEach(cat=>{const cp=prods.filter(p=>p.category&&p.category.toUpperCase()===cat.name.toUpperCase());if(cp.length===0)return;const s=document.createElement("section");s.className="csec";s.innerHTML=`<h2>${cat.name}</h2><div class="cnt">${cp.length} piece${cp.length>1?'s':''} in this shelf.</div><div class="grd"></div>`;c.appendChild(s);const g=s.querySelector(".grd");cp.forEach(p=>g.appendChild(mkCard(p)));});}
 function mkCard(p){const img=(p.images&&p.images[0])||p.image_url;const d=document.createElement("div");d.className="cd";d.innerHTML=`<div class="cdi" onclick="oDet('${p.id}')"><img src="${img||''}" loading="lazy" alt="${p.name}"></div><div class="cdn"><div class="cat">${p.category||""}</div><h3>${p.name}</h3><div class="pr">₹${p.price}</div><button class="abtn" onclick="event.stopPropagation();oDet('${p.id}')">View & Add</button></div>`;return d;}
 function rGrd(l){const g=document.getElementById("grd");g.innerHTML="";if(!l.length){g.innerHTML="<p style='grid-column:1/-1;text-align:center;color:#888;padding:20px;'>No products.</p>";return;}l.forEach(p=>g.appendChild(mkCard(p)));}
@@ -606,10 +618,21 @@ function fCat(c){rGrd(c==="ALL"?prods:prods.filter(p=>p.category&&p.category.toU
   document.getElementById("detPr").textContent="₹"+p.price;
   document.getElementById("detDsc").textContent=p.description||"Premium quality clothing from T-HEART.";
   const sd=document.getElementById("detSz");
-  const sizes=(p.sizes||"S,M,L,XL").split(",").map(s=>s.trim()).filter(s=>s);
-  if(sizes.length===0)sizes.push("M");
+  
+  let sizes=[];
+  if(p.sizes && typeof p.sizes === 'string' && p.sizes.trim().length>0){
+    sizes=p.sizes.split(",").map(s=>s.trim().toUpperCase()).filter(s=>s.length>0);
+  }
+  if(sizes.length===0) sizes=["S","M","L","XL"];
   sd.innerHTML=sizes.map((s,i)=>`<button class="sbtn ${i===0?'active':''}" onclick="selectSize(this)">${s}</button>`).join("");
-  document.getElementById("detAdd").onclick=()=>{const activeSz=document.querySelector("#detSz .sbtn.active");const sz=activeSz?activeSz.textContent:"M";aCart(p.id,p.name,p.price,imgs[0]||"",sz);};
+  
+  document.getElementById("detAdd").onclick=()=>{
+    const activeSz=document.querySelector("#detSz .sbtn.active");
+    if(!activeSz){t("Please select a size");return;}
+    const sz=activeSz.textContent;
+    aCart(p.id,p.name,p.price,imgs[0]||"",sz);
+  };
+  
   const yal=prods.filter(x=>String(x.id)!==String(p.id)).slice(0,4);
   const yalGrd=document.getElementById("detYalGrd");yalGrd.innerHTML="";
   if(yal.length>0){document.getElementById("detYal").style.display="block";yal.forEach(x=>yalGrd.appendChild(mkCard(x)));}
@@ -642,13 +665,13 @@ function cDet(){document.getElementById("detPg").classList.remove("open");docume
 function gCart(){try{return JSON.parse(localStorage.getItem("th_c")||"[]");}catch(e){return[];}}
 function sCart(c){localStorage.setItem("th_c",JSON.stringify(c));uCnt();rCart();rBag();}
 function aCart(id,name,price,img,size){const c=gCart();const ex=c.find(i=>String(i.id)===String(id)&&i.size===size);if(ex)ex.qty++;else c.push({id,name,price,img,qty:1,size:size||"M"});sCart(c);}
+
 function uCnt(){
   const count=gCart().reduce((s,i)=>s+i.qty,0);
   const b=document.getElementById("cCnt");
   b.style.display=count>0?"flex":"none";
   b.textContent=count;
   
-  // Persistent Bottom Bar Logic
   const x=document.getElementById("tst");
   if(count > 0){
     x.innerHTML=`<span class="tst-text">🛒 ${count} item${count>1?'s':''} in bag</span><span class="tst-action">View Bag →</span>`;
@@ -659,8 +682,6 @@ function uCnt(){
     x.onclick=null;
   }
 }
-
-
 
 function chQty(id,d){const c=gCart();const i=c.find(x=>String(x.id)===String(id));if(!i)return;i.qty+=d;if(i.qty<=0)sCart(c.filter(x=>String(x.id)!==String(id)));else sCart(c);}
 function sTot(){return gCart().reduce((s,i)=>s+i.price*i.qty,0);}
@@ -680,23 +701,36 @@ function rCart(){
 function rBag(){
   const c=gCart();
   document.getElementById("bagCnt").textContent=c.length?`${c.reduce((s,i)=>s+i.qty,0)} piece${c.reduce((s,i)=>s+i.qty,0)>1?'s':''} • ready to pack.`:"Your bag is empty.";
-  document.getElementById("bagItems").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-family:Georgia,serif;font-size:16px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: ${i.size||'M'} • ₹${i.price}</div><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button onclick="chQty('${i.id}',-1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">-</button><span style="font-size:14px;min-width:20px;text-align:center;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">+</button></div></div><div style="text-align:right;"><div style="font-weight:600;">₹${i.price*i.qty}</div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:8px;cursor:pointer;">REMOVE</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
+  document.getElementById("bagItems").innerHTML=c.length?c.map(i=>`<div class="ci"><img src="${i.img||''}"><div style="flex:1;"><div style="font-family:Georgia,serif;font-size:16px;">${i.name}</div><div style="color:#888;font-size:12px;">Size: ${i.size||'M'} • ₹${i.price}</div><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button onclick="chQty('${i.id}',-1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">-</button><span style="font-size:14px;min-width:20px;text-align:center;">${i.qty}</span><button onclick="chQty('${i.id}',1)" style="width:30px;height:30px;border:1px solid #E5E5E5;background:#fff;cursor:pointer;border-radius:50%;font-size:16px;">+</button></div></div><div style="text-align:right;"><div style="font-weight:600;">${i.price*i.qty}</div><button onclick="sCart(gCart().filter(x=>String(x.id)!==String('${i.id}')))" style="background:none;border:none;color:#a33;font-size:11px;text-decoration:underline;margin-top:8px;cursor:pointer;">REMOVE</button></div></div>`).join(""):"<p style='text-align:center;color:#888;padding:40px 15px;'>Your bag is empty.</p>";
   document.getElementById("bagSub").textContent="₹"+sTot();
   document.getElementById("bagDsc").textContent="-₹"+gDsc();
   const shippingCost=gShp();
   document.getElementById("bagShp").textContent=shippingCost===0?"FREE":"₹"+shippingCost;
   document.getElementById("bagTot").textContent="₹"+tot();
+  
+  const checkoutBtnMain=document.getElementById("checkoutBtnMain");
+  if(checkoutBtnMain){
+    if(c.length===0){
+      checkoutBtnMain.style.opacity="0.4";
+      checkoutBtnMain.style.pointerEvents="none";
+      checkoutBtnMain.textContent="Cart is Empty";
+    } else {
+      checkoutBtnMain.style.opacity="1";
+      checkoutBtnMain.style.pointerEvents="auto";
+      checkoutBtnMain.textContent="Proceed to Checkout";
+    }
+  }
 }
 function oCart(){
   document.getElementById("cOv").classList.add("open");
   document.getElementById("cDr").classList.add("open");
-  document.getElementById("tst").classList.remove("show"); // Hide notification when cart is open
+  document.getElementById("tst").classList.remove("show");
   rCart();
 }
 function cCart(){
   document.getElementById("cOv").classList.remove("open");
   document.getElementById("cDr").classList.remove("open");
-  uCnt(); // Show notification again when cart is closed (if items exist)
+  uCnt();
 }
 function showBag(){
   const c=gCart();
@@ -724,13 +758,18 @@ function validateCheckout(){
   const ct=document.getElementById("chC").value.trim();
   const pi=document.getElementById("chPi").value.trim();
   const err=document.getElementById("chErr");
-  if(!/^[a-zA-Z\s]{2,}$/.test(fn)){err.textContent="Enter valid first name";return false;}
-  if(!/^[a-zA-Z\s]{2,}$/.test(ln)){err.textContent="Enter valid last name";return false;}
-  if(!/^[6-9]\d{9}$/.test(ph)){err.textContent="Enter valid 10-digit mobile";return false;}
-  if(ad.length<15){err.textContent="Enter complete address (min 15 chars)";return false;}
-  if(ct.length<2){err.textContent="Enter valid city";return false;}
-  if(!/^[1-8]\d{5}$/.test(pi)){err.textContent="Enter valid 6-digit pincode";return false;}
-  err.textContent="";return true;
+  const btn=document.getElementById("confirmOrderBtn");
+  
+  if(!/^[a-zA-Z\s]{2,}$/.test(fn)){err.textContent="Enter valid first name";if(btn){btn.style.opacity="0.5";btn.style.pointerEvents="none";}return false;}
+  if(!/^[a-zA-Z\s]{2,}$/.test(ln)){err.textContent="Enter valid last name";if(btn){btn.style.opacity="0.5";btn.style.pointerEvents="none";}return false;}
+  if(!/^[6-9]\d{9}$/.test(ph)){err.textContent="Enter valid 10-digit mobile";if(btn){btn.style.opacity="0.5";btn.style.pointerEvents="none";}return false;}
+  if(ad.length<15){err.textContent="Enter complete address (min 15 chars)";if(btn){btn.style.opacity="0.5";btn.style.pointerEvents="none";}return false;}
+  if(ct.length<2){err.textContent="Enter valid city";if(btn){btn.style.opacity="0.5";btn.style.pointerEvents="none";}return false;}
+  if(!/^[1-8]\d{5}$/.test(pi)){err.textContent="Enter valid 6-digit pincode";if(btn){btn.style.opacity="0.5";btn.style.pointerEvents="none";}return false;}
+  
+  err.textContent="";
+  if(btn){btn.style.opacity="1";btn.style.pointerEvents="auto";}
+  return true;
 }
 function useMyLocation(){
   if(!navigator.geolocation){alert("Geolocation not supported");return;}
@@ -761,11 +800,17 @@ async function plOrd(){
   const ct=document.getElementById("chC").value.trim();
   const pi=document.getElementById("chPi").value.trim();
   const err=document.getElementById("chErr");
+  const btn=document.getElementById("confirmOrderBtn");
   const totalAmount=tot();
   
-  if(totalAmount<=0){err.textContent="Invalid amount";return;}
+  const cartItems=gCart();
+  if(totalAmount<=0 || cartItems.length===0){err.textContent="Cart is empty or invalid amount";return;}
+  for(let item of cartItems){
+    if(!item.price || item.price<=0 || !item.id){err.textContent="Invalid item in cart";return;}
+  }
   
-  err.textContent="Placing Order (COD)...";
+  if(btn){btn.style.opacity="0.5";btn.style.pointerEvents="none";btn.textContent="Placing Order...";}
+  err.textContent="";
   
   try{
     const orderData={
@@ -785,7 +830,7 @@ async function plOrd(){
     };
     
     const{error}=await db.from("Orders table").insert([orderData]);
-    if(error){err.textContent="Order error: "+error.message;return;}
+    if(error){err.textContent="Order error: "+error.message;if(btn){btn.style.opacity="1";btn.style.pointerEvents="auto";btn.textContent="Confirm Order (COD)";}return;}
     
     if(prof){prof.address=ad;prof.city=ct;prof.pincode=pi;localStorage.setItem("th_profile",JSON.stringify(prof));}
     
@@ -793,7 +838,7 @@ async function plOrd(){
     
     alert("✅ Order Placed Successfully!\n\nPayment Method: Cash on Delivery (COD)\n\nCheck 'My Orders' to track it.");
     ["chFN","chLN","chP","chA","chC","chPi"].forEach(id=>document.getElementById(id).value="");
-  }catch(e){err.textContent="Error: "+e.message;}
+  }catch(e){err.textContent="Error: "+e.message;if(btn){btn.style.opacity="1";btn.style.pointerEvents="auto";btn.textContent="Confirm Order (COD)";}}
 }
 
 loadProfile();ldSet();ldAnn();ldCats();
