@@ -687,8 +687,17 @@ function rBag(){
   document.getElementById("bagShp").textContent=shippingCost===0?"FREE":"₹"+shippingCost;
   document.getElementById("bagTot").textContent="₹"+tot();
 }
-function oCart(){document.getElementById("cOv").classList.add("open");document.getElementById("cDr").classList.add("open");rCart();}
-function cCart(){document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");}
+function oCart(){
+  document.getElementById("cOv").classList.add("open");
+  document.getElementById("cDr").classList.add("open");
+  document.getElementById("tst").classList.remove("show"); // Hide notification when cart is open
+  rCart();
+}
+function cCart(){
+  document.getElementById("cOv").classList.remove("open");
+  document.getElementById("cDr").classList.remove("open");
+  uCnt(); // Show notification again when cart is closed (if items exist)
+}
 function showBag(){
   const c=gCart();
   if(!c.length){t("Your bag is empty!");document.getElementById("cOv").classList.remove("open");document.getElementById("cDr").classList.remove("open");return;}
