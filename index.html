@@ -493,6 +493,11 @@ async function openOrders(){
     const{data,error}=await db.from("Orders table").select("*").eq("customer_phone",prof.phone).order("created_at",{ascending:false});
     if(error){document.getElementById("ordersList").innerHTML="<p>Error loading orders</p>";return;}
     if(!data||data.length===0){document.getElementById("ordersList").innerHTML="<p>No orders yet</p>";return;}
+
+    // Fetch existing requests for this customer
+    const { data: cancelReqs } = await db.from("cancellation_requests").select("order_id, status").eq("customer_phone", prof.phone);
+    const { data: returnReqs } = await db.from("return_requests").select("order_id, status").eq("customer_phone", prof.phone);
+
     document.getElementById("ordersList").innerHTML=data.map(o=>{
       const status=o.order_status||"Pending";
       const statusClass="status-"+status.toLowerCase();
@@ -503,10 +508,28 @@ async function openOrders(){
       const isWithin3Days = diffHours <= 72;
       
       let actionButtons = "";
-      if(isWithin3Days && status !== 'Shipped' && status !== 'Delivered') {
+      const cancelReq = (cancelReqs || []).find(r => String(r.order_id) === String(o.id));
+      const returnReq = (returnReqs || []).find(r => String(r.order_id) === String(o.id));
+
+      // Cancellation Logic
+      if (cancelReq) {
+        let msg = cancelReq.status === 'approved' ? 'Cancellation Approved' : 'Request Submitted';
+        actionButtons += `<div style="margin-top:10px;padding:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;text-align:center;">
+          <p style="font-size:12px;color:#166534;margin:0;font-weight:600;">✓ ${msg}</p>
+          <a href="https://wa.me/919315640226?text=Hi%20T-HEART,%20I%20need%20help%20with%20Order%20${o.id}" target="_blank" style="font-size:11px;color:#2563eb;text-decoration:none;display:inline-block;margin-top:5px;">Contact WhatsApp for help →</a>
+        </div>`;
+      } else if (isWithin3Days && status !== 'Shipped' && status !== 'Delivered') {
         actionButtons += `<button onclick="openRequestModal('cancel', '${o.id}')" style="margin-top:10px;padding:8px;background:#ef4444;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;width:100%;">Request Cancellation</button>`;
       }
-      if(isWithin3Days && status === 'Delivered') {
+
+      // Return Logic
+      if (returnReq) {
+        let msg = returnReq.status === 'approved' ? 'Return Approved' : 'Return Request Submitted';
+        actionButtons += `<div style="margin-top:10px;padding:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;text-align:center;">
+          <p style="font-size:12px;color:#166534;margin:0;font-weight:600;">✓ ${msg}</p>
+          <a href="https://wa.me/919315640226?text=Hi%20T-HEART,%20I%20need%20help%20with%20Return%20for%20Order%20${o.id}" target="_blank" style="font-size:11px;color:#2563eb;text-decoration:none;display:inline-block;margin-top:5px;">Contact WhatsApp for help →</a>
+        </div>`;
+      } else if (isWithin3Days && status === 'Delivered') {
         actionButtons += `<button onclick="openRequestModal('return', '${o.id}')" style="margin-top:10px;padding:8px;background:#f59e0b;color:#000;border:none;border-radius:4px;cursor:pointer;font-size:12px;width:100%;">Request Return</button>`;
       }
 
