@@ -389,6 +389,13 @@ function switchAuthTab(tab){
   document.getElementById("authMsg").textContent="";
 }
 
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 async function doSignup(){
   const name=document.getElementById("signupName").value.trim();
   const phone=document.getElementById("signupPhone").value.trim();
@@ -398,12 +405,15 @@ async function doSignup(){
   if(!/^[6-9]\d{9}$/.test(phone)){msg.textContent="Valid 10-digit phone required";return;}
   if(password.length<6){msg.textContent="Password min 6 characters";return;}
   msg.textContent="Creating account...";
+  
+  const hashedPass = await hashPassword(password);
+  
   try{
     const{data:existing}=await db.from("customers").select("*").eq("phone",phone).limit(1);
     if(existing&&existing.length>0){msg.textContent="Phone already registered. Please login.";return;}
-    const{error}=await db.from("customers").insert([{name,phone,password}]);
+    const{error}=await db.from("customers").insert([{name,phone,password:hashedPass}]);
     if(error){msg.textContent="Error: "+error.message;return;}
-    prof={name,phone,password,address:"",city:"",pincode:""};
+    prof={name,phone,password:hashedPass,address:"",city:"",pincode:""};
     localStorage.setItem("th_profile",JSON.stringify(prof));
     loadProfile();closeAuth();t("Account created!");
   }catch(e){msg.textContent="Error: "+e.message;}
@@ -416,8 +426,11 @@ async function doLogin(){
   if(!/^[6-9]\d{9}$/.test(phone)){msg.textContent="Valid phone required";return;}
   if(!password){msg.textContent="Password required";return;}
   msg.textContent="Logging in...";
+  
+  const hashedPass = await hashPassword(password);
+  
   try{
-    const{data,error}=await db.from("customers").select("*").eq("phone",phone).eq("password",password).limit(1);
+    const{data,error}=await db.from("customers").select("*").eq("phone",phone).eq("password",hashedPass).limit(1);
     if(error){msg.textContent="Error: "+error.message;return;}
     if(!data||data.length===0){msg.textContent="Invalid phone or password";return;}
     prof=data[0];
@@ -425,7 +438,6 @@ async function doLogin(){
     loadProfile();closeAuth();t("Welcome back!");
   }catch(e){msg.textContent="Error: "+e.message;}
 }
-
 function openProfile(){
   if(!prof)return;
   document.getElementById("profileName").value=prof.name||"";
