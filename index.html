@@ -627,11 +627,11 @@ async function ldHero(ids){
     hSlides.forEach(p=>{const img=p.hero_image_url||(p.images&&p.images[0])||p.image_url;if(img){new Image().src=img;}});
     cHero=0;rHero(0);rDots();
     if(hInt)clearInterval(hInt);
-    if(hSlides.length>1)hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);
+    if(hSlides.length>1)hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},5000);
     const hc=document.getElementById("hCard");
     let sx=0,sy=0;
     hc.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
-    hc.addEventListener("touchend",e=>{const dx=sx-e.changedTouches[0].clientX;if(Math.abs(dx)>50){cHero=dx>0?(cHero+1)%hSlides.length:(cHero-1+hSlides.length)%hSlides.length;rHero(cHero);rDots();if(hInt){clearInterval(hInt);hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},10000);}}},{passive:true});
+    hc.addEventListener("touchend",e=>{const dx=sx-e.changedTouches[0].clientX;if(Math.abs(dx)>50){cHero=dx>0?(cHero+1)%hSlides.length:(cHero-1+hSlides.length)%hSlides.length;rHero(cHero);rDots();if(hInt){clearInterval(hInt);hInt=setInterval(()=>{cHero=(cHero+1)%hSlides.length;rHero(cHero);rDots();},5000);}}},{passive:true});
     hc.onclick=()=>{const pid=document.getElementById("hImg").dataset.pid;if(pid)oDet(pid);};
   }catch(e){console.log("ldHero error:",e);}
 }
