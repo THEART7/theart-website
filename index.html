@@ -108,7 +108,12 @@ body{background:#F8F7F4;color:#1A1A1A;font-family:-apple-system,BlinkMacSystemFo
 footer{background:#fff;padding:35px 20px;border-top:1px solid #E5E5E5;margin-top:30px;text-align:center;}
 footer h4{font-size:10px;letter-spacing:2px;margin:18px 0 8px;text-transform:uppercase;color:#888;}
 footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size:13px;}
+/* Desktop Layout Fix - Content ko center aur limit karna */
+.hdr, .hero, .csec, .coll, footer { max-width: 1200px; margin: 0 auto; }
+
+/* Grid Columns Fix */
 @media(min-width:700px){.grd{grid-template-columns:repeat(3,1fr);}.csec h2{font-size:32px;}.coll h2{font-size:36px;}}
+@media(min-width:1024px){.grd{grid-template-columns:repeat(4,1fr);}}
 .auth-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
 .auth-modal.open{display:flex;}
 .auth-box{background:#fff;padding:30px;border-radius:12px;max-width:400px;width:100%;}
