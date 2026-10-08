@@ -9,6 +9,55 @@
     <meta property="og:url" content="https://t-heart.in">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
+  /* Premium Splash Screen Intro */
+#splashScreen {
+    position: fixed;
+    inset: 0;
+    background: #F8F7F4;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+#splashScreen.hide {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.splash-logo {
+    font-family: Georgia, serif;
+    font-size: 32px;
+    letter-spacing: 6px;
+    color: #1A1A1A;
+    animation: fadeText 2.5s ease-in-out infinite;
+    margin-bottom: 30px;
+}
+@keyframes fadeText {
+    0%, 100% { opacity: 0.2; transform: scale(0.98); }
+    50% { opacity: 1; transform: scale(1.02); }
+}
+.splash-emojis {
+    display: flex;
+    gap: 12px;
+    font-size: 26px;
+}
+.splash-emojis span {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: popEmoji 0.5s forwards;
+}
+.splash-emojis span:nth-child(1) { animation-delay: 0.2s; }
+.splash-emojis span:nth-child(2) { animation-delay: 0.4s; }
+.splash-emojis span:nth-child(3) { animation-delay: 0.6s; }
+.splash-emojis span:nth-child(4) { animation-delay: 0.8s; }
+.splash-emojis span:nth-child(5) { animation-delay: 1.0s; }
+.splash-emojis span:nth-child(6) { animation-delay: 1.2s; }
+
+@keyframes popEmoji {
+    to { opacity: 1; transform: translateY(0); }
+}
 <title>T-HEART</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -151,6 +200,13 @@ footer a{display:block;color:#1A1A1A;text-decoration:none;margin:4px 0;font-size
 </style>
 </head>
 <body>
+ <!-- Premium Intro Splash Screen -->
+<div id="splashScreen">
+    <div class="splash-logo">T-HEART</div>
+    <div class="splash-emojis">
+        <span></span><span>👚</span><span>👔</span><span></span><span>🧦</span><span>🛒</span>
+    </div>
+</div> 
 <div class="ann" id="annBar"><span id="annText"></span></div>
 <header class="hdr">
   <button class="mbtn" onclick="tMnu()">☰</button>
@@ -891,6 +947,15 @@ loadProfile();ldSet();ldAnn();ldCats();
 ldProds().then(()=>{const hash=window.location.hash;if(hash.startsWith("#product=")){const pid=hash.replace("#product=","");setTimeout(()=>oDet(pid),400);}});
 uCnt();
 window.addEventListener("hashchange",()=>{if(!window.location.hash.startsWith("#product=")){const det=document.getElementById("detPg");if(det.classList.contains("open"))cDet();}});
+  // 5 Second Splash Screen Timer
+setTimeout(() => {
+    const splash = document.getElementById('splashScreen');
+    if (splash) {
+        splash.classList.add('hide');
+        // Memory se hatane ke liye
+        setTimeout(() => splash.remove(), 800);
+    }
+}, 5000);
 </script>
 </body>
 </html>
